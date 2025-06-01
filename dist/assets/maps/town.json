@@ -7,21 +7,37 @@
         "w": {
             "tileIndex": 21,
             "type": "obstacle"
+        },
+        "t": {
+            "tileIndex": 71,
+            "type": "obstacle"
+        },
+        "s": {
+            "tileIndex": 73,
+            "type": "obstacle"
+        },
+        "p": {
+            "tileIndex": 75,
+            "type": "obstacle"
+        },
+        "b": {
+            "tileIndex": 2465,
+            "type": "obstacle"
         }
     },
     "data": [
         "                         ",
         "                         ",
-        "         wwww            ",
+        "                         ",
+        "     wwww      wwww      ",
+        "     wwww      wwww      ",
+        "     wtww      wsww      ",
         "                         ",
         "                         ",
         "                         ",
-        "                         ",
-        "                         ",
-        "                         ",
-        "       wwww              ",
-        "                         ",
-        "                         ",
+        "     wwww      wwww      ",
+        "     wwww      wwww      ",
+        "     wbww      wpww      ",
         "                         ",
         "                         ",
         "                         "
