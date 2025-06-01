@@ -5,9 +5,9 @@ import {
     GameAction, 
     GameStateUtils, 
     TILE, 
-    createInitialGameState, 
-    gameReducer 
+    createInitialGameState
 } from './gameState.js';
+import { gameReducer } from './gameReducer.js';
 
 /**
  * Pure function that transforms GameState into a RenderTree
