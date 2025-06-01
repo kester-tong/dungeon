@@ -1,4 +1,4 @@
-import { Map } from "./maps/Map";
+import { Map, Tile } from "./maps/Map";
 // Tile constants
 export const TILE = {
     GROUND: 2,
@@ -41,15 +41,15 @@ export const GameStateUtils = {
         if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
             return false;
         }
-        return state.map.data[y][x] !== TILE.WALL;
+        return state.map.data[y][x].type === "terrain";
     },
     
     /**
      * Get the tile at a specific position
      */
-    getTileAt(state: GameState, x: number, y: number): number {
+    getTileAt(state: GameState, x: number, y: number): Tile {
         if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
-            return TILE.GROUND; // Default to ground for out of bounds
+            return { tileIndex: TILE.GROUND, type: "terrain" }; // Default to ground for out of bounds
         }
         return state.map.data[y][x];
     }

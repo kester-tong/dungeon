@@ -10,7 +10,7 @@ export function render(state: GameState): RenderTree {
     const tiles: number[][][] = Array(state.map.height).fill(null).map((_, y) => 
         Array(state.map.width).fill(null).map((_, x) => {
             // Start with the base tile
-            const tileLayers = [GameStateUtils.getTileAt(state, x, y)];
+            const tileLayers = [GameStateUtils.getTileAt(state, x, y).tileIndex];
             
             // Add player if at this position
             if (x === state.player.x && y === state.player.y) {

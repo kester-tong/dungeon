@@ -1,8 +1,13 @@
-import { Map } from './Map.js';
+import { Map, Tile } from './Map.js';
+
+interface TileDefinition {
+    tileIndex: number;
+    type: "terrain" | "obstacle";
+}
 
 interface MapAsset {
     data: string[];
-    tileMapping: { [key: string]: number };
+    tileMapping: { [key: string]: TileDefinition };
 }
 
 export async function loadMap(path: string): Promise<Map> {
@@ -14,9 +19,15 @@ export async function loadMap(path: string): Promise<Map> {
         
         const mapAsset: MapAsset = await response.json();
         
-        // Convert string-based data to number-based data using the mapping from the file
-        const data: number[][] = mapAsset.data.map(row => 
-            Array.from(row).map(char => mapAsset.tileMapping[char] ?? 2)
+        // Default tile for unmapped characters
+        const defaultTile: Tile = { tileIndex: 2, type: "terrain" };
+        
+        // Convert string-based data to Tile objects using the mapping from the file
+        const data: Tile[][] = mapAsset.data.map(row => 
+            Array.from(row).map(char => {
+                const tileDef = mapAsset.tileMapping[char];
+                return tileDef ? { tileIndex: tileDef.tileIndex, type: tileDef.type } : defaultTile;
+            })
         );
         
         const height = data.length;

@@ -1,7 +1,13 @@
 {
     "tileMapping": {
-        " ": 2,
-        "w": 21
+        " ": {
+            "tileIndex": 2,
+            "type": "terrain"
+        },
+        "w": {
+            "tileIndex": 21,
+            "type": "obstacle"
+        }
     },
     "data": [
         "                         ",
