@@ -9,7 +9,8 @@
     "esModuleInterop": true,  // Allows default imports from commonjs modules.
     "skipLibCheck": true,     // Skip type checking of declaration files.
     "forceConsistentCasingInFileNames": true,
-    "sourceMap": true         // Generate source maps for easier debugging.
+    "sourceMap": true,        // Generate source maps for easier debugging.
+    "lib": ["DOM", "ES2015", "ES2016", "ES2017"]  // Include DOM library for browser APIs
   },
   "include": [
     "src/**/*"                // Which files to include in compilation.
