@@ -3,11 +3,11 @@ import { CanvasRenderer } from './renderer.js';
 import { 
     GameState, 
     GameAction, 
-    TILE, 
-    createInitialGameState
+    TILE
 } from './gameState.js';
 import { gameReducer } from './gameReducer.js';
 import { render } from './render.js';
+import { loadMap } from './maps/loader.js';
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -16,7 +16,7 @@ export class Game {
     private renderer: CanvasRenderer;
     
     // The game state holds all game data (immutable)
-    private gameState: GameState;
+    private gameState: GameState | null = null;
     
     // Track which keys have been processed to prevent repeated movements
     // This is UI state, not game state, so we keep it separate
@@ -35,34 +35,47 @@ export class Game {
         // Create tileset
         this.tileset = new Tileset('/assets/images/tileset.png');
         
-        // Initialize game state with map dimensions
-        this.gameState = createInitialGameState(25, 15);
-
-        // Set canvas dimensions based on map size
-        this.canvas.width = this.gameState.map.width * TILE.SIZE;
-        this.canvas.height = this.gameState.map.height * TILE.SIZE;
-
-        // Create renderer for efficient tile rendering
+        // Renderer will be created after map loads
         this.renderer = new CanvasRenderer(this.canvas, this.tileset, TILE.SIZE);
 
         this.init();
     }
 
-    private init(): void {
-        // Initialize event listeners
-        window.addEventListener('keydown', this.handleKeyDown.bind(this));
-        
-        console.log("Game initialized. Canvas dimensions:", this.canvas.width, "x", this.canvas.height);
-        console.log("Map dimensions:", this.gameState.map.width, "x", this.gameState.map.height, "tiles");
-        
-        // Start the game loop after the tileset is loaded
-        if (this.tileset.isLoaded()) {
-            this.gameLoop();
-        } else {
-            // If tileset is not loaded yet, wait for it to load
-            this.tileset.getImage().addEventListener('load', () => {
+    private async init(): Promise<void> {
+        try {
+            // Load the map first
+            const map = await loadMap('/assets/maps/town.json');
+            
+            // Now create the game state with the loaded map
+            this.gameState = {
+                map,
+                player: {
+                    x: Math.floor(map.width / 2),
+                    y: Math.floor(map.height / 2)
+                }
+            };
+            
+            // Set canvas dimensions based on loaded map size
+            this.canvas.width = map.width * TILE.SIZE;
+            this.canvas.height = map.height * TILE.SIZE;
+            
+            // Initialize event listeners after game state is ready
+            window.addEventListener('keydown', this.handleKeyDown.bind(this));
+            
+            console.log("Game initialized. Canvas dimensions:", this.canvas.width, "x", this.canvas.height);
+            console.log("Map dimensions:", map.width, "x", map.height, "tiles");
+            
+            // Start the game loop after the tileset is loaded
+            if (this.tileset.isLoaded()) {
                 this.gameLoop();
-            });
+            } else {
+                // If tileset is not loaded yet, wait for it to load
+                this.tileset.getImage().addEventListener('load', () => {
+                    this.gameLoop();
+                });
+            }
+        } catch (error) {
+            console.error('Failed to initialize game:', error);
         }
     }
 
@@ -70,6 +83,8 @@ export class Game {
      * Dispatch an action to update the game state
      */
     private dispatch(action: GameAction): void {
+        if (!this.gameState) return;
+        
         // Update game state using the reducer
         console.log('action: ' + JSON.stringify(action))
         this.gameState = gameReducer(this.gameState, action);
@@ -88,7 +103,7 @@ export class Game {
      * Draw the current game state to the canvas
      */
     private draw(): void {
-        if (!this.tileset.isLoaded()) {
+        if (!this.tileset.isLoaded() || !this.gameState) {
             return;
         }
         
