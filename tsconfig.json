@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2015", // Or newer, like ES2020. Target modern JavaScript features.
+    "module": "ES2015", // Use ES modules for browser compatibility.
+    "moduleResolution": "node", // How modules get resolved.
+    "outDir": "./dist/js",    // Where to output compiled JavaScript.
+    "rootDir": "./src",       // Where your TypeScript source files are.
+    "strict": true,           // Enable all strict type-checking options.
+    "esModuleInterop": true,  // Allows default imports from commonjs modules.
+    "skipLibCheck": true,     // Skip type checking of declaration files.
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true         // Generate source maps for easier debugging.
+  },
+  "include": [
+    "src/**/*"                // Which files to include in compilation.
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"            // Exclude test files if any.
+  ]
+}
