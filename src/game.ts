@@ -2,6 +2,33 @@ import { Tileset } from './tileset.js';
 import { CanvasRenderer, RenderTree, TextBox } from './renderer.js';
 import { GameState } from './gameState.js';
 
+/**
+ * Pure function that transforms GameState into a RenderTree
+ * (analogous to React's functional components or render methods)
+ */
+export function render(state: GameState): RenderTree {
+    // Create the tiles array from the game state
+    const tiles: number[][][] = Array(state.getMapHeight()).fill(null).map((_, y) => 
+        Array(state.getMapWidth()).fill(null).map((_, x) => {
+            // Start with the base tile
+            const tileLayers = [state.getTileAt(x, y)];
+            
+            // Add player if at this position
+            if (x === state.getPlayerX() && y === state.getPlayerY()) {
+                tileLayers.push(GameState.CHARACTER_TILE_INDEX);
+            }
+            
+            return tileLayers;
+        })
+    );
+    
+    // Return the complete render tree
+    return {
+        tiles,
+        textBoxes: state.getTextBoxes()
+    };
+}
+
 export class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -121,41 +148,15 @@ export class Game {
     }
 
     /**
-     * Create a RenderTree from the current game state
-     */
-    private createRenderTree(): RenderTree {
-        // Create the tiles array from the game state
-        const tiles: number[][][] = Array(this.gameState.getMapHeight()).fill(null).map((_, y) => 
-            Array(this.gameState.getMapWidth()).fill(null).map((_, x) => {
-                // Start with the base tile
-                const tileLayers = [this.gameState.getTileAt(x, y)];
-                
-                // Add player if at this position
-                if (x === this.gameState.getPlayerX() && y === this.gameState.getPlayerY()) {
-                    tileLayers.push(GameState.CHARACTER_TILE_INDEX);
-                }
-                
-                return tileLayers;
-            })
-        );
-        
-        // Return the complete render tree
-        return {
-            tiles,
-            textBoxes: this.gameState.getTextBoxes()
-        };
-    }
-
-    /**
-     * Render the current game state
+     * Draw the current game state to the canvas
      */
     private draw(): void {
         if (!this.tileset.isLoaded()) {
             return;
         }
         
-        // Create render tree from game state
-        const renderTree = this.createRenderTree();
+        // Create render tree from game state using the pure render function
+        const renderTree = render(this.gameState);
         
         // Use the renderer to efficiently render only what has changed
         this.renderer.render(renderTree);
