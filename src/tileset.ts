@@ -75,10 +75,6 @@ export class Tileset {
     public getImage(): HTMLImageElement {
         return this.image;
     }
-    
-    public getMaskImage(): HTMLImageElement | null {
-        return this.maskImage;
-    }
 
     public getTileSize(): number {
         return Tileset.TILE_SIZE;

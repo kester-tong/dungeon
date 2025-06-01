@@ -124,14 +124,13 @@ export class Game {
             }
         }
 
-        // Second pass: Draw the player character with masking
+        // Second pass: Draw the player character with built-in transparency
         const characterTileIndex = 18 * 32; // The character tile at index 18*32
         this.tileset.drawTile(
             this.ctx, 
             characterTileIndex, 
             this.playerTileX * Game.TILE_SIZE, 
-            this.playerTileY * Game.TILE_SIZE,
-            true // Use masking for the character
+            this.playerTileY * Game.TILE_SIZE
         );
     }
 
