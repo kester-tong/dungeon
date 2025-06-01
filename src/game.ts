@@ -1,5 +1,4 @@
 import { Tileset } from './tileset.js';
-import { TownMap } from './map.js';
 import { CanvasRenderer, RenderTree, TextBox } from './renderer.js';
 import { GameState } from './gameState.js';
 
@@ -25,10 +24,10 @@ export class Game {
         // Create tileset
         this.tileset = new Tileset('/assets/images/tileset.png');
         
-        // Initialize game state
-        this.gameState = new GameState(40, 22); // Map dimensions
+        // Initialize game state with map dimensions
+        this.gameState = new GameState(40, 22);
         
-        // Initialize the map
+        // Initialize the map with town layout
         this.gameState.createTownLayout();
 
         // Set canvas dimensions based on map size
