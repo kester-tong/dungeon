@@ -1,6 +1,13 @@
 import { Tileset } from './tileset.js';
 import { CanvasRenderer, RenderTree, TextBox } from './renderer.js';
-import { GameState } from './gameState.js';
+import { 
+    GameState, 
+    GameAction, 
+    GameStateUtils, 
+    TILE, 
+    createInitialGameState, 
+    gameReducer 
+} from './gameState.js';
 
 /**
  * Pure function that transforms GameState into a RenderTree
@@ -8,14 +15,14 @@ import { GameState } from './gameState.js';
  */
 export function render(state: GameState): RenderTree {
     // Create the tiles array from the game state
-    const tiles: number[][][] = Array(state.getMapHeight()).fill(null).map((_, y) => 
-        Array(state.getMapWidth()).fill(null).map((_, x) => {
+    const tiles: number[][][] = Array(state.map.height).fill(null).map((_, y) => 
+        Array(state.map.width).fill(null).map((_, x) => {
             // Start with the base tile
-            const tileLayers = [state.getTileAt(x, y)];
+            const tileLayers = [GameStateUtils.getTileAt(state, x, y)];
             
             // Add player if at this position
-            if (x === state.getPlayerX() && y === state.getPlayerY()) {
-                tileLayers.push(GameState.CHARACTER_TILE_INDEX);
+            if (x === state.player.x && y === state.player.y) {
+                tileLayers.push(TILE.CHARACTER);
             }
             
             return tileLayers;
@@ -25,7 +32,7 @@ export function render(state: GameState): RenderTree {
     // Return the complete render tree
     return {
         tiles,
-        textBoxes: state.getTextBoxes()
+        textBoxes: state.textBoxes
     };
 }
 
@@ -35,7 +42,7 @@ export class Game {
     private tileset: Tileset;
     private renderer: CanvasRenderer;
     
-    // The game state holds all game data
+    // The game state holds all game data (immutable)
     private gameState: GameState;
 
     constructor(canvasId: string) {
@@ -52,17 +59,14 @@ export class Game {
         this.tileset = new Tileset('/assets/images/tileset.png');
         
         // Initialize game state with map dimensions
-        this.gameState = new GameState(40, 22);
-        
-        // Initialize the map with town layout
-        this.gameState.createTownLayout();
+        this.gameState = createInitialGameState(40, 22);
 
         // Set canvas dimensions based on map size
-        this.canvas.width = this.gameState.getMapWidth() * GameState.TILE_SIZE;
-        this.canvas.height = this.gameState.getMapHeight() * GameState.TILE_SIZE;
+        this.canvas.width = this.gameState.map.width * TILE.SIZE;
+        this.canvas.height = this.gameState.map.height * TILE.SIZE;
 
         // Create renderer for efficient tile rendering
-        this.renderer = new CanvasRenderer(this.canvas, this.tileset, GameState.TILE_SIZE);
+        this.renderer = new CanvasRenderer(this.canvas, this.tileset, TILE.SIZE);
 
         this.init();
     }
@@ -73,7 +77,7 @@ export class Game {
         window.addEventListener('keyup', this.handleKeyUp.bind(this));
 
         console.log("Game initialized. Canvas dimensions:", this.canvas.width, "x", this.canvas.height);
-        console.log("Map dimensions:", this.gameState.getMapWidth(), "x", this.gameState.getMapHeight(), "tiles");
+        console.log("Map dimensions:", this.gameState.map.width, "x", this.gameState.map.height, "tiles");
         
         // Start the game loop after the tileset is loaded
         if (this.tileset.isLoaded()) {
@@ -84,6 +88,14 @@ export class Game {
                 this.gameLoop();
             });
         }
+    }
+
+    /**
+     * Dispatch an action to update the game state
+     */
+    private dispatch(action: GameAction): void {
+        // Update game state using the reducer
+        this.gameState = gameReducer(this.gameState, action);
     }
 
     /**
@@ -108,7 +120,7 @@ export class Game {
     private updateFromInput(key: string, isKeyDown: boolean): void {
         if (isKeyDown) {
             // Only process the key if it hasn't been processed yet
-            if (!this.gameState.isKeyProcessed(key)) {
+            if (!this.gameState.processedKeys[key]) {
                 let dx = 0;
                 let dy = 0;
                 
@@ -134,16 +146,21 @@ export class Game {
                 
                 // Try to move the player
                 if (dx !== 0 || dy !== 0) {
-                    const moved = this.gameState.movePlayer(dx, dy);
-                    if (moved) {
-                        // Mark the key as processed to prevent repeated movements
-                        this.gameState.setKeyProcessed(key, true);
+                    // First dispatch the move action
+                    const oldX = this.gameState.player.x;
+                    const oldY = this.gameState.player.y;
+                    
+                    this.dispatch({ type: 'MOVE_PLAYER', dx, dy });
+                    
+                    // If the player actually moved, mark the key as processed
+                    if (this.gameState.player.x !== oldX || this.gameState.player.y !== oldY) {
+                        this.dispatch({ type: 'PROCESS_KEY', key, processed: true });
                     }
                 }
             }
         } else {
             // Key is released, clear processed state
-            this.gameState.setKeyProcessed(key, false);
+            this.dispatch({ type: 'PROCESS_KEY', key, processed: false });
         }
     }
 
@@ -188,17 +205,17 @@ export class Game {
      */
     private showWelcomeMessage(): void {
         // Clear any existing text boxes
-        this.gameState.clearTextBoxes();
+        this.dispatch({ type: 'CLEAR_TEXT_BOXES' });
         
         // Add a welcome message at the bottom of the screen
         const textBox: TextBox = {
             startX: 2,
-            startY: this.gameState.getMapHeight() - 5,
-            endX: this.gameState.getMapWidth() - 3,
-            endY: this.gameState.getMapHeight() - 2,
+            startY: this.gameState.map.height - 5,
+            endX: this.gameState.map.width - 3,
+            endY: this.gameState.map.height - 2,
             text: "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
         };
         
-        this.gameState.addTextBox(textBox);
+        this.dispatch({ type: 'ADD_TEXT_BOX', textBox });
     }
 }

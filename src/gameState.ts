@@ -1,137 +1,90 @@
 import { TextBox } from './renderer.js';
 
+// Tile constants
+export const TILE = {
+    GROUND: 2,
+    WALL: 21,
+    DOOR_START: 67,
+    DOOR_END: 82,
+    CHARACTER: 18 * 32,
+    SIZE: 32
+};
+
 /**
- * GameState represents the complete state of the game.
- * It serves as the single source of truth for the game's data.
+ * GameState is a Plain Old Data object that represents the complete state of the game.
+ * It contains no methods, only data.
  */
-export class GameState {
-    // Map state
-    private readonly mapWidth: number;
-    private readonly mapHeight: number;
-    private mapData: number[][];
-    
-    // Tile constants
-    public static readonly GROUND_TILE = 2;
-    public static readonly WALL_TILE = 21;
-    public static readonly DOOR_TILE_START = 67;
-    public static readonly DOOR_TILE_END = 82;
-    public static readonly CHARACTER_TILE_INDEX = 18 * 32;
-    public static readonly TILE_SIZE = 32;
+export interface GameState {
+    // Map state (immutable)
+    readonly map: {
+        data: number[][];
+        width: number;
+        height: number;
+    };
     
     // Player state
-    private playerX: number;
-    private playerY: number;
+    player: {
+        x: number;
+        y: number;
+    };
     
     // UI state
-    private textBoxes: TextBox[] = [];
+    textBoxes: TextBox[];
     
     // Input state
-    private processedKeys: { [key: string]: boolean } = {};
+    processedKeys: { [key: string]: boolean };
+}
 
-    constructor(mapWidth: number, mapHeight: number) {
-        this.mapWidth = mapWidth;
-        this.mapHeight = mapHeight;
-        
-        // Initialize player position in the middle of the map
-        this.playerX = Math.floor(mapWidth / 2);
-        this.playerY = Math.floor(mapHeight / 2);
-        
-        // Initialize with ground tiles
-        this.mapData = Array(mapHeight).fill(null)
-            .map(() => Array(mapWidth).fill(GameState.GROUND_TILE));
-    }
-    
-    // Map methods
-    
-    public getMapWidth(): number {
-        return this.mapWidth;
-    }
-    
-    public getMapHeight(): number {
-        return this.mapHeight;
-    }
-    
-    public getTileAt(x: number, y: number): number {
-        if (x < 0 || x >= this.mapWidth || y < 0 || y >= this.mapHeight) {
-            return GameState.GROUND_TILE; // Default to ground for out of bounds
+/**
+ * Actions that can be dispatched to update the game state
+ */
+export type GameAction = 
+    | { type: 'MOVE_PLAYER', dx: number, dy: number }
+    | { type: 'PROCESS_KEY', key: string, processed: boolean }
+    | { type: 'ADD_TEXT_BOX', textBox: TextBox }
+    | { type: 'CLEAR_TEXT_BOXES' };
+
+/**
+ * Helper functions for working with game state
+ */
+export const GameStateUtils = {
+    /**
+     * Check if a position is walkable
+     */
+    isWalkable(state: GameState, x: number, y: number): boolean {
+        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
+            return false;
         }
-        return this.mapData[y][x];
-    }
+        return state.map.data[y][x] !== TILE.WALL;
+    },
     
-    public setTileAt(x: number, y: number, tileIndex: number): void {
-        if (x >= 0 && x < this.mapWidth && y >= 0 && y < this.mapHeight) {
-            this.mapData[y][x] = tileIndex;
+    /**
+     * Get the tile at a specific position
+     */
+    getTileAt(state: GameState, x: number, y: number): number {
+        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
+            return TILE.GROUND; // Default to ground for out of bounds
         }
+        return state.map.data[y][x];
     }
+};
+
+/**
+ * Create the initial map for the game
+ */
+function createTownMap(width: number, height: number): number[][] {
+    // Create an empty map filled with ground tiles
+    const mapData = Array(height).fill(null)
+        .map(() => Array(width).fill(TILE.GROUND));
     
-    public isWalkable(x: number, y: number): boolean {
-        const tile = this.getTileAt(x, y);
-        return tile !== GameState.WALL_TILE;
-    }
-    
-    // Player methods
-    
-    public getPlayerX(): number {
-        return this.playerX;
-    }
-    
-    public getPlayerY(): number {
-        return this.playerY;
-    }
-    
-    public movePlayer(dx: number, dy: number): boolean {
-        const newX = this.playerX + dx;
-        const newY = this.playerY + dy;
-        
-        // Check if the new position is within bounds and walkable
-        if (newX >= 0 && newX < this.mapWidth && 
-            newY >= 0 && newY < this.mapHeight && 
-            this.isWalkable(newX, newY)) {
-            this.playerX = newX;
-            this.playerY = newY;
-            return true;
-        }
-        
-        return false;
-    }
-    
-    // Text box methods
-    
-    public getTextBoxes(): TextBox[] {
-        return [...this.textBoxes];
-    }
-    
-    public addTextBox(textBox: TextBox): void {
-        this.textBoxes.push(textBox);
-    }
-    
-    public clearTextBoxes(): void {
-        this.textBoxes = [];
-    }
-    
-    // Input methods
-    
-    public isKeyProcessed(key: string): boolean {
-        return !!this.processedKeys[key];
-    }
-    
-    public setKeyProcessed(key: string, processed: boolean): void {
-        if (processed) {
-            this.processedKeys[key] = true;
-        } else {
-            delete this.processedKeys[key];
-        }
-    }
-    
-    // Building creation
-    
-    public createBuilding(x: number, y: number, width: number, height: number, doorTile: number): void {
+    // Helper function to create a building
+    function createBuilding(x: number, y: number, width: number, height: number, doorTile: number): void {
         // Create walls for the building
         for (let yPos = y; yPos < y + height; yPos++) {
             for (let xPos = x; xPos < x + width; xPos++) {
                 // Place walls on the perimeter
                 if (xPos === x || xPos === x + width - 1 || yPos === y || yPos === y + height - 1) {
-                    this.mapData[yPos][xPos] = GameState.WALL_TILE;
+                    mapData[yPos][xPos] = TILE.WALL;
                 }
             }
         }
@@ -139,25 +92,111 @@ export class GameState {
         // Place door in the middle of the bottom wall
         const doorX = x + Math.floor(width / 2);
         const doorY = y + height - 1;
-        this.mapData[doorY][doorX] = doorTile;
+        mapData[doorY][doorX] = doorTile;
     }
     
-    // Create standard town layout
-    public createTownLayout(): void {
-        // Inn (top left)
-        this.createBuilding(2, 2, 5, 4, GameState.DOOR_TILE_START); // 67 = Inn door
+    // Inn (top left)
+    createBuilding(2, 2, 5, 4, TILE.DOOR_START); // 67 = Inn door
+    
+    // Shop (top right)
+    createBuilding(17, 2, 5, 4, TILE.DOOR_START + 1); // 68 = Shop door
+    
+    // Blacksmith (middle left)
+    createBuilding(3, 8, 6, 5, TILE.DOOR_START + 2); // 69 = Blacksmith door
+    
+    // Temple (middle right)
+    createBuilding(16, 8, 6, 5, TILE.DOOR_START + 3); // 70 = Temple door
+    
+    // Houses (bottom)
+    createBuilding(7, 10, 4, 3, TILE.DOOR_START + 4); // 71 = House door
+    createBuilding(14, 10, 4, 3, TILE.DOOR_START + 5); // 72 = Another house door
+    
+    return mapData;
+}
+
+/**
+ * Create the initial game state
+ */
+export function createInitialGameState(mapWidth: number, mapHeight: number): GameState {
+    const mapData = createTownMap(mapWidth, mapHeight);
+    
+    return {
+        map: {
+            data: mapData,
+            width: mapWidth,
+            height: mapHeight
+        },
+        player: {
+            x: Math.floor(mapWidth / 2),
+            y: Math.floor(mapHeight / 2)
+        },
+        textBoxes: [],
+        processedKeys: {}
+    };
+}
+
+/**
+ * Reducer function that takes the current state and an action, and returns a new state
+ */
+export function gameReducer(state: GameState, action: GameAction): GameState {
+    switch (action.type) {
+        case 'MOVE_PLAYER': {
+            const { dx, dy } = action;
+            const newX = state.player.x + dx;
+            const newY = state.player.y + dy;
+            
+            // Check if the new position is valid
+            if (
+                newX >= 0 && newX < state.map.width &&
+                newY >= 0 && newY < state.map.height &&
+                GameStateUtils.isWalkable(state, newX, newY)
+            ) {
+                // Return a new state with the updated player position
+                return {
+                    ...state,
+                    player: {
+                        ...state.player,
+                        x: newX,
+                        y: newY
+                    }
+                };
+            }
+            
+            // If the move is invalid, return the unchanged state
+            return state;
+        }
         
-        // Shop (top right)
-        this.createBuilding(17, 2, 5, 4, GameState.DOOR_TILE_START + 1); // 68 = Shop door
+        case 'PROCESS_KEY': {
+            const { key, processed } = action;
+            const newProcessedKeys = { ...state.processedKeys };
+            
+            if (processed) {
+                newProcessedKeys[key] = true;
+            } else {
+                delete newProcessedKeys[key];
+            }
+            
+            return {
+                ...state,
+                processedKeys: newProcessedKeys
+            };
+        }
         
-        // Blacksmith (middle left)
-        this.createBuilding(3, 8, 6, 5, GameState.DOOR_TILE_START + 2); // 69 = Blacksmith door
+        case 'ADD_TEXT_BOX': {
+            return {
+                ...state,
+                textBoxes: [...state.textBoxes, action.textBox]
+            };
+        }
         
-        // Temple (middle right)
-        this.createBuilding(16, 8, 6, 5, GameState.DOOR_TILE_START + 3); // 70 = Temple door
+        case 'CLEAR_TEXT_BOXES': {
+            return {
+                ...state,
+                textBoxes: []
+            };
+        }
         
-        // Houses (bottom)
-        this.createBuilding(7, 10, 4, 3, GameState.DOOR_TILE_START + 4); // 71 = House door
-        this.createBuilding(14, 10, 4, 3, GameState.DOOR_TILE_START + 5); // 72 = Another house door
+        default:
+            return state;
     }
 }
