@@ -10,19 +10,19 @@
         },
         "t": {
             "tileIndex": 71,
-            "type": "obstacle"
+            "type": "chattable"
         },
         "s": {
             "tileIndex": 73,
-            "type": "obstacle"
+            "type": "chattable"
         },
         "p": {
             "tileIndex": 75,
-            "type": "obstacle"
+            "type": "chattable"
         },
         "b": {
             "tileIndex": 2465,
-            "type": "obstacle"
+            "type": "chattable"
         }
     },
     "data": [

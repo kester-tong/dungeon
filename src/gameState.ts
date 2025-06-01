@@ -13,6 +13,16 @@ export interface GameState {
         x: number;
         y: number;
     };
+    
+    // Chat state
+    chat: {
+        isInChat: boolean;
+        messages: string[];
+        currentInput: string;
+        // Store previous game position to return to
+        previousPlayerX?: number;
+        previousPlayerY?: number;
+    };
 }
 
 /**

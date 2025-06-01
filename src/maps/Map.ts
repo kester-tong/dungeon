@@ -1,6 +1,6 @@
 export interface Tile {
     tileIndex: number;
-    type: "terrain" | "obstacle";
+    type: "terrain" | "obstacle" | "chattable";
 }
 
 export interface Map {

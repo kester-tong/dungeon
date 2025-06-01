@@ -1,5 +1,5 @@
 import { GameState } from './gameState.js';
-import { RenderTree } from './renderer.js';
+import { RenderTree, TileArray } from './renderer.js';
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
@@ -8,6 +8,19 @@ const CHARACTER_TILE_INDEX = 576; // 18 * 32
  * (analogous to React's functional components or render methods)
  */
 export function render(state: GameState): RenderTree {
+    // If in chat, return ChatWindow
+    if (state.chat.isInChat) {
+        return {
+            type: 'ChatWindow',
+            messages: [
+                ...state.chat.messages,
+                "",
+                "Press ESC to exit"
+            ],
+            inputText: state.chat.currentInput
+        };
+    }
+    
     // Extract tile indices from map data
     const tiles: number[][][] = state.map.data.map(row => 
         row.map(tile => [tile.tileIndex])
@@ -15,18 +28,10 @@ export function render(state: GameState): RenderTree {
     
     // Add character at player position
     tiles[state.player.y][state.player.x].push(CHARACTER_TILE_INDEX);
-    
-    // Create welcome text box
-    const welcomeTextBox = {
-        startX: 2,
-        startY: state.map.height - 5,
-        endX: state.map.width - 3,
-        endY: state.map.height - 2,
-        text: "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
-    };
 
-    // Return the complete render tree
+    // Return the TileArray render tree
     return {
+        type: 'TileArray',
         tiles,
     };
 }

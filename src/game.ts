@@ -51,6 +51,11 @@ export class Game {
                 player: {
                     x: Math.floor(map.width / 2),
                     y: Math.floor(map.height / 2)
+                },
+                chat: {
+                    isInChat: false,
+                    messages: [],
+                    currentInput: ""
                 }
             };
             

@@ -1,10 +1,10 @@
 import { Tileset } from './tileset.js';
 
 /**
- * RenderTree represents the tile-based view to be rendered.
- * It includes both tile layers and text boxes.
+ * TileArray represents a tile-based view to be rendered.
  */
-export interface RenderTree {
+export interface TileArray {
+    type: 'TileArray';
     /**
      * 3D array of tile indices where:
      * - First dimension [y]: rows (top to bottom)
@@ -13,6 +13,20 @@ export interface RenderTree {
      */
     tiles: number[][][];
 }
+
+/**
+ * ChatWindow represents a chat/dialog interface to be rendered.
+ */
+export interface ChatWindow {
+    type: 'ChatWindow';
+    messages: string[];
+    inputText?: string;
+}
+
+/**
+ * RenderTree is a labeled union that can be either a TileArray or ChatWindow.
+ */
+export type RenderTree = TileArray | ChatWindow;
 
 /**
  * CanvasRenderer is responsible for efficiently rendering a RenderTree to a canvas.
@@ -43,32 +57,76 @@ export class CanvasRenderer {
      * @param newTree A RenderTree representing the current state to be rendered
      */
     public render(newTree: RenderTree): void {
-        // Initialize currentTree if it's null
-        if (!this.currentTree) {
-            this.currentTree = this.deepCloneTree(newTree);
-            this.renderFullTree(newTree);
+        if (newTree.type === 'ChatWindow') {
+            this.renderChatWindow(newTree);
             return;
         }
         
-        // Ensure dimensions match or default to full render
-        if (newTree.tiles.length !== this.currentTree.tiles.length || 
-            newTree.tiles[0].length !== this.currentTree.tiles[0].length) {
+        // Handle TileArray rendering
+        this.renderTileArray(newTree);
+    }
+    
+    /**
+     * Render a TileArray to the canvas with diffing
+     */
+    private renderTileArray(newTree: TileArray): void {
+        // Initialize currentTree if it's null or if switching from ChatWindow
+        if (!this.currentTree || this.currentTree.type !== 'TileArray') {
             this.currentTree = this.deepCloneTree(newTree);
-            this.renderFullTree(newTree);
+            this.renderFullTileArray(newTree);
+            return;
+        }
+        
+        const currentTileArray = this.currentTree as TileArray;
+        
+        // Ensure dimensions match or default to full render
+        if (newTree.tiles.length !== currentTileArray.tiles.length || 
+            newTree.tiles[0].length !== currentTileArray.tiles[0].length) {
+            this.currentTree = this.deepCloneTree(newTree);
+            this.renderFullTileArray(newTree);
             return;
         }
         
         // Perform diffing and update only changed tiles
-        this.renderDiff(newTree);
+        this.renderTileArrayDiff(newTree, currentTileArray);
         
         // Update the current tree
         this.currentTree = this.deepCloneTree(newTree);
     }
     
     /**
-     * Render the full tree from scratch
+     * Render a ChatWindow to the canvas
      */
-    private renderFullTree(tree: RenderTree): void {
+    private renderChatWindow(chatWindow: ChatWindow): void {
+        // Clear the canvas
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Set text style
+        this.ctx.fillStyle = '#fff';
+        this.ctx.font = '16px monospace';
+        
+        // Render messages
+        let y = 30;
+        for (const message of chatWindow.messages) {
+            this.ctx.fillText(message, 20, y);
+            y += 20;
+        }
+        
+        // Render input text if present
+        if (chatWindow.inputText !== undefined) {
+            this.ctx.fillStyle = '#ccc';
+            this.ctx.fillText('> ' + chatWindow.inputText, 20, this.canvas.height - 30);
+        }
+        
+        // Update current tree
+        this.currentTree = this.deepCloneTree(chatWindow);
+    }
+    
+    /**
+     * Render the full TileArray from scratch
+     */
+    private renderFullTileArray(tree: TileArray): void {
         // Clear the canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -82,14 +140,12 @@ export class CanvasRenderer {
     }
     
     /**
-     * Render only the tiles that have changed
+     * Render only the tiles that have changed in a TileArray
      */
-    private renderDiff(newTree: RenderTree): void {
-        if (!this.currentTree) return;
-        
+    private renderTileArrayDiff(newTree: TileArray, currentTree: TileArray): void {
         for (let y = 0; y < newTree.tiles.length; y++) {
             for (let x = 0; x < newTree.tiles[y].length; x++) {
-                if (!this.areTileLayersEqual(newTree.tiles[y][x], this.currentTree.tiles[y][x])) {
+                if (!this.areTileLayersEqual(newTree.tiles[y][x], currentTree.tiles[y][x])) {
                     // Clear this tile position with black
                     this.ctx.fillStyle = '#000';
                     this.ctx.fillRect(
