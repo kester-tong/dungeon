@@ -6,13 +6,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "watch": "tsc -w",
-    "start": "npm run build && live-server ./dist"
+    "server": "live-server ./dist",
+    "start": "npm run build && concurrently \"npm run watch\" \"npm run server\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "live-server": "^1.2.2",
     "typescript": "^5.8.3"
   }
