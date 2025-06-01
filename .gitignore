@@ -7,10 +7,6 @@ yarn-error.log
 # Build outputs
 dist/js/
 build/
-# But include important assets
-!dist/index.html
-!dist/assets/
-!dist/assets/images/
 
 # TypeScript
 *.tsbuildinfo
