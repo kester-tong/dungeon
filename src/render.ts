@@ -9,15 +9,15 @@ const CHARACTER_TILE_INDEX = 576; // 18 * 32
  */
 export function render(state: GameState): RenderTree {
     // If in chat, return ChatWindow
-    if (state.chat.isInChat) {
+    if (state.location.type === 'in_chat') {
         return {
             type: 'ChatWindow',
             messages: [
-                ...state.chat.messages,
+                ...state.location.messages,
                 "",
                 "Press ESC to exit"
             ],
-            inputText: state.chat.currentInput
+            inputText: state.location.currentInput
         };
     }
     
@@ -26,8 +26,9 @@ export function render(state: GameState): RenderTree {
         row.map(tile => [tile.tileIndex])
     );
     
-    // Add character at player position
-    tiles[state.player.y][state.player.x].push(CHARACTER_TILE_INDEX);
+    // Add character at player position (we know we're navigating at this point)
+    const player = state.location.player;
+    tiles[player.y][player.x].push(CHARACTER_TILE_INDEX);
 
     // Return the TileArray render tree
     return {

@@ -1,4 +1,4 @@
-import { GameState, GameAction } from './gameState.js';
+import { GameState, GameAction, NavigatingLocation } from './gameState.js';
 
 /**
  * Get chat messages based on the tile index
@@ -46,20 +46,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             const { key } = action;
             
             // Handle ESC key to exit chat
-            if (key === 'Escape' && state.chat.isInChat) {
+            if (key === 'Escape' && state.location.type === 'in_chat') {
                 return {
                     ...state,
-                    chat: {
-                        ...state.chat,
-                        isInChat: false,
-                        messages: [],
-                        currentInput: ""
+                    location: {
+                        type: 'navigating',
+                        player: state.location.previousLocation
                     }
                 };
             }
             
             // If we're in chat, ignore movement keys
-            if (state.chat.isInChat) {
+            if (state.location.type === 'in_chat') {
                 return state;
             }
             
@@ -89,9 +87,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                     return state;
             }
             
-            // Calculate new position
-            const newX = state.player.x + dx;
-            const newY = state.player.y + dy;
+            // Calculate new position (we know we're navigating at this point)
+            const navigatingLocation = state.location as NavigatingLocation;
+            const newX = navigatingLocation.player.x + dx;
+            const newY = navigatingLocation.player.y + dy;
             
             // Check bounds
             if (newX < 0 || newX >= state.map.width || newY < 0 || newY >= state.map.height) {
@@ -105,12 +104,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 const chatMessages = getChatMessages(targetTile.tileIndex);
                 return {
                     ...state,
-                    chat: {
-                        isInChat: true,
+                    location: {
+                        type: 'in_chat',
                         messages: chatMessages,
                         currentInput: "",
-                        previousPlayerX: state.player.x,
-                        previousPlayerY: state.player.y
+                        previousLocation: navigatingLocation.player
                     }
                 };
             }
@@ -120,10 +118,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 // Return a new state with the updated player position
                 return {
                     ...state,
-                    player: {
-                        ...state.player,
-                        x: newX,
-                        y: newY
+                    location: {
+                        ...navigatingLocation,
+                        player: {
+                            x: newX,
+                            y: newY
+                        }
                     }
                 };
             }

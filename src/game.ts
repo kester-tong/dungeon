@@ -48,14 +48,12 @@ export class Game {
             // Now create the game state with the loaded map
             this.gameState = {
                 map,
-                player: {
-                    x: Math.floor(map.width / 2),
-                    y: Math.floor(map.height / 2)
-                },
-                chat: {
-                    isInChat: false,
-                    messages: [],
-                    currentInput: ""
+                location: {
+                    type: 'navigating',
+                    player: {
+                        x: Math.floor(map.width / 2),
+                        y: Math.floor(map.height / 2)
+                    }
                 }
             };
             
