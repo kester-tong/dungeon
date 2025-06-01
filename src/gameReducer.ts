@@ -56,8 +56,46 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 };
             }
             
-            // If we're in chat, ignore movement keys
+            // If we're in chat, handle text input
             if (state.location.type === 'in_chat') {
+                const chatLocation = state.location;
+                
+                // Handle Enter key to commit input
+                if (key === 'Enter') {
+                    const newMessage = `> ${chatLocation.currentInput}`;
+                    return {
+                        ...state,
+                        location: {
+                            ...chatLocation,
+                            messages: [...chatLocation.messages, newMessage],
+                            currentInput: ""
+                        }
+                    };
+                }
+                
+                // Handle Backspace for deletion
+                if (key === 'Backspace') {
+                    return {
+                        ...state,
+                        location: {
+                            ...chatLocation,
+                            currentInput: chatLocation.currentInput.slice(0, -1)
+                        }
+                    };
+                }
+                
+                // Handle printable characters (letters, numbers, spaces, punctuation)
+                if (key.length === 1) {
+                    return {
+                        ...state,
+                        location: {
+                            ...chatLocation,
+                            currentInput: chatLocation.currentInput + key
+                        }
+                    };
+                }
+                
+                // Ignore other special keys
                 return state;
             }
             
