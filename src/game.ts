@@ -125,37 +125,17 @@ export class Game {
         if (isKeyDown) {
             // Only process the key if it hasn't been processed yet
             if (!this.processedKeys[key]) {
-                let dx = 0;
-                let dy = 0;
+                // Check if it's a movement key
+                const isMovementKey = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 
+                                       'a', 'd', 'w', 's'].includes(key);
                 
-                // Determine direction based on key pressed
-                switch (key) {
-                    case 'ArrowLeft':
-                    case 'a':
-                        dx = -1;
-                        break;
-                    case 'ArrowRight':
-                    case 'd':
-                        dx = 1;
-                        break;
-                    case 'ArrowUp':
-                    case 'w':
-                        dy = -1;
-                        break;
-                    case 'ArrowDown':
-                    case 's':
-                        dy = 1;
-                        break;
-                }
-                
-                // Try to move the player
-                if (dx !== 0 || dy !== 0) {
+                if (isMovementKey) {
                     // Save old position to detect if player actually moved
                     const oldX = this.gameState.player.x;
                     const oldY = this.gameState.player.y;
                     
-                    // Dispatch the move action
-                    this.dispatch({ type: 'MOVE_PLAYER', dx, dy });
+                    // Dispatch the key down action - movement logic is now in the reducer
+                    this.dispatch({ type: 'KEY_DOWN', key });
                     
                     // If the player actually moved, mark key as processed
                     if (this.gameState.player.x !== oldX || this.gameState.player.y !== oldY) {

@@ -36,7 +36,7 @@ export interface GameState {
  * Actions that can be dispatched to update the game state
  */
 export type GameAction = 
-    | { type: 'MOVE_PLAYER', dx: number, dy: number }
+    | { type: 'KEY_DOWN', key: string }
     | { type: 'ADD_TEXT_BOX', textBox: TextBox }
     | { type: 'CLEAR_TEXT_BOXES' };
 
@@ -135,8 +135,35 @@ export function createInitialGameState(mapWidth: number, mapHeight: number): Gam
  */
 export function gameReducer(state: GameState, action: GameAction): GameState {
     switch (action.type) {
-        case 'MOVE_PLAYER': {
-            const { dx, dy } = action;
+        case 'KEY_DOWN': {
+            const { key } = action;
+            let dx = 0;
+            let dy = 0;
+            
+            // Determine movement direction based on key
+            switch (key) {
+                case 'ArrowLeft':
+                case 'a':
+                    dx = -1;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                    dx = 1;
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                    dy = -1;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                    dy = 1;
+                    break;
+                default:
+                    // If it's not a movement key, return state unchanged
+                    return state;
+            }
+            
+            // Calculate new position
             const newX = state.player.x + dx;
             const newY = state.player.y + dy;
             
