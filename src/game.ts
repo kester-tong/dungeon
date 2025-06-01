@@ -71,7 +71,9 @@ export class Game {
      */
     private dispatch(action: GameAction): void {
         // Update game state using the reducer
+        console.log('action: ' + JSON.stringify(action))
         this.gameState = gameReducer(this.gameState, action);
+        console.log('state: ' + JSON.stringify(this.gameState))
     }
 
     /**

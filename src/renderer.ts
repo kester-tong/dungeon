@@ -1,18 +1,6 @@
 import { Tileset } from './tileset.js';
 
 /**
- * TextBox represents a text area to be rendered on the canvas.
- * All dimensions are in tile coordinates (not pixels).
- */
-export interface TextBox {
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-    text: string;
-}
-
-/**
  * RenderTree represents the tile-based view to be rendered.
  * It includes both tile layers and text boxes.
  */
@@ -24,11 +12,6 @@ export interface RenderTree {
      * - Third dimension [layer]: stacked tile indices at position (x,y), ordered from bottom to top
      */
     tiles: number[][][];
-    
-    /**
-     * Array of text boxes to render on top of the tiles
-     */
-    textBoxes: TextBox[];
 }
 
 /**
@@ -78,9 +61,6 @@ export class CanvasRenderer {
         // Perform diffing and update only changed tiles
         this.renderDiff(newTree);
         
-        // Always render text boxes (they might be animated or changing)
-        this.renderTextBoxes(newTree.textBoxes);
-        
         // Update the current tree
         this.currentTree = this.deepCloneTree(newTree);
     }
@@ -99,9 +79,6 @@ export class CanvasRenderer {
                 this.renderTileLayers(x, y, tree.tiles[y][x]);
             }
         }
-        
-        // Render text boxes
-        this.renderTextBoxes(tree.textBoxes);
     }
     
     /**
@@ -144,41 +121,6 @@ export class CanvasRenderer {
                 pixelX,
                 pixelY
             );
-        }
-    }
-    
-    /**
-     * Render text boxes on the canvas
-     */
-    private renderTextBoxes(textBoxes: TextBox[]): void {
-        this.ctx.font = `${Math.floor(this.tileSize * 0.7)}px monospace`;
-        this.ctx.textBaseline = 'middle';
-        
-        for (const box of textBoxes) {
-            // Calculate pixel dimensions
-            const startX = box.startX * this.tileSize;
-            const startY = box.startY * this.tileSize;
-            const width = (box.endX - box.startX + 1) * this.tileSize;
-            const height = (box.endY - box.startY + 1) * this.tileSize;
-            
-            // Clear the text box area with black background
-            this.ctx.fillStyle = '#000';
-            this.ctx.fillRect(startX, startY, width, height);
-            
-            // Draw the text in white
-            this.ctx.fillStyle = '#fff';
-            
-            // If text contains multiple lines, split and draw each line
-            const lines = box.text.split('\n');
-            const lineHeight = Math.floor(this.tileSize * 0.9);
-            
-            for (let i = 0; i < lines.length; i++) {
-                this.ctx.fillText(
-                    lines[i],
-                    startX + Math.floor(this.tileSize * 0.5),
-                    startY + Math.floor(this.tileSize * 0.8) + (i * lineHeight)
-                );
-            }
         }
     }
     

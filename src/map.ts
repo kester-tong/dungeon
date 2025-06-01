@@ -28,7 +28,6 @@ export class TownMap {
         
         this.mapView = {
             tiles: tiles,
-            textBoxes: []
         };
         
         // Create town layout
@@ -73,31 +72,6 @@ export class TownMap {
         }
         
         return viewWithPlayer;
-    }
-    
-    /**
-     * Add a text box to the map view
-     * @param startX Starting X coordinate (in tiles)
-     * @param startY Starting Y coordinate (in tiles)
-     * @param endX Ending X coordinate (in tiles)
-     * @param endY Ending Y coordinate (in tiles)
-     * @param text The text to display in the box
-     */
-    public addTextBox(startX: number, startY: number, endX: number, endY: number, text: string): void {
-        this.mapView.textBoxes.push({
-            startX,
-            startY,
-            endX,
-            endY,
-            text
-        });
-    }
-    
-    /**
-     * Clear all text boxes from the map view
-     */
-    public clearTextBoxes(): void {
-        this.mapView.textBoxes = [];
     }
 
     private createTownLayout(): void {

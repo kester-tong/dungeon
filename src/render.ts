@@ -33,6 +33,5 @@ export function render(state: GameState): RenderTree {
     // Return the complete render tree
     return {
         tiles,
-        textBoxes: [welcomeTextBox]
     };
 }

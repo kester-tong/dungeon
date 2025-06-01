@@ -1,4 +1,4 @@
-
+import { Map } from "./maps/Map";
 // Tile constants
 export const TILE = {
     GROUND: 2,
@@ -15,18 +15,13 @@ export const TILE = {
  */
 export interface GameState {
     // Map state (immutable)
-    readonly map: {
-        data: number[][];
-        width: number;
-        height: number;
-    };
+    readonly map: Map;
     
     // Player state
     player: {
         x: number;
         y: number;
     };
-    
 }
 
 /**
