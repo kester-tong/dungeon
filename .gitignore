@@ -25,6 +25,9 @@ build/
 .env.test.local
 .env.production.local
 
+# Generated config file (contains secrets)
+src/config.ts
+
 # Logs
 logs/
 *.log
