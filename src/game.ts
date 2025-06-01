@@ -1,24 +1,16 @@
 import { Tileset } from './tileset.js';
 import { TownMap } from './map.js';
-import { CanvasRenderer, RenderTree } from './renderer.js';
+import { CanvasRenderer, RenderTree, TextBox } from './renderer.js';
+import { GameState } from './gameState.js';
 
 export class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private tileset: Tileset;
-    private map: TownMap;
     private renderer: CanvasRenderer;
-
-    // Game constants
-    private static readonly TILE_SIZE = 32;
-    private static readonly CHARACTER_TILE_INDEX = 18 * 32; // Character tile index
     
-    // Player position in tile coordinates
-    private playerTileX: number = 12;
-    private playerTileY: number = 7;
-    
-    // Track which keys have been processed to prevent repeated movements
-    private processedKeys: { [key: string]: boolean } = {};
+    // The game state holds all game data
+    private gameState: GameState;
 
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -30,16 +22,21 @@ export class Game {
             throw new Error('2D rendering context not available.');
         }
 
-        // Create tileset and map with PNG that has built-in transparency
+        // Create tileset
         this.tileset = new Tileset('/assets/images/tileset.png');
-        this.map = new TownMap();
+        
+        // Initialize game state
+        this.gameState = new GameState(40, 22); // Map dimensions
+        
+        // Initialize the map
+        this.gameState.createTownLayout();
 
         // Set canvas dimensions based on map size
-        this.canvas.width = this.map.getWidth() * Game.TILE_SIZE;
-        this.canvas.height = this.map.getHeight() * Game.TILE_SIZE;
+        this.canvas.width = this.gameState.getMapWidth() * GameState.TILE_SIZE;
+        this.canvas.height = this.gameState.getMapHeight() * GameState.TILE_SIZE;
 
         // Create renderer for efficient tile rendering
-        this.renderer = new CanvasRenderer(this.canvas, this.tileset, Game.TILE_SIZE);
+        this.renderer = new CanvasRenderer(this.canvas, this.tileset, GameState.TILE_SIZE);
 
         this.init();
     }
@@ -50,7 +47,7 @@ export class Game {
         window.addEventListener('keyup', this.handleKeyUp.bind(this));
 
         console.log("Game initialized. Canvas dimensions:", this.canvas.width, "x", this.canvas.height);
-        console.log("Map dimensions:", this.map.getWidth(), "x", this.map.getHeight(), "tiles");
+        console.log("Map dimensions:", this.gameState.getMapWidth(), "x", this.gameState.getMapHeight(), "tiles");
         
         // Start the game loop after the tileset is loaded
         if (this.tileset.isLoaded()) {
@@ -63,99 +60,122 @@ export class Game {
         }
     }
 
+    /**
+     * Handle key down events
+     */
     private handleKeyDown(event: KeyboardEvent): void {
-        // Only process the key if it hasn't been processed yet
-        if (!this.processedKeys[event.key]) {
-            const oldTileX = this.playerTileX;
-            const oldTileY = this.playerTileY;
-            let moved = false;
-            
-            // Handle movement based on key pressed
-            switch (event.key) {
-                case 'ArrowLeft':
-                case 'a':
-                    this.playerTileX -= 1;
-                    moved = true;
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                    this.playerTileX += 1;
-                    moved = true;
-                    break;
-                case 'ArrowUp':
-                case 'w':
-                    this.playerTileY -= 1;
-                    moved = true;
-                    break;
-                case 'ArrowDown':
-                case 's':
-                    this.playerTileY += 1;
-                    moved = true;
-                    break;
-            }
-            
-            // Check if the new position is walkable
-            if (moved) {
-                // Keep player within map bounds
-                this.playerTileX = Math.max(0, Math.min(this.map.getWidth() - 1, this.playerTileX));
-                this.playerTileY = Math.max(0, Math.min(this.map.getHeight() - 1, this.playerTileY));
+        // Update game state based on input
+        this.updateFromInput(event.key, true);
+    }
+
+    /**
+     * Handle key up events
+     */
+    private handleKeyUp(event: KeyboardEvent): void {
+        // Update game state based on input
+        this.updateFromInput(event.key, false);
+    }
+
+    /**
+     * Update game state based on user input
+     */
+    private updateFromInput(key: string, isKeyDown: boolean): void {
+        if (isKeyDown) {
+            // Only process the key if it hasn't been processed yet
+            if (!this.gameState.isKeyProcessed(key)) {
+                let dx = 0;
+                let dy = 0;
                 
-                // Check walkable state
-                if (!this.map.isWalkable(this.playerTileX, this.playerTileY)) {
-                    // If not walkable, revert to old position
-                    this.playerTileX = oldTileX;
-                    this.playerTileY = oldTileY;
+                // Determine direction based on key pressed
+                switch (key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                        dx = -1;
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                        dx = 1;
+                        break;
+                    case 'ArrowUp':
+                    case 'w':
+                        dy = -1;
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                        dy = 1;
+                        break;
                 }
                 
-                // Mark the key as processed to prevent repeated movements
-                this.processedKeys[event.key] = true;
+                // Try to move the player
+                if (dx !== 0 || dy !== 0) {
+                    const moved = this.gameState.movePlayer(dx, dy);
+                    if (moved) {
+                        // Mark the key as processed to prevent repeated movements
+                        this.gameState.setKeyProcessed(key, true);
+                    }
+                }
             }
+        } else {
+            // Key is released, clear processed state
+            this.gameState.setKeyProcessed(key, false);
         }
     }
 
-    private handleKeyUp(event: KeyboardEvent): void {
-        // Clear the processed state when key is released
-        delete this.processedKeys[event.key];
+    /**
+     * Create a RenderTree from the current game state
+     */
+    private createRenderTree(): RenderTree {
+        // Create the tiles array from the game state
+        const tiles: number[][][] = Array(this.gameState.getMapHeight()).fill(null).map((_, y) => 
+            Array(this.gameState.getMapWidth()).fill(null).map((_, x) => {
+                // Start with the base tile
+                const tileLayers = [this.gameState.getTileAt(x, y)];
+                
+                // Add player if at this position
+                if (x === this.gameState.getPlayerX() && y === this.gameState.getPlayerY()) {
+                    tileLayers.push(GameState.CHARACTER_TILE_INDEX);
+                }
+                
+                return tileLayers;
+            })
+        );
+        
+        // Return the complete render tree
+        return {
+            tiles,
+            textBoxes: this.gameState.getTextBoxes()
+        };
     }
 
-
+    /**
+     * Render the current game state
+     */
     private draw(): void {
         if (!this.tileset.isLoaded()) {
             return;
         }
         
-        // Get the map view with the player character
-        const renderTree: RenderTree = this.map.getMapViewWithPlayer(
-            Game.CHARACTER_TILE_INDEX,
-            this.playerTileX,
-            this.playerTileY
-        );
-        
-        // Example of adding a text box (would normally be triggered by game events)
-        // Uncommenting this would show a text box at the bottom of the screen
-        /*
-        if (renderTree.textBoxes.length === 0) {
-            renderTree.textBoxes.push({
-                startX: 2,
-                startY: this.map.getHeight() - 5,
-                endX: this.map.getWidth() - 3,
-                endY: this.map.getHeight() - 2,
-                text: "Welcome to the dungeon game!\nUse arrow keys or WASD to move."
-            });
-        }
-        */
+        // Create render tree from game state
+        const renderTree = this.createRenderTree();
         
         // Use the renderer to efficiently render only what has changed
         this.renderer.render(renderTree);
     }
 
+    /**
+     * Main game loop
+     */
     private gameLoop(): void {
+        // Render the current game state
         this.draw();
 
         // Request the next frame
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
+    /**
+     * Start the game
+     */
     public start(): void {
         console.log("Game started!");
         
@@ -168,17 +188,17 @@ export class Game {
      */
     private showWelcomeMessage(): void {
         // Clear any existing text boxes
-        this.map.clearTextBoxes();
+        this.gameState.clearTextBoxes();
         
         // Add a welcome message at the bottom of the screen
-        this.map.addTextBox(
-            2, // startX
-            this.map.getHeight() - 5, // startY
-            this.map.getWidth() - 3, // endX
-            this.map.getHeight() - 2, // endY
-            "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
-        );
+        const textBox: TextBox = {
+            startX: 2,
+            startY: this.gameState.getMapHeight() - 5,
+            endX: this.gameState.getMapWidth() - 3,
+            endY: this.gameState.getMapHeight() - 2,
+            text: "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
+        };
         
-        // The text box will be rendered in the next draw cycle
+        this.gameState.addTextBox(textBox);
     }
 }
