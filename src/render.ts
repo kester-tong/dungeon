@@ -1,4 +1,4 @@
-import { GameState, GameStateUtils, TILE } from './gameState.js';
+import { GameState, TILE } from './gameState.js';
 import { RenderTree } from './renderer.js';
 
 /**
@@ -10,7 +10,10 @@ export function render(state: GameState): RenderTree {
     const tiles: number[][][] = Array(state.map.height).fill(null).map((_, y) => 
         Array(state.map.width).fill(null).map((_, x) => {
             // Start with the base tile
-            const tileLayers = [GameStateUtils.getTileAt(state, x, y).tileIndex];
+            const tile = (x >= 0 && x < state.map.width && y >= 0 && y < state.map.height) 
+                ? state.map.data[y][x]
+                : { tileIndex: TILE.GROUND, type: "terrain" as const };
+            const tileLayers = [tile.tileIndex];
             
             // Add player if at this position
             if (x === state.player.x && y === state.player.y) {

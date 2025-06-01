@@ -1,4 +1,4 @@
-import { GameState, GameAction, GameStateUtils } from './gameState.js';
+import { GameState, GameAction } from './gameState.js';
 
 /**
  * Reducer function that takes the current state and an action, and returns a new state
@@ -37,11 +37,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             const newX = state.player.x + dx;
             const newY = state.player.y + dy;
             
-            // Check if the new position is valid
+            // Check if the new position is valid and walkable
             if (
                 newX >= 0 && newX < state.map.width &&
                 newY >= 0 && newY < state.map.height &&
-                GameStateUtils.isWalkable(state, newX, newY)
+                state.map.data[newY][newX].type === "terrain"
             ) {
                 // Return a new state with the updated player position
                 return {

@@ -30,27 +30,3 @@ export interface GameState {
 export type GameAction = 
     | { type: 'KEY_DOWN', key: string };
 
-/**
- * Helper functions for working with game state
- */
-export const GameStateUtils = {
-    /**
-     * Check if a position is walkable
-     */
-    isWalkable(state: GameState, x: number, y: number): boolean {
-        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
-            return false;
-        }
-        return state.map.data[y][x].type === "terrain";
-    },
-    
-    /**
-     * Get the tile at a specific position
-     */
-    getTileAt(state: GameState, x: number, y: number): Tile {
-        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
-            return { tileIndex: TILE.GROUND, type: "terrain" }; // Default to ground for out of bounds
-        }
-        return state.map.data[y][x];
-    }
-};
