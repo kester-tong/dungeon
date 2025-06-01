@@ -44,6 +44,10 @@ export class Game {
     
     // The game state holds all game data (immutable)
     private gameState: GameState;
+    
+    // Track which keys have been processed to prevent repeated movements
+    // This is UI state, not game state, so we keep it separate
+    private processedKeys: { [key: string]: boolean } = {};
 
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -120,7 +124,7 @@ export class Game {
     private updateFromInput(key: string, isKeyDown: boolean): void {
         if (isKeyDown) {
             // Only process the key if it hasn't been processed yet
-            if (!this.gameState.processedKeys[key]) {
+            if (!this.processedKeys[key]) {
                 let dx = 0;
                 let dy = 0;
                 
@@ -146,21 +150,22 @@ export class Game {
                 
                 // Try to move the player
                 if (dx !== 0 || dy !== 0) {
-                    // First dispatch the move action
+                    // Save old position to detect if player actually moved
                     const oldX = this.gameState.player.x;
                     const oldY = this.gameState.player.y;
                     
+                    // Dispatch the move action
                     this.dispatch({ type: 'MOVE_PLAYER', dx, dy });
                     
-                    // If the player actually moved, mark the key as processed
+                    // If the player actually moved, mark key as processed
                     if (this.gameState.player.x !== oldX || this.gameState.player.y !== oldY) {
-                        this.dispatch({ type: 'PROCESS_KEY', key, processed: true });
+                        this.processedKeys[key] = true;
                     }
                 }
             }
         } else {
             // Key is released, clear processed state
-            this.dispatch({ type: 'PROCESS_KEY', key, processed: false });
+            delete this.processedKeys[key];
         }
     }
 

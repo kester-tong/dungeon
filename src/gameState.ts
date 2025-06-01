@@ -30,9 +30,6 @@ export interface GameState {
     
     // UI state
     textBoxes: TextBox[];
-    
-    // Input state
-    processedKeys: { [key: string]: boolean };
 }
 
 /**
@@ -40,7 +37,6 @@ export interface GameState {
  */
 export type GameAction = 
     | { type: 'MOVE_PLAYER', dx: number, dy: number }
-    | { type: 'PROCESS_KEY', key: string, processed: boolean }
     | { type: 'ADD_TEXT_BOX', textBox: TextBox }
     | { type: 'CLEAR_TEXT_BOXES' };
 
@@ -130,8 +126,7 @@ export function createInitialGameState(mapWidth: number, mapHeight: number): Gam
             x: Math.floor(mapWidth / 2),
             y: Math.floor(mapHeight / 2)
         },
-        textBoxes: [],
-        processedKeys: {}
+        textBoxes: []
     };
 }
 
@@ -164,22 +159,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             
             // If the move is invalid, return the unchanged state
             return state;
-        }
-        
-        case 'PROCESS_KEY': {
-            const { key, processed } = action;
-            const newProcessedKeys = { ...state.processedKeys };
-            
-            if (processed) {
-                newProcessedKeys[key] = true;
-            } else {
-                delete newProcessedKeys[key];
-            }
-            
-            return {
-                ...state,
-                processedKeys: newProcessedKeys
-            };
         }
         
         case 'ADD_TEXT_BOX': {
