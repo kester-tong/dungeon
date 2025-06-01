@@ -1,4 +1,3 @@
-import { TextBox } from './renderer.js';
 
 // Tile constants
 export const TILE = {
@@ -28,17 +27,13 @@ export interface GameState {
         y: number;
     };
     
-    // UI state
-    textBoxes: TextBox[];
 }
 
 /**
  * Actions that can be dispatched to update the game state
  */
 export type GameAction = 
-    | { type: 'KEY_DOWN', key: string }
-    | { type: 'ADD_TEXT_BOX', textBox: TextBox }
-    | { type: 'CLEAR_TEXT_BOXES' };
+    | { type: 'KEY_DOWN', key: string };
 
 /**
  * Helper functions for working with game state
@@ -125,8 +120,7 @@ export function createInitialGameState(mapWidth: number, mapHeight: number): Gam
         player: {
             x: Math.floor(mapWidth / 2),
             y: Math.floor(mapHeight / 2)
-        },
-        textBoxes: []
+        }
     };
 }
 
@@ -186,20 +180,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             
             // If the move is invalid, return the unchanged state
             return state;
-        }
-        
-        case 'ADD_TEXT_BOX': {
-            return {
-                ...state,
-                textBoxes: [...state.textBoxes, action.textBox]
-            };
-        }
-        
-        case 'CLEAR_TEXT_BOXES': {
-            return {
-                ...state,
-                textBoxes: []
-            };
         }
         
         default:

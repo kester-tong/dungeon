@@ -1,5 +1,5 @@
 import { Tileset } from './tileset.js';
-import { CanvasRenderer, RenderTree, TextBox } from './renderer.js';
+import { CanvasRenderer, RenderTree } from './renderer.js';
 import { 
     GameState, 
     GameAction, 
@@ -29,10 +29,19 @@ export function render(state: GameState): RenderTree {
         })
     );
     
+    // Create welcome text box
+    const welcomeTextBox = {
+        startX: 2,
+        startY: state.map.height - 5,
+        endX: state.map.width - 3,
+        endY: state.map.height - 2,
+        text: "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
+    };
+
     // Return the complete render tree
     return {
         tiles,
-        textBoxes: state.textBoxes
+        textBoxes: [welcomeTextBox]
     };
 }
 
@@ -180,27 +189,5 @@ export class Game {
      */
     public start(): void {
         console.log("Game started!");
-        
-        // Show a welcome message in a text box
-        this.showWelcomeMessage();
-    }
-    
-    /**
-     * Display a welcome message in a text box
-     */
-    private showWelcomeMessage(): void {
-        // Clear any existing text boxes
-        this.dispatch({ type: 'CLEAR_TEXT_BOXES' });
-        
-        // Add a welcome message at the bottom of the screen
-        const textBox: TextBox = {
-            startX: 2,
-            startY: this.gameState.map.height - 5,
-            endX: this.gameState.map.width - 3,
-            endY: this.gameState.map.height - 2,
-            text: "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
-        };
-        
-        this.dispatch({ type: 'ADD_TEXT_BOX', textBox });
     }
 }
