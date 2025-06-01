@@ -22,9 +22,14 @@ export class TownMap {
             .map(() => Array(TownMap.MAP_WIDTH).fill(TownMap.GROUND_TILE));
         
         // Initialize the map view with layers
-        this.mapView = Array(TownMap.MAP_HEIGHT).fill(null).map(() => 
+        const tiles = Array(TownMap.MAP_HEIGHT).fill(null).map(() => 
             Array(TownMap.MAP_WIDTH).fill(null).map(() => [TownMap.GROUND_TILE])
         );
+        
+        this.mapView = {
+            tiles: tiles,
+            textBoxes: []
+        };
         
         // Create town layout
         this.createTownLayout();
@@ -39,7 +44,7 @@ export class TownMap {
                 const tileIndex = this.mapData[y][x];
                 
                 // Reset to a single layer with the current tile
-                this.mapView[y][x] = [tileIndex];
+                this.mapView.tiles[y][x] = [tileIndex];
             }
         }
     }
@@ -64,10 +69,35 @@ export class TownMap {
         // Add the character as a new layer at the player's position
         if (playerX >= 0 && playerX < TownMap.MAP_WIDTH && 
             playerY >= 0 && playerY < TownMap.MAP_HEIGHT) {
-            viewWithPlayer[playerY][playerX].push(characterTileIndex);
+            viewWithPlayer.tiles[playerY][playerX].push(characterTileIndex);
         }
         
         return viewWithPlayer;
+    }
+    
+    /**
+     * Add a text box to the map view
+     * @param startX Starting X coordinate (in tiles)
+     * @param startY Starting Y coordinate (in tiles)
+     * @param endX Ending X coordinate (in tiles)
+     * @param endY Ending Y coordinate (in tiles)
+     * @param text The text to display in the box
+     */
+    public addTextBox(startX: number, startY: number, endX: number, endY: number, text: string): void {
+        this.mapView.textBoxes.push({
+            startX,
+            startY,
+            endX,
+            endY,
+            text
+        });
+    }
+    
+    /**
+     * Clear all text boxes from the map view
+     */
+    public clearTextBoxes(): void {
+        this.mapView.textBoxes = [];
     }
 
     private createTownLayout(): void {

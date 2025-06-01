@@ -131,6 +131,20 @@ export class Game {
             this.playerTileY
         );
         
+        // Example of adding a text box (would normally be triggered by game events)
+        // Uncommenting this would show a text box at the bottom of the screen
+        /*
+        if (renderTree.textBoxes.length === 0) {
+            renderTree.textBoxes.push({
+                startX: 2,
+                startY: this.map.getHeight() - 5,
+                endX: this.map.getWidth() - 3,
+                endY: this.map.getHeight() - 2,
+                text: "Welcome to the dungeon game!\nUse arrow keys or WASD to move."
+            });
+        }
+        */
+        
         // Use the renderer to efficiently render only what has changed
         this.renderer.render(renderTree);
     }
@@ -144,5 +158,27 @@ export class Game {
 
     public start(): void {
         console.log("Game started!");
+        
+        // Show a welcome message in a text box
+        this.showWelcomeMessage();
+    }
+    
+    /**
+     * Display a welcome message in a text box
+     */
+    private showWelcomeMessage(): void {
+        // Clear any existing text boxes
+        this.map.clearTextBoxes();
+        
+        // Add a welcome message at the bottom of the screen
+        this.map.addTextBox(
+            2, // startX
+            this.map.getHeight() - 5, // startY
+            this.map.getWidth() - 3, // endX
+            this.map.getHeight() - 2, // endY
+            "Welcome to the Dungeon Game!\nUse arrow keys or WASD to move around.\nExplore the town and enter buildings."
+        );
+        
+        // The text box will be rendered in the next draw cycle
     }
 }

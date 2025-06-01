@@ -1,13 +1,35 @@
 import { Tileset } from './tileset.js';
 
 /**
- * RenderTree represents the tile-based view to be rendered.
- * It's a 3D array where:
- * - First dimension [y]: rows (top to bottom)
- * - Second dimension [x]: columns (left to right)
- * - Third dimension [layer]: stacked tile indices at position (x,y), ordered from bottom to top
+ * TextBox represents a text area to be rendered on the canvas.
+ * All dimensions are in tile coordinates (not pixels).
  */
-export type RenderTree = number[][][];
+export interface TextBox {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    text: string;
+}
+
+/**
+ * RenderTree represents the tile-based view to be rendered.
+ * It includes both tile layers and text boxes.
+ */
+export interface RenderTree {
+    /**
+     * 3D array of tile indices where:
+     * - First dimension [y]: rows (top to bottom)
+     * - Second dimension [x]: columns (left to right)
+     * - Third dimension [layer]: stacked tile indices at position (x,y), ordered from bottom to top
+     */
+    tiles: number[][][];
+    
+    /**
+     * Array of text boxes to render on top of the tiles
+     */
+    textBoxes: TextBox[];
+}
 
 /**
  * CanvasRenderer is responsible for efficiently rendering a RenderTree to a canvas.
@@ -20,7 +42,7 @@ export class CanvasRenderer {
     private tileSize: number;
     
     // Store the current view state for diffing
-    private currentTree: RenderTree;
+    private currentTree: RenderTree | null = null;
     
     constructor(canvas: HTMLCanvasElement, tileset: Tileset, tileSize: number) {
         this.canvas = canvas;
@@ -31,7 +53,6 @@ export class CanvasRenderer {
         
         this.tileset = tileset;
         this.tileSize = tileSize;
-        this.currentTree = [];
     }
     
     /**
@@ -39,16 +60,16 @@ export class CanvasRenderer {
      * @param newTree A RenderTree representing the current state to be rendered
      */
     public render(newTree: RenderTree): void {
-        // Initialize currentTree if it's empty
-        if (this.currentTree.length === 0) {
+        // Initialize currentTree if it's null
+        if (!this.currentTree) {
             this.currentTree = this.deepCloneTree(newTree);
             this.renderFullTree(newTree);
             return;
         }
         
         // Ensure dimensions match or default to full render
-        if (newTree.length !== this.currentTree.length || 
-            newTree[0].length !== this.currentTree[0].length) {
+        if (newTree.tiles.length !== this.currentTree.tiles.length || 
+            newTree.tiles[0].length !== this.currentTree.tiles[0].length) {
             this.currentTree = this.deepCloneTree(newTree);
             this.renderFullTree(newTree);
             return;
@@ -56,6 +77,9 @@ export class CanvasRenderer {
         
         // Perform diffing and update only changed tiles
         this.renderDiff(newTree);
+        
+        // Always render text boxes (they might be animated or changing)
+        this.renderTextBoxes(newTree.textBoxes);
         
         // Update the current tree
         this.currentTree = this.deepCloneTree(newTree);
@@ -70,20 +94,25 @@ export class CanvasRenderer {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Render each tile
-        for (let y = 0; y < tree.length; y++) {
-            for (let x = 0; x < tree[y].length; x++) {
-                this.renderTileLayers(x, y, tree[y][x]);
+        for (let y = 0; y < tree.tiles.length; y++) {
+            for (let x = 0; x < tree.tiles[y].length; x++) {
+                this.renderTileLayers(x, y, tree.tiles[y][x]);
             }
         }
+        
+        // Render text boxes
+        this.renderTextBoxes(tree.textBoxes);
     }
     
     /**
      * Render only the tiles that have changed
      */
     private renderDiff(newTree: RenderTree): void {
-        for (let y = 0; y < newTree.length; y++) {
-            for (let x = 0; x < newTree[y].length; x++) {
-                if (!this.areTileLayersEqual(newTree[y][x], this.currentTree[y][x])) {
+        if (!this.currentTree) return;
+        
+        for (let y = 0; y < newTree.tiles.length; y++) {
+            for (let x = 0; x < newTree.tiles[y].length; x++) {
+                if (!this.areTileLayersEqual(newTree.tiles[y][x], this.currentTree.tiles[y][x])) {
                     // Clear this tile position with black
                     this.ctx.fillStyle = '#000';
                     this.ctx.fillRect(
@@ -94,7 +123,7 @@ export class CanvasRenderer {
                     );
                     
                     // Render the new tile layers
-                    this.renderTileLayers(x, y, newTree[y][x]);
+                    this.renderTileLayers(x, y, newTree.tiles[y][x]);
                 }
             }
         }
@@ -115,6 +144,41 @@ export class CanvasRenderer {
                 pixelX,
                 pixelY
             );
+        }
+    }
+    
+    /**
+     * Render text boxes on the canvas
+     */
+    private renderTextBoxes(textBoxes: TextBox[]): void {
+        this.ctx.font = `${Math.floor(this.tileSize * 0.7)}px monospace`;
+        this.ctx.textBaseline = 'middle';
+        
+        for (const box of textBoxes) {
+            // Calculate pixel dimensions
+            const startX = box.startX * this.tileSize;
+            const startY = box.startY * this.tileSize;
+            const width = (box.endX - box.startX + 1) * this.tileSize;
+            const height = (box.endY - box.startY + 1) * this.tileSize;
+            
+            // Clear the text box area with black background
+            this.ctx.fillStyle = '#000';
+            this.ctx.fillRect(startX, startY, width, height);
+            
+            // Draw the text in white
+            this.ctx.fillStyle = '#fff';
+            
+            // If text contains multiple lines, split and draw each line
+            const lines = box.text.split('\n');
+            const lineHeight = Math.floor(this.tileSize * 0.9);
+            
+            for (let i = 0; i < lines.length; i++) {
+                this.ctx.fillText(
+                    lines[i],
+                    startX + Math.floor(this.tileSize * 0.5),
+                    startY + Math.floor(this.tileSize * 0.8) + (i * lineHeight)
+                );
+            }
         }
     }
     
