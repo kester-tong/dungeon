@@ -30,8 +30,8 @@ export class Game {
             throw new Error('2D rendering context not available.');
         }
 
-        // Create tileset and map with mask for alpha channel
-        this.tileset = new Tileset('/assets/images/tileset.bmp', '/assets/images/mask.bmp');
+        // Create tileset and map with PNG that has built-in transparency
+        this.tileset = new Tileset('/assets/images/tileset.png');
         this.map = new TownMap();
 
         // Set canvas dimensions based on map size
