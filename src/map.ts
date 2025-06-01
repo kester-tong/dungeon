@@ -1,6 +1,8 @@
+import { RenderTree } from './renderer.js';
+
 export class TownMap {
-    private static readonly MAP_WIDTH = 25;
-    private static readonly MAP_HEIGHT = 15;
+    private static readonly MAP_WIDTH = 40;
+    private static readonly MAP_HEIGHT = 22;
     
     // Tile constants
     private static readonly GROUND_TILE = 2;
@@ -12,7 +14,7 @@ export class TownMap {
     private mapData: number[][];
     
     // Store the rendered view with layers
-    private mapView: number[][][];
+    private mapView: RenderTree;
 
     constructor() {
         // Initialize with ground tiles
@@ -45,7 +47,7 @@ export class TownMap {
     /**
      * Get the current map view with layers
      */
-    public getMapView(): number[][][] {
+    public getMapView(): RenderTree {
         return this.mapView;
     }
     
@@ -55,7 +57,7 @@ export class TownMap {
      * @param playerX The player's x position
      * @param playerY The player's y position
      */
-    public getMapViewWithPlayer(characterTileIndex: number, playerX: number, playerY: number): number[][][] {
+    public getMapViewWithPlayer(characterTileIndex: number, playerX: number, playerY: number): RenderTree {
         // Create a deep clone of the current map view
         const viewWithPlayer = JSON.parse(JSON.stringify(this.mapView));
         

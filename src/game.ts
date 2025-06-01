@@ -1,13 +1,13 @@
 import { Tileset } from './tileset.js';
 import { TownMap } from './map.js';
-import { Renderer } from './renderer.js';
+import { CanvasRenderer, RenderTree } from './renderer.js';
 
 export class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private tileset: Tileset;
     private map: TownMap;
-    private renderer: Renderer;
+    private renderer: CanvasRenderer;
 
     // Game constants
     private static readonly TILE_SIZE = 32;
@@ -39,7 +39,7 @@ export class Game {
         this.canvas.height = this.map.getHeight() * Game.TILE_SIZE;
 
         // Create renderer for efficient tile rendering
-        this.renderer = new Renderer(this.canvas, this.tileset, Game.TILE_SIZE);
+        this.renderer = new CanvasRenderer(this.canvas, this.tileset, Game.TILE_SIZE);
 
         this.init();
     }
@@ -125,14 +125,14 @@ export class Game {
         }
         
         // Get the map view with the player character
-        const viewWithPlayer = this.map.getMapViewWithPlayer(
+        const renderTree: RenderTree = this.map.getMapViewWithPlayer(
             Game.CHARACTER_TILE_INDEX,
             this.playerTileX,
             this.playerTileY
         );
         
         // Use the renderer to efficiently render only what has changed
-        this.renderer.render(viewWithPlayer);
+        this.renderer.render(renderTree);
     }
 
     private gameLoop(): void {

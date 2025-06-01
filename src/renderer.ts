@@ -1,13 +1,26 @@
 import { Tileset } from './tileset.js';
 
-export class Renderer {
+/**
+ * RenderTree represents the tile-based view to be rendered.
+ * It's a 3D array where:
+ * - First dimension [y]: rows (top to bottom)
+ * - Second dimension [x]: columns (left to right)
+ * - Third dimension [layer]: stacked tile indices at position (x,y), ordered from bottom to top
+ */
+export type RenderTree = number[][][];
+
+/**
+ * CanvasRenderer is responsible for efficiently rendering a RenderTree to a canvas.
+ * It performs diffing between consecutive RenderTrees to minimize drawing operations.
+ */
+export class CanvasRenderer {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private tileset: Tileset;
     private tileSize: number;
     
     // Store the current view state for diffing
-    private currentView: number[][][];
+    private currentTree: RenderTree;
     
     constructor(canvas: HTMLCanvasElement, tileset: Tileset, tileSize: number) {
         this.canvas = canvas;
@@ -18,48 +31,48 @@ export class Renderer {
         
         this.tileset = tileset;
         this.tileSize = tileSize;
-        this.currentView = [];
+        this.currentTree = [];
     }
     
     /**
-     * Render the given view to the canvas, only updating what has changed
-     * @param newView A 3D array of tile indices [y][x][layerIndex] where each position can have multiple layers
+     * Render the given RenderTree to the canvas, only updating what has changed
+     * @param newTree A RenderTree representing the current state to be rendered
      */
-    public render(newView: number[][][]): void {
-        // Initialize currentView if it's empty
-        if (this.currentView.length === 0) {
-            this.currentView = this.deepCloneView(newView);
-            this.renderFullView(newView);
+    public render(newTree: RenderTree): void {
+        // Initialize currentTree if it's empty
+        if (this.currentTree.length === 0) {
+            this.currentTree = this.deepCloneTree(newTree);
+            this.renderFullTree(newTree);
             return;
         }
         
         // Ensure dimensions match or default to full render
-        if (newView.length !== this.currentView.length || 
-            newView[0].length !== this.currentView[0].length) {
-            this.currentView = this.deepCloneView(newView);
-            this.renderFullView(newView);
+        if (newTree.length !== this.currentTree.length || 
+            newTree[0].length !== this.currentTree[0].length) {
+            this.currentTree = this.deepCloneTree(newTree);
+            this.renderFullTree(newTree);
             return;
         }
         
         // Perform diffing and update only changed tiles
-        this.renderDiff(newView);
+        this.renderDiff(newTree);
         
-        // Update the current view
-        this.currentView = this.deepCloneView(newView);
+        // Update the current tree
+        this.currentTree = this.deepCloneTree(newTree);
     }
     
     /**
-     * Render the full view from scratch
+     * Render the full tree from scratch
      */
-    private renderFullView(view: number[][][]): void {
+    private renderFullTree(tree: RenderTree): void {
         // Clear the canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Render each tile
-        for (let y = 0; y < view.length; y++) {
-            for (let x = 0; x < view[y].length; x++) {
-                this.renderTileLayers(x, y, view[y][x]);
+        for (let y = 0; y < tree.length; y++) {
+            for (let x = 0; x < tree[y].length; x++) {
+                this.renderTileLayers(x, y, tree[y][x]);
             }
         }
     }
@@ -67,10 +80,10 @@ export class Renderer {
     /**
      * Render only the tiles that have changed
      */
-    private renderDiff(newView: number[][][]): void {
-        for (let y = 0; y < newView.length; y++) {
-            for (let x = 0; x < newView[y].length; x++) {
-                if (!this.areTileLayersEqual(newView[y][x], this.currentView[y][x])) {
+    private renderDiff(newTree: RenderTree): void {
+        for (let y = 0; y < newTree.length; y++) {
+            for (let x = 0; x < newTree[y].length; x++) {
+                if (!this.areTileLayersEqual(newTree[y][x], this.currentTree[y][x])) {
                     // Clear this tile position with black
                     this.ctx.fillStyle = '#000';
                     this.ctx.fillRect(
@@ -81,7 +94,7 @@ export class Renderer {
                     );
                     
                     // Render the new tile layers
-                    this.renderTileLayers(x, y, newView[y][x]);
+                    this.renderTileLayers(x, y, newTree[y][x]);
                 }
             }
         }
@@ -123,10 +136,10 @@ export class Renderer {
     }
     
     /**
-     * Create a deep clone of the view to avoid reference issues
+     * Create a deep clone of the tree to avoid reference issues
      */
-    private deepCloneView(view: number[][][]): number[][][] {
-        return JSON.parse(JSON.stringify(view));
+    private deepCloneTree(tree: RenderTree): RenderTree {
+        return JSON.parse(JSON.stringify(tree));
     }
     
     /**
