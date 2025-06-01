@@ -1,5 +1,3 @@
-import { TileLayer } from './renderer.js';
-
 export class TownMap {
     private static readonly MAP_WIDTH = 25;
     private static readonly MAP_HEIGHT = 15;
@@ -14,7 +12,7 @@ export class TownMap {
     private mapData: number[][];
     
     // Store the rendered view with layers
-    private mapView: TileLayer[][][];
+    private mapView: number[][][];
 
     constructor() {
         // Initialize with ground tiles
@@ -23,10 +21,7 @@ export class TownMap {
         
         // Initialize the map view with layers
         this.mapView = Array(TownMap.MAP_HEIGHT).fill(null).map(() => 
-            Array(TownMap.MAP_WIDTH).fill(null).map(() => [{
-                tileIndex: TownMap.GROUND_TILE,
-                visible: true
-            }])
+            Array(TownMap.MAP_WIDTH).fill(null).map(() => [TownMap.GROUND_TILE])
         );
         
         // Create town layout
@@ -42,10 +37,7 @@ export class TownMap {
                 const tileIndex = this.mapData[y][x];
                 
                 // Reset to a single layer with the current tile
-                this.mapView[y][x] = [{
-                    tileIndex: tileIndex,
-                    visible: true
-                }];
+                this.mapView[y][x] = [tileIndex];
             }
         }
     }
@@ -53,7 +45,7 @@ export class TownMap {
     /**
      * Get the current map view with layers
      */
-    public getMapView(): TileLayer[][][] {
+    public getMapView(): number[][][] {
         return this.mapView;
     }
     
@@ -63,17 +55,14 @@ export class TownMap {
      * @param playerX The player's x position
      * @param playerY The player's y position
      */
-    public getMapViewWithPlayer(characterTileIndex: number, playerX: number, playerY: number): TileLayer[][][] {
+    public getMapViewWithPlayer(characterTileIndex: number, playerX: number, playerY: number): number[][][] {
         // Create a deep clone of the current map view
         const viewWithPlayer = JSON.parse(JSON.stringify(this.mapView));
         
         // Add the character as a new layer at the player's position
         if (playerX >= 0 && playerX < TownMap.MAP_WIDTH && 
             playerY >= 0 && playerY < TownMap.MAP_HEIGHT) {
-            viewWithPlayer[playerY][playerX].push({
-                tileIndex: characterTileIndex,
-                visible: true
-            });
+            viewWithPlayer[playerY][playerX].push(characterTileIndex);
         }
         
         return viewWithPlayer;

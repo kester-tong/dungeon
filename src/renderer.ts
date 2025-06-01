@@ -1,10 +1,5 @@
 import { Tileset } from './tileset.js';
 
-export interface TileLayer {
-    tileIndex: number;
-    visible: boolean;
-}
-
 export class Renderer {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -12,7 +7,7 @@ export class Renderer {
     private tileSize: number;
     
     // Store the current view state for diffing
-    private currentView: TileLayer[][][];
+    private currentView: number[][][];
     
     constructor(canvas: HTMLCanvasElement, tileset: Tileset, tileSize: number) {
         this.canvas = canvas;
@@ -30,7 +25,7 @@ export class Renderer {
      * Render the given view to the canvas, only updating what has changed
      * @param newView A 3D array of tile indices [y][x][layerIndex] where each position can have multiple layers
      */
-    public render(newView: TileLayer[][][]): void {
+    public render(newView: number[][][]): void {
         // Initialize currentView if it's empty
         if (this.currentView.length === 0) {
             this.currentView = this.deepCloneView(newView);
@@ -56,7 +51,7 @@ export class Renderer {
     /**
      * Render the full view from scratch
      */
-    private renderFullView(view: TileLayer[][][]): void {
+    private renderFullView(view: number[][][]): void {
         // Clear the canvas
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -72,7 +67,7 @@ export class Renderer {
     /**
      * Render only the tiles that have changed
      */
-    private renderDiff(newView: TileLayer[][][]): void {
+    private renderDiff(newView: number[][][]): void {
         for (let y = 0; y < newView.length; y++) {
             for (let x = 0; x < newView[y].length; x++) {
                 if (!this.areTileLayersEqual(newView[y][x], this.currentView[y][x])) {
@@ -95,34 +90,31 @@ export class Renderer {
     /**
      * Render all layers for a specific tile position
      */
-    private renderTileLayers(x: number, y: number, layers: TileLayer[]): void {
+    private renderTileLayers(x: number, y: number, tileIndices: number[]): void {
         const pixelX = x * this.tileSize;
         const pixelY = y * this.tileSize;
         
-        // Render each visible layer in order (bottom to top)
-        for (const layer of layers) {
-            if (layer.visible) {
-                this.tileset.drawTile(
-                    this.ctx,
-                    layer.tileIndex,
-                    pixelX,
-                    pixelY
-                );
-            }
+        // Render each layer in order (bottom to top)
+        for (const tileIndex of tileIndices) {
+            this.tileset.drawTile(
+                this.ctx,
+                tileIndex,
+                pixelX,
+                pixelY
+            );
         }
     }
     
     /**
      * Compare two tile layer arrays to see if they are equal
      */
-    private areTileLayersEqual(layers1: TileLayer[], layers2: TileLayer[]): boolean {
-        if (layers1.length !== layers2.length) {
+    private areTileLayersEqual(indices1: number[], indices2: number[]): boolean {
+        if (indices1.length !== indices2.length) {
             return false;
         }
         
-        for (let i = 0; i < layers1.length; i++) {
-            if (layers1[i].tileIndex !== layers2[i].tileIndex ||
-                layers1[i].visible !== layers2[i].visible) {
+        for (let i = 0; i < indices1.length; i++) {
+            if (indices1[i] !== indices2[i]) {
                 return false;
             }
         }
@@ -133,7 +125,7 @@ export class Renderer {
     /**
      * Create a deep clone of the view to avoid reference issues
      */
-    private deepCloneView(view: TileLayer[][][]): TileLayer[][][] {
+    private deepCloneView(view: number[][][]): number[][][] {
         return JSON.parse(JSON.stringify(view));
     }
     
