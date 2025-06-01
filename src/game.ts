@@ -36,7 +36,7 @@ export class Game {
         this.tileset = new Tileset('/assets/images/tileset.png');
         
         // Initialize game state with map dimensions
-        this.gameState = createInitialGameState(40, 22);
+        this.gameState = createInitialGameState(25, 15);
 
         // Set canvas dimensions based on map size
         this.canvas.width = this.gameState.map.width * TILE.SIZE;
@@ -51,8 +51,7 @@ export class Game {
     private init(): void {
         // Initialize event listeners
         window.addEventListener('keydown', this.handleKeyDown.bind(this));
-        window.addEventListener('keyup', this.handleKeyUp.bind(this));
-
+        
         console.log("Game initialized. Canvas dimensions:", this.canvas.width, "x", this.canvas.height);
         console.log("Map dimensions:", this.gameState.map.width, "x", this.gameState.map.height, "tiles");
         
@@ -80,46 +79,7 @@ export class Game {
      */
     private handleKeyDown(event: KeyboardEvent): void {
         // Update game state based on input
-        this.updateFromInput(event.key, true);
-    }
-
-    /**
-     * Handle key up events
-     */
-    private handleKeyUp(event: KeyboardEvent): void {
-        // Update game state based on input
-        this.updateFromInput(event.key, false);
-    }
-
-    /**
-     * Update game state based on user input
-     */
-    private updateFromInput(key: string, isKeyDown: boolean): void {
-        if (isKeyDown) {
-            // Only process the key if it hasn't been processed yet
-            if (!this.processedKeys[key]) {
-                // Check if it's a movement key
-                const isMovementKey = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 
-                                       'a', 'd', 'w', 's'].includes(key);
-                
-                if (isMovementKey) {
-                    // Save old position to detect if player actually moved
-                    const oldX = this.gameState.player.x;
-                    const oldY = this.gameState.player.y;
-                    
-                    // Dispatch the key down action - movement logic is now in the reducer
-                    this.dispatch({ type: 'KEY_DOWN', key });
-                    
-                    // If the player actually moved, mark key as processed
-                    if (this.gameState.player.x !== oldX || this.gameState.player.y !== oldY) {
-                        this.processedKeys[key] = true;
-                    }
-                }
-            }
-        } else {
-            // Key is released, clear processed state
-            delete this.processedKeys[key];
-        }
+        this.dispatch({ type: 'KEY_DOWN', key: event.key });
     }
 
     /**

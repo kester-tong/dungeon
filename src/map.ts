@@ -1,8 +1,8 @@
 import { RenderTree } from './renderer.js';
 
 export class TownMap {
-    private static readonly MAP_WIDTH = 40;
-    private static readonly MAP_HEIGHT = 22;
+    private static readonly MAP_WIDTH = 25;
+    private static readonly MAP_HEIGHT = 15;
     
     // Tile constants
     private static readonly GROUND_TILE = 2;
