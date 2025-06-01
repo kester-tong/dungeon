@@ -1,17 +1,17 @@
 import { Tileset } from './tileset.js';
 import { TownMap } from './map.js';
+import { Renderer } from './renderer.js';
 
 export class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
-    private staticMapCanvas: HTMLCanvasElement;
-    private staticMapCtx: CanvasRenderingContext2D;
     private tileset: Tileset;
     private map: TownMap;
-    private mapRendered: boolean = false;
+    private renderer: Renderer;
 
     // Game constants
     private static readonly TILE_SIZE = 32;
+    private static readonly CHARACTER_TILE_INDEX = 18 * 32; // Character tile index
     
     // Player position in tile coordinates
     private playerTileX: number = 12;
@@ -38,14 +38,8 @@ export class Game {
         this.canvas.width = this.map.getWidth() * Game.TILE_SIZE;
         this.canvas.height = this.map.getHeight() * Game.TILE_SIZE;
 
-        // Create static map canvas for rendering the map once
-        this.staticMapCanvas = document.createElement('canvas');
-        this.staticMapCanvas.width = this.canvas.width;
-        this.staticMapCanvas.height = this.canvas.height;
-        this.staticMapCtx = this.staticMapCanvas.getContext('2d')!;
-        if (!this.staticMapCtx) {
-            throw new Error('Static map 2D rendering context not available.');
-        }
+        // Create renderer for efficient tile rendering
+        this.renderer = new Renderer(this.canvas, this.tileset, Game.TILE_SIZE);
 
         this.init();
     }
@@ -60,38 +54,13 @@ export class Game {
         
         // Start the game loop after the tileset is loaded
         if (this.tileset.isLoaded()) {
-            this.renderStaticMap();
             this.gameLoop();
         } else {
             // If tileset is not loaded yet, wait for it to load
             this.tileset.getImage().addEventListener('load', () => {
-                this.renderStaticMap();
                 this.gameLoop();
             });
         }
-    }
-    
-    private renderStaticMap(): void {
-        // Only render the static map once
-        if (this.mapRendered) return;
-        
-        // Clear the static map canvas
-        this.staticMapCtx.fillStyle = '#000';
-        this.staticMapCtx.fillRect(0, 0, this.staticMapCanvas.width, this.staticMapCanvas.height);
-        
-        // Draw all map tiles to the static map canvas
-        for (let y = 0; y < this.map.getHeight(); y++) {
-            for (let x = 0; x < this.map.getWidth(); x++) {
-                const tile = this.map.getTileAt(x, y);
-                const pixelX = x * Game.TILE_SIZE;
-                const pixelY = y * Game.TILE_SIZE;
-                
-                this.tileset.drawTile(this.staticMapCtx, tile, pixelX, pixelY);
-            }
-        }
-        
-        this.mapRendered = true;
-        console.log("Static map rendered");
     }
 
     private handleKeyDown(event: KeyboardEvent): void {
@@ -151,39 +120,19 @@ export class Game {
 
 
     private draw(): void {
-        // Ensure the static map is rendered
-        if (!this.mapRendered && this.tileset.isLoaded()) {
-            this.renderStaticMap();
+        if (!this.tileset.isLoaded()) {
+            return;
         }
         
-        // Clear the main canvas
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Step 1: Copy the pre-rendered static map to the main canvas in one operation
-        if (this.mapRendered) {
-            this.ctx.drawImage(this.staticMapCanvas, 0, 0);
-        } else {
-            // Fallback if static map is not yet rendered
-            for (let y = 0; y < this.map.getHeight(); y++) {
-                for (let x = 0; x < this.map.getWidth(); x++) {
-                    const tile = this.map.getTileAt(x, y);
-                    const pixelX = x * Game.TILE_SIZE;
-                    const pixelY = y * Game.TILE_SIZE;
-                    
-                    this.tileset.drawTile(this.ctx, tile, pixelX, pixelY);
-                }
-            }
-        }
-
-        // Step 2: Draw just the player character on top of the map
-        const characterTileIndex = 18 * 32; // The character tile at index 18*32
-        this.tileset.drawTile(
-            this.ctx, 
-            characterTileIndex, 
-            this.playerTileX * Game.TILE_SIZE, 
-            this.playerTileY * Game.TILE_SIZE
+        // Get the map view with the player character
+        const viewWithPlayer = this.map.getMapViewWithPlayer(
+            Game.CHARACTER_TILE_INDEX,
+            this.playerTileX,
+            this.playerTileY
         );
+        
+        // Use the renderer to efficiently render only what has changed
+        this.renderer.render(viewWithPlayer);
     }
 
     private gameLoop(): void {

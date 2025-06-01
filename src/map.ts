@@ -1,3 +1,5 @@
+import { TileLayer } from './renderer.js';
+
 export class TownMap {
     private static readonly MAP_WIDTH = 25;
     private static readonly MAP_HEIGHT = 15;
@@ -10,14 +12,71 @@ export class TownMap {
     
     // Store the map data as a 2D array
     private mapData: number[][];
+    
+    // Store the rendered view with layers
+    private mapView: TileLayer[][][];
 
     constructor() {
         // Initialize with ground tiles
         this.mapData = Array(TownMap.MAP_HEIGHT).fill(null)
             .map(() => Array(TownMap.MAP_WIDTH).fill(TownMap.GROUND_TILE));
         
+        // Initialize the map view with layers
+        this.mapView = Array(TownMap.MAP_HEIGHT).fill(null).map(() => 
+            Array(TownMap.MAP_WIDTH).fill(null).map(() => [{
+                tileIndex: TownMap.GROUND_TILE,
+                visible: true
+            }])
+        );
+        
         // Create town layout
         this.createTownLayout();
+    }
+    
+    /**
+     * Update the map view based on the current map data
+     */
+    public updateMapView(): void {
+        for (let y = 0; y < TownMap.MAP_HEIGHT; y++) {
+            for (let x = 0; x < TownMap.MAP_WIDTH; x++) {
+                const tileIndex = this.mapData[y][x];
+                
+                // Reset to a single layer with the current tile
+                this.mapView[y][x] = [{
+                    tileIndex: tileIndex,
+                    visible: true
+                }];
+            }
+        }
+    }
+    
+    /**
+     * Get the current map view with layers
+     */
+    public getMapView(): TileLayer[][][] {
+        return this.mapView;
+    }
+    
+    /**
+     * Create a view with a character at a specific position
+     * @param characterTileIndex The tile index for the character
+     * @param playerX The player's x position
+     * @param playerY The player's y position
+     */
+    public getMapViewWithPlayer(characterTileIndex: number, playerX: number, playerY: number): TileLayer[][][] {
+        // Create a deep clone of the current map view
+        const viewWithPlayer = JSON.parse(JSON.stringify(this.mapView));
+        
+        // Add the character as a new layer at the player's position
+        if (playerX >= 0 && playerX < TownMap.MAP_WIDTH && 
+            playerY >= 0 && playerY < TownMap.MAP_HEIGHT) {
+            viewWithPlayer[playerY][playerX].push({
+                tileIndex: characterTileIndex,
+                visible: true
+            });
+        }
+        
+        return viewWithPlayer;
     }
 
     private createTownLayout(): void {
@@ -38,6 +97,9 @@ export class TownMap {
         // Houses (bottom)
         this.createBuilding(7, 10, 4, 3, TownMap.DOOR_TILE_START + 4); // 71 = House door
         this.createBuilding(14, 10, 4, 3, TownMap.DOOR_TILE_START + 5); // 72 = Another house door
+        
+        // Update the map view with the new layout
+        this.updateMapView();
     }
 
     private createBuilding(x: number, y: number, width: number, height: number, doorTile: number): void {
