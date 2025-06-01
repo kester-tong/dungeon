@@ -1,13 +1,4 @@
 import { Map, Tile } from "./maps/Map";
-// Tile constants
-export const TILE = {
-    GROUND: 2,
-    WALL: 21,
-    DOOR_START: 67,
-    DOOR_END: 82,
-    CHARACTER: 18 * 32,
-    SIZE: 32
-};
 
 /**
  * GameState is a Plain Old Data object that represents the complete state of the game.

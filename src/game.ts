@@ -2,8 +2,7 @@ import { Tileset } from './tileset.js';
 import { CanvasRenderer } from './renderer.js';
 import { 
     GameState, 
-    GameAction, 
-    TILE
+    GameAction
 } from './gameState.js';
 import { gameReducer } from './gameReducer.js';
 import { render } from './render.js';
@@ -36,7 +35,7 @@ export class Game {
         this.tileset = new Tileset('/assets/images/tileset.png');
         
         // Renderer will be created after map loads
-        this.renderer = new CanvasRenderer(this.canvas, this.tileset, TILE.SIZE);
+        this.renderer = new CanvasRenderer(this.canvas, this.tileset, this.tileset.getTileSize());
 
         this.init();
     }
@@ -56,8 +55,8 @@ export class Game {
             };
             
             // Set canvas dimensions based on loaded map size
-            this.canvas.width = map.width * TILE.SIZE;
-            this.canvas.height = map.height * TILE.SIZE;
+            this.canvas.width = map.width * this.tileset.getTileSize();
+            this.canvas.height = map.height * this.tileset.getTileSize();
             
             // Initialize event listeners after game state is ready
             window.addEventListener('keydown', this.handleKeyDown.bind(this));
