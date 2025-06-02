@@ -93,65 +93,85 @@ const gameSlice = createSlice({
       state.assetsLoaded = true;
     },
     
-    movePlayer: (state, action: PayloadAction<{ dx: number; dy: number }>) => {
-      if (!state.map || !state.location || state.location.type !== 'navigating') return;
+    keyDown: (state, action: PayloadAction<string>) => {
+      const key = action.payload;
       
-      const { dx, dy } = action.payload;
-      const newX = state.location.player.x + dx;
-      const newY = state.location.player.y + dy;
-      
-      // Check bounds
-      if (newX < 0 || newX >= state.map.width || newY < 0 || newY >= state.map.height) {
-        return;
-      }
-      
-      const targetTile = state.map.data[newY][newX];
-      
-      // Check if target tile is chattable - enter chat
-      if (targetTile.type === "chattable") {
-        const chatMessages = getChatMessages(targetTile.tileIndex);
-        state.location = {
-          type: 'in_chat',
-          messages: chatMessages,
-          currentInput: "",
-          previousLocation: state.location.player
-        };
-        return;
-      }
-      
-      // Check if target tile is walkable (terrain)
-      if (targetTile.type === "terrain") {
-        state.location.player.x = newX;
-        state.location.player.y = newY;
-      }
-    },
-    
-    exitChat: (state) => {
-      if (state.location?.type === 'in_chat') {
+      // Handle ESC key to exit chat
+      if (key === 'Escape' && state.location?.type === 'in_chat') {
         state.location = {
           type: 'navigating',
           player: state.location.previousLocation
         };
+        return;
       }
-    },
-    
-    addChatInput: (state, action: PayloadAction<string>) => {
+      
+      // If we're in chat, handle text input
       if (state.location?.type === 'in_chat') {
-        state.location.currentInput += action.payload;
+        if (key === 'Enter') {
+          const newMessage = `> ${state.location.currentInput}`;
+          state.location.messages.push(newMessage);
+          state.location.currentInput = "";
+        } else if (key === 'Backspace') {
+          state.location.currentInput = state.location.currentInput.slice(0, -1);
+        } else if (key.length === 1) {
+          state.location.currentInput += key;
+        }
+        return;
       }
-    },
-    
-    deleteChatInput: (state) => {
-      if (state.location?.type === 'in_chat') {
-        state.location.currentInput = state.location.currentInput.slice(0, -1);
-      }
-    },
-    
-    submitChatInput: (state) => {
-      if (state.location?.type === 'in_chat') {
-        const newMessage = `> ${state.location.currentInput}`;
-        state.location.messages.push(newMessage);
-        state.location.currentInput = "";
+      
+      // Handle movement keys when navigating
+      if (state.location?.type === 'navigating' && state.map) {
+        let dx = 0;
+        let dy = 0;
+        
+        switch (key) {
+          case 'ArrowLeft':
+          case 'a':
+            dx = -1;
+            break;
+          case 'ArrowRight':
+          case 'd':
+            dx = 1;
+            break;
+          case 'ArrowUp':
+          case 'w':
+            dy = -1;
+            break;
+          case 'ArrowDown':
+          case 's':
+            dy = 1;
+            break;
+          default:
+            return;
+        }
+        
+        const newX = state.location.player.x + dx;
+        const newY = state.location.player.y + dy;
+        
+        // Check bounds
+        if (newX < 0 || newX >= state.map.width || newY < 0 || newY >= state.map.height) {
+          return;
+        }
+        
+        const targetTile = state.map.data[newY][newX];
+        
+        // Check if target tile is chattable - enter chat
+        if (targetTile.type === "chattable") {
+          const chatMessages = getChatMessages(targetTile.tileIndex);
+          state.location = {
+            type: 'in_chat',
+            messages: chatMessages,
+            currentInput: "",
+            previousLocation: state.location.player
+          };
+          return;
+        }
+        
+        // Check if target tile is walkable (terrain)
+        if (targetTile.type === "terrain") {
+          state.location.player.x = newX;
+          state.location.player.y = newY;
+        }
       }
     },
   },
@@ -159,11 +179,7 @@ const gameSlice = createSlice({
 
 export const {
   loadMap,
-  movePlayer,
-  exitChat,
-  addChatInput,
-  deleteChatInput,
-  submitChatInput,
+  keyDown,
 } = gameSlice.actions
 
 export default gameSlice.reducer

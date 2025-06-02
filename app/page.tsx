@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react'
 import { useTileset } from './components/TilesetProvider'
 import { useGameAssets } from './components/GameAssetsProvider'
 import { useAppSelector, useAppDispatch } from './store/hooks'
-import { loadMap, movePlayer, exitChat, addChatInput, deleteChatInput, submitChatInput } from './store/gameSlice'
+import { loadMap, keyDown } from './store/gameSlice'
 import { TileRenderer, TileArray } from './components/TileRenderer'
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
@@ -40,62 +40,15 @@ export default function Home() {
     return { tiles }
   }, [gameState.map, gameState.location])
 
-  // Handle keyboard input
+  // Handle keyboard input - just dispatch the key, let reducer handle state logic
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const { key } = event
-      
-      // Handle ESC key to exit chat
-      if (key === 'Escape' && gameState.location?.type === 'in_chat') {
-        dispatch(exitChat())
-        return
-      }
-      
-      // If we're in chat, handle text input
-      if (gameState.location?.type === 'in_chat') {
-        if (key === 'Enter') {
-          dispatch(submitChatInput())
-        } else if (key === 'Backspace') {
-          dispatch(deleteChatInput())
-        } else if (key.length === 1) {
-          dispatch(addChatInput(key))
-        }
-        return
-      }
-      
-      // Handle movement keys when navigating
-      if (gameState.location?.type === 'navigating') {
-        let dx = 0
-        let dy = 0
-        
-        switch (key) {
-          case 'ArrowLeft':
-          case 'a':
-            dx = -1
-            break
-          case 'ArrowRight':
-          case 'd':
-            dx = 1
-            break
-          case 'ArrowUp':
-          case 'w':
-            dy = -1
-            break
-          case 'ArrowDown':
-          case 's':
-            dy = 1
-            break
-          default:
-            return
-        }
-        
-        dispatch(movePlayer({ dx, dy }))
-      }
+      dispatch(keyDown(event.key))
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [gameState.location, dispatch])
+  }, [dispatch])
 
   // Render chat window if in chat mode
   if (gameState.location?.type === 'in_chat') {
