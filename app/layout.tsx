@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { TilesetProvider } from './components/TilesetProvider'
 import { GameAssetsProvider } from './components/GameAssetsProvider'
+import { ReduxProvider } from './store/Provider'
 
 export const metadata: Metadata = {
   title: 'Dungeon Game',
@@ -15,11 +16,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TilesetProvider imageUrl="/assets/images/tileset.png">
-          <GameAssetsProvider mapUrl="/assets/maps/town.json">
-            {children}
-          </GameAssetsProvider>
-        </TilesetProvider>
+        <ReduxProvider>
+          <TilesetProvider imageUrl="/assets/images/tileset.png">
+            <GameAssetsProvider mapUrl="/assets/maps/town.json">
+              {children}
+            </GameAssetsProvider>
+          </TilesetProvider>
+        </ReduxProvider>
       </body>
     </html>
   )
