@@ -19,11 +19,20 @@ export interface NavigatingLocation {
 }
 
 /**
+ * ChatMessage represents a single message in a conversation
+ */
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+/**
  * InChatLocation represents the player in a chat/dialog interface
  */
 export interface InChatLocation {
   type: 'in_chat';
-  messages: string[];
+  intro_text: string | null;
+  messages: ChatMessage[];
   currentInput: string;
   previousLocation: Position;
   npcId: string;
@@ -59,12 +68,13 @@ export const loadNPCChat = createAsyncThunk(
     const npc = await response.json()
     
     // Return intro_text and first_message if available
-    const messages = [npc.intro_text]
+    const messages: ChatMessage[] = []
     if (npc.first_message) {
-      messages.push(npc.first_message)
+      messages.push({ role: 'assistant', content: npc.first_message })
     }
     
     return {
+      intro_text: npc.intro_text,
       messages,
       npcId: params.npcId,
       previousLocation: params.previousLocation
@@ -75,14 +85,14 @@ export const loadNPCChat = createAsyncThunk(
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
-  async (params: { message: string; npcId: string }) => {
+  async (params: { messages: ChatMessage[]; npcId: string }) => {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: params.message,
+        messages: params.messages,
         npcId: params.npcId,
       }),
     })
@@ -108,20 +118,20 @@ export const handleKeyPress = createAsyncThunk(
       const message = gameState.location.currentInput.trim()
       
       if (message) {
-        // Add user message to chat
-        dispatch(gameSlice.actions.addChatMessage(`> ${message}`))
+        // Build messages array including the new user message
+        const allMessages = [...gameState.location.messages, { role: 'user' as const, content: message }]
+        
+        // Add user message to chat and clear input
+        dispatch(gameSlice.actions.addChatMessage({ role: 'user', content: message }))
         dispatch(gameSlice.actions.clearChatInput())
         
-        // Get the NPC ID from the current chat context
-        const npcId = gameState.location.npcId
-        
-        // Send to API and wait for response
-        const response = await dispatch(sendChatMessage({ message, npcId }))
+        // Send all messages to API and wait for response
+        const response = await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId }))
         
         if (sendChatMessage.fulfilled.match(response)) {
-          dispatch(gameSlice.actions.addChatMessage(response.payload))
+          dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: response.payload }))
         } else {
-          dispatch(gameSlice.actions.addChatMessage("Sorry, I couldn't understand that."))
+          dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: "Sorry, I couldn't understand that." }))
         }
       }
       
@@ -133,7 +143,7 @@ export const handleKeyPress = createAsyncThunk(
     
     // Then check if we entered chat and need to load NPC data
     const newState = getState() as { game: GameState }
-    if (newState.game.location?.type === 'in_chat' && newState.game.location.messages.length === 0) {
+    if (newState.game.location?.type === 'in_chat' && newState.game.location.intro_text === null) {
       // We just entered chat but have no messages - load NPC intro
       await dispatch(loadNPCChat({ 
         npcId: newState.game.location.npcId, 
@@ -174,8 +184,8 @@ const gameSlice = createSlice({
       // If we're in chat, handle text input
       if (state.location?.type === 'in_chat') {
         if (key === 'Enter') {
-          const newMessage = `> ${state.location.currentInput}`;
-          state.location.messages.push(newMessage);
+          const newMessage = state.location.currentInput;
+          state.location.messages.push({ role: 'user', content: newMessage });
           state.location.currentInput = "";
         } else if (key === 'Backspace') {
           state.location.currentInput = state.location.currentInput.slice(0, -1);
@@ -225,7 +235,8 @@ const gameSlice = createSlice({
         if (targetTile.type === "npc") {
           state.location = {
             type: 'in_chat',
-            messages: [], // Start empty, will be populated by async thunk
+            intro_text: null,  // Signal to load intro text and messages with async thunk
+            messages: [],
             currentInput: "",
             previousLocation: state.location.player,
             npcId: targetTile.npcId
@@ -242,7 +253,7 @@ const gameSlice = createSlice({
     },
     
     // Helper reducers for chat functionality
-    addChatMessage: (state, action: PayloadAction<string>) => {
+    addChatMessage: (state, action: PayloadAction<ChatMessage>) => {
       if (state.location?.type === 'in_chat') {
         state.location.messages.push(action.payload)
       }
@@ -260,6 +271,7 @@ const gameSlice = createSlice({
     builder
       .addCase(loadNPCChat.fulfilled, (state, action) => {
         if (state.location?.type === 'in_chat') {
+          state.location.intro_text = action.payload.intro_text
           state.location.messages = action.payload.messages
         }
       })

@@ -66,13 +66,12 @@ export default function Home() {
           whiteSpace: 'pre-wrap',
           margin: 0,
         }}>
-          {gameState.location.messages.map((message, index) => 
-          <>
-            {message + "\n\n"}
-            {index === 0 ? "Press ESC to exit\n\n" : null}
-            </>
-          )}
-          {'> ' + gameState.location.currentInput}
+          { gameState.location.intro_text + '\n\nPress ESC to exit\n\n' +
+            gameState.location.messages.map(message => 
+              (message.role === 'user' ? '> ' : '') + message.content
+            ).join('\n\n') + 
+            '\n\n> ' + gameState.location.currentInput + 
+            (gameState.chatLoading ? '' : '|')}
         </pre>
       </main>
     )

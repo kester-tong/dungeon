@@ -9,7 +9,7 @@ const anthropic = new Anthropic({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { message, npcId } = body
+    const { messages, npcId } = body
 
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error('Anthropic API key not configured')
@@ -22,12 +22,7 @@ export async function POST(request: NextRequest) {
       model: 'claude-opus-4-20250514',
       max_tokens: 150,
       system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: message
-        }
-      ]
+      messages: messages
     })
 
     const responseText = response.content[0]?.type === 'text' 
