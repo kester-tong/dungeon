@@ -51,9 +51,7 @@ function getChatMessages(tileIndex: number): string[] {
   switch (tileIndex) {
     case 71: // Tavern door (t)
       return [
-        "Welcome to the Rusty Anchor Tavern!",
-        "Would you like some ale or a hot meal?",
-        "We have rooms available upstairs if you need rest."
+        "Welcome to the Rusty Anchor Tavern!\nWould you like some ale or a hot meal?\nWe have rooms available upstairs if you need rest."
       ];
     case 73: // Shop door (s)
       return [

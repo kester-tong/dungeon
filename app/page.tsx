@@ -101,28 +101,25 @@ export default function Home() {
   if (gameState.location?.type === 'in_chat') {
     return (
       <main style={{ padding: '1rem' }}>
-        <div style={{
-          width: '800px',
-          height: '480px',
+        <pre style={{
+          width: '804px',
+          height: '484px',
           backgroundColor: '#000',
           color: '#fff',
           fontFamily: 'monospace',
-          padding: '20px',
+          //padding: '20px',
           border: '2px solid #333',
-          overflow: 'auto'
+          overflow: 'auto',
+          whiteSpace: 'pre-wrap'
         }}>
-          {gameState.location.messages.map((message, index) => (
-            <div key={index} style={{ marginBottom: '10px' }}>
-              {message}
-            </div>
-          ))}
-          <div style={{ marginTop: '20px' }}>
-            <div style={{ marginBottom: '10px' }}>Press ESC to exit</div>
-            <div style={{ color: '#ccc' }}>
-              {'> ' + gameState.location.currentInput}
-            </div>
-          </div>
-        </div>
+          {gameState.location.messages.map((message, index) => 
+          <>
+            {message + "\n\n"}
+            {index === 0 ? "Press ESC to exit\n\n" : null}
+            </>
+          )}
+          {'> ' + gameState.location.currentInput}
+        </pre>
       </main>
     )
   }
