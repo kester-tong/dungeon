@@ -1,9 +1,10 @@
 'use client'
 
-import React, { createContext, useContext, useRef, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { Tileset } from '../../src/tileset'
 
 interface TilesetContextType {
-  imageRef: React.MutableRefObject<HTMLImageElement | null>;
+  tileset: Tileset | null;
   loaded: boolean;
 }
 
@@ -18,7 +19,7 @@ export function TilesetProvider({
   children, 
   imageUrl 
 }: TilesetProviderProps) {
-  const imageRef = useRef<HTMLImageElement | null>(null)
+  const [tileset, setTileset] = useState<Tileset | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -27,28 +28,28 @@ export function TilesetProvider({
     
     image.onload = () => {
       console.log('Tileset loaded:', imageUrl)
+      const newTileset = new Tileset(image)
+      setTileset(newTileset)
       setLoaded(true)
     }
     
     image.onerror = (err) => {
       console.error('Failed to load tileset:', imageUrl, err)
+      setTileset(null)
       setLoaded(false)
     }
     
     image.src = imageUrl
-    imageRef.current = image
     
     return () => {
       // Cleanup
-      if (imageRef.current) {
-        imageRef.current.onload = null
-        imageRef.current.onerror = null
-      }
+      image.onload = null
+      image.onerror = null
     }
   }, [imageUrl])
 
   const contextValue: TilesetContextType = {
-    imageRef,
+    tileset,
     loaded
   }
 

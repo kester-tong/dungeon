@@ -1,55 +1,61 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTileset } from './components/TilesetProvider'
+import { useGameAssets } from './components/GameAssetsProvider'
+import { TestCanvas } from './components/TestCanvas'
+import { TileRenderer, TileArray } from './components/TileRenderer'
 
 export default function Home() {
-  const { imageRef, loaded } = useTileset()
+  const { tileset, loaded } = useTileset()
+  const { map, loaded: mapLoaded, error } = useGameAssets()
+
+  // Convert map to TileArray format
+  const tileArray: TileArray | null = useMemo(() => {
+    if (!map) return null
+    
+    // Convert map data to 3D tile array format
+    const tiles: number[][][] = map.data.map(row => 
+      row.map(tile => [tile.tileIndex])
+    )
+    
+    return { tiles }
+  }, [map])
 
   useEffect(() => {
     console.log('Game page loaded - ready for game engine migration')
     console.log('Tileset loaded:', loaded)
-    if (loaded && imageRef.current) {
-      console.log('Tileset image dimensions:', imageRef.current.width, 'x', imageRef.current.height)
+    console.log('Map loaded:', mapLoaded)
+    if (loaded && tileset) {
+      console.log('Tileset ready for rendering')
     }
-  }, [loaded, imageRef])
+    if (mapLoaded && map) {
+      console.log('Map dimensions:', map.width, 'x', map.height)
+    }
+    if (error) {
+      console.error('Map loading error:', error)
+    }
+  }, [loaded, tileset, mapLoaded, map, error])
 
   return (
     <main style={{ padding: '1rem' }}>
-      <h1>Dungeon Game</h1>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <h3>Tileset Status:</h3>
-        <p>Loaded: {loaded ? '✅ Yes' : '⏳ Loading...'}</p>
-        {loaded && imageRef.current && (
-          <p>Dimensions: {imageRef.current.width} x {imageRef.current.height}px</p>
-        )}
-      </div>
-      
-      <div style={{ 
-        border: '2px solid #333', 
-        width: '800px', 
-        height: '480px', 
-        backgroundColor: '#000',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        fontFamily: 'monospace',
-        flexDirection: 'column'
-      }}>
-        <div>Game Canvas Will Go Here</div>
-        <div>(Migration Pending)</div>
-        {loaded && (
-          <div style={{ marginTop: '10px', fontSize: '12px', color: '#ccc' }}>
-            Tileset Ready for Rendering!
-          </div>
-        )}
-      </div>
-      
-      <div style={{ marginTop: '1rem', fontSize: '14px', color: '#666' }}>
-        <p>Controls: WASD or Arrow Keys to move, ESC to exit chat</p>
-      </div>
+      {loaded && tileset && mapLoaded && tileArray ? (
+        <TileRenderer tileset={tileset} tileArray={tileArray} width={800} height={480} />
+      ) : (
+        <div style={{ 
+          border: '2px solid #333', 
+          width: '800px', 
+          height: '480px', 
+          backgroundColor: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontFamily: 'monospace'
+        }}>
+          <div>Loading...</div>
+        </div>
+      )}
     </main>
   )
 }

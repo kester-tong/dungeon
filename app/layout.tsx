@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { TilesetProvider } from './components/TilesetProvider'
+import { GameAssetsProvider } from './components/GameAssetsProvider'
 
 export const metadata: Metadata = {
   title: 'Dungeon Game',
@@ -15,7 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <TilesetProvider imageUrl="/assets/images/tileset.png">
-          {children}
+          <GameAssetsProvider mapUrl="/assets/maps/town.json">
+            {children}
+          </GameAssetsProvider>
         </TilesetProvider>
       </body>
     </html>

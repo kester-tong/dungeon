@@ -1,6 +1,5 @@
 export class Tileset {
     private image: HTMLImageElement;
-    private loaded: boolean = false;
 
     private static readonly TILE_SIZE = 32;
     private static readonly TILESET_WIDTH = 64;
@@ -8,26 +7,11 @@ export class Tileset {
     private static readonly COLUMN_WIDTH = 32;
     private static readonly CHARACTER_TILE_INDEX = 18 * 32; // Character tile index
 
-    constructor(imageUrl: string) {
-        // Load tileset image with transparency
-        this.image = new Image();
-        this.image.src = imageUrl;
-        this.image.onload = () => {
-            console.log("Tileset with transparency loaded:", imageUrl);
-            this.loaded = true;
-        };
-        this.image.onerror = (err) => {
-            console.error("Failed to load tileset:", imageUrl, err);
-        };
-    }
-
-    public isLoaded(): boolean {
-        return this.loaded;
+    constructor(image: HTMLImageElement) {
+        this.image = image;
     }
 
     public drawTile(ctx: CanvasRenderingContext2D, tileIndex: number, x: number, y: number): void {
-        if (!this.loaded) return;
-
         const sourceCoords = this.getTileCoordinates(tileIndex);
         
         // Draw the tile with built-in transparency
