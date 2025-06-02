@@ -52,26 +52,38 @@ export default function Home() {
 
   // Render chat window if in chat mode
   if (gameState.location?.type === 'in_chat') {
+    const chatContent = gameState.location.intro_text + '\n\nPress ESC to exit\n\n' +
+      gameState.location.messages.map(message => 
+        (message.role === 'user' ? '> ' : '') + message.content
+      ).join('\n\n') + 
+      (gameState.chatLoading ? '' : '\n\n> ' + gameState.location.currentInput + '█')
+
     return (
       <main style={{ padding: '1rem' }}>
+        <style jsx>{`
+          @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+          }
+          .blinking-cursor {
+            animation: blink 1s infinite;
+          }
+        `}</style>
         <pre style={{
           width: '804px',
           height: '484px',
           backgroundColor: '#000',
           color: '#fff',
           fontFamily: 'monospace',
-          //padding: '20px',
           border: '2px solid #333',
           overflow: 'auto',
           whiteSpace: 'pre-wrap',
           margin: 0,
         }}>
-          { gameState.location.intro_text + '\n\nPress ESC to exit\n\n' +
-            gameState.location.messages.map(message => 
-              (message.role === 'user' ? '> ' : '') + message.content
-            ).join('\n\n') + 
-            '\n\n> ' + gameState.location.currentInput + 
-            (gameState.chatLoading ? '' : '|')}
+          {chatContent}
+          {gameState.chatLoading && (
+            <span className="blinking-cursor">{'\n\n█'}</span>
+          )}
         </pre>
       </main>
     )
