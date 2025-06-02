@@ -110,7 +110,8 @@ export default function Home() {
           //padding: '20px',
           border: '2px solid #333',
           overflow: 'auto',
-          whiteSpace: 'pre-wrap'
+          whiteSpace: 'pre-wrap',
+          margin: 0,
         }}>
           {gameState.location.messages.map((message, index) => 
           <>
