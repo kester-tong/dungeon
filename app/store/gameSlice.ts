@@ -48,6 +48,30 @@ const initialState: GameState = {
   chatLoading: false,
 }
 
+// Async thunk for loading NPC intro messages
+export const loadNPCChat = createAsyncThunk(
+  'game/loadNPCChat',
+  async (params: { npcId: string; previousLocation: Position }) => {
+    const response = await fetch(`/assets/npcs/${params.npcId}.json`)
+    if (!response.ok) {
+      throw new Error(`Failed to load NPC ${params.npcId}`)
+    }
+    const npc = await response.json()
+    
+    // Return intro_text and first_message if available
+    const messages = [npc.intro_text]
+    if (npc.first_message) {
+      messages.push(npc.first_message)
+    }
+    
+    return {
+      messages,
+      npcId: params.npcId,
+      previousLocation: params.previousLocation
+    }
+  }
+)
+
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
@@ -104,46 +128,22 @@ export const handleKeyPress = createAsyncThunk(
       return
     }
 
-    // For all other keys, just dispatch the regular keyDown action
+    // First, dispatch the regular keyDown action
     dispatch(gameSlice.actions.keyDown(key))
+    
+    // Then check if we entered chat and need to load NPC data
+    const newState = getState() as { game: GameState }
+    if (newState.game.location?.type === 'in_chat' && newState.game.location.messages.length === 0) {
+      // We just entered chat but have no messages - load NPC intro
+      await dispatch(loadNPCChat({ 
+        npcId: newState.game.location.npcId, 
+        previousLocation: newState.game.location.previousLocation 
+      }))
+    }
   }
 )
 
 
-/**
- * Get chat messages based on the tile index
- */
-function getChatMessages(tileIndex: number): string[] {
-  switch (tileIndex) {
-    case 71: // Tavern door (t)
-      return [
-        "Welcome to the Rusty Anchor Tavern!\nWould you like some ale or a hot meal?\nWe have rooms available upstairs if you need rest."
-      ];
-    case 73: // Shop door (s)
-      return [
-        "Welcome to the General Store!",
-        "We have supplies, weapons, and armor.",
-        "What can I help you find today?"
-      ];
-    case 75: // Temple door (p)
-      return [
-        "Blessings upon you, traveler.",
-        "This is the Temple of Light.",
-        "Would you like healing or guidance?"
-      ];
-    case 2465: // Blacksmith door (b)
-      return [
-        "Welcome to the forge!",
-        "I can repair your equipment or craft new items.",
-        "The fire burns hot today - perfect for smithing!"
-      ];
-    default:
-      return [
-        "Hello there!",
-        "Nice weather we're having."
-      ];
-  }
-}
 
 const gameSlice = createSlice({
   name: 'game',
@@ -221,12 +221,11 @@ const gameSlice = createSlice({
         
         const targetTile = state.map.data[newY][newX];
         
-        // Check if target tile is an NPC - enter chat
+        // Check if target tile is an NPC - enter chat with empty messages
         if (targetTile.type === "npc") {
-          const chatMessages = getChatMessages(targetTile.tileIndex);
           state.location = {
             type: 'in_chat',
-            messages: chatMessages,
+            messages: [], // Start empty, will be populated by async thunk
             currentInput: "",
             previousLocation: state.location.player,
             npcId: targetTile.npcId
@@ -259,6 +258,11 @@ const gameSlice = createSlice({
   // Handle async thunk states
   extraReducers: (builder) => {
     builder
+      .addCase(loadNPCChat.fulfilled, (state, action) => {
+        if (state.location?.type === 'in_chat') {
+          state.location.messages = action.payload.messages
+        }
+      })
       .addCase(sendChatMessage.pending, (state) => {
         state.chatLoading = true
       })
