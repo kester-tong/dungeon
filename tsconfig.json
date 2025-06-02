@@ -1,22 +1,42 @@
 {
   "compilerOptions": {
     "target": "ES2015", // Or newer, like ES2020. Target modern JavaScript features.
-    "module": "ES2015", // Use ES modules for browser compatibility.
+    "module": "esnext", // Use ES modules for browser compatibility.
     "moduleResolution": "node", // How modules get resolved.
-    "outDir": "./dist/js",    // Where to output compiled JavaScript.
-    "rootDir": "./src",       // Where your TypeScript source files are.
-    "strict": true,           // Enable all strict type-checking options.
-    "esModuleInterop": true,  // Allows default imports from commonjs modules.
-    "skipLibCheck": true,     // Skip type checking of declaration files.
+    "outDir": "./dist/js", // Where to output compiled JavaScript.
+    // "rootDir": "./src", // Removed to allow Next.js app directory
+    "strict": true, // Enable all strict type-checking options.
+    "esModuleInterop": true, // Allows default imports from commonjs modules.
+    "skipLibCheck": true, // Skip type checking of declaration files.
     "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,        // Generate source maps for easier debugging.
-    "lib": ["DOM", "ES2015", "ES2016", "ES2017"]  // Include DOM library for browser APIs
+    "sourceMap": true, // Generate source maps for easier debugging.
+    "lib": [
+      "DOM",
+      "ES2015",
+      "ES2016",
+      "ES2017"
+    ] // Include DOM library for browser APIs
+    ,
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "src/**/*"                // Which files to include in compilation.
+    "src/**/*", // Which files to include in compilation.
+    "app/**/*", // Next.js app directory
+    ".next/types/**/*.ts",
+    "next-env.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "**/*.spec.ts"            // Exclude test files if any.
+    "**/*.spec.ts" // Exclude test files if any.
   ]
 }

@@ -8,15 +8,29 @@
     "build": "tsc",
     "watch": "tsc -w",
     "server": "live-server ./dist",
-    "start": "npm run build && concurrently \"npm run watch\" \"npm run server\""
+    "start": "npm run build && concurrently \"npm run watch\" \"npm run server\"",
+    "dev": "next dev",
+    "build:next": "next build",
+    "start:next": "next start",
+    "lint": "next lint"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
     "concurrently": "^9.1.2",
+    "eslint": "^9.28.0",
+    "eslint-config-next": "^15.3.3",
     "live-server": "^1.2.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   }
 }

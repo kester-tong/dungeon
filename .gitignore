@@ -8,6 +8,10 @@ yarn-error.log
 dist/js/
 build/
 
+# Next.js
+.next/
+out/
+
 # TypeScript
 *.tsbuildinfo
 
