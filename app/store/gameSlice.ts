@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { Map } from '../../src/maps/Map'
+import { gameConfig } from '../src/config/gameConfig';
 
 /**
  * Position represents x, y coordinates
@@ -166,7 +167,7 @@ const gameSlice = createSlice({
       // Initialize player at starting position when map loads
       state.location = {
         type: 'navigating',
-        player: { x: 5, y: 5 }
+        player: gameConfig.startingPosition
       };
       state.assetsLoaded = true;
     },

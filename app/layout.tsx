@@ -17,8 +17,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ReduxProvider>
-          <TilesetProvider imageUrl="/assets/images/tileset.png">
-            <GameAssetsProvider mapUrl="/assets/maps/town.json">
+          <TilesetProvider>
+            <GameAssetsProvider>
               {children}
             </GameAssetsProvider>
           </TilesetProvider>

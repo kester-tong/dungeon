@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Tileset } from '../../src/tileset'
+import { gameConfig } from '../src/config/gameConfig'
 
 interface TilesetContextType {
   tileset: Tileset | null;
@@ -12,12 +13,10 @@ const TilesetContext = createContext<TilesetContextType | null>(null)
 
 interface TilesetProviderProps {
   children: React.ReactNode;
-  imageUrl: string;
 }
 
 export function TilesetProvider({ 
-  children, 
-  imageUrl 
+  children 
 }: TilesetProviderProps) {
   const [tileset, setTileset] = useState<Tileset | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -27,26 +26,32 @@ export function TilesetProvider({
     const image = new Image()
     
     image.onload = () => {
-      console.log('Tileset loaded:', imageUrl)
-      const newTileset = new Tileset(image)
+      console.log('Tileset loaded:', gameConfig.tileset.imagePath)
+      const newTileset = new Tileset(
+        image, 
+        gameConfig.tileset.tileSize,
+        gameConfig.tileset.width,
+        gameConfig.tileset.height,
+        gameConfig.tileset.columnWidth
+      )
       setTileset(newTileset)
       setLoaded(true)
     }
     
     image.onerror = (err) => {
-      console.error('Failed to load tileset:', imageUrl, err)
+      console.error('Failed to load tileset:', gameConfig.tileset.imagePath, err)
       setTileset(null)
       setLoaded(false)
     }
     
-    image.src = imageUrl
+    image.src = gameConfig.tileset.imagePath
     
     return () => {
       // Cleanup
       image.onload = null
       image.onerror = null
     }
-  }, [imageUrl])
+  }, [])
 
   const contextValue: TilesetContextType = {
     tileset,

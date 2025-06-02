@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Map } from '../../src/maps/Map'
 import { loadMap } from '../../src/maps/loader'
+import { gameConfig } from '../src/config/gameConfig'
 
 interface GameAssetsContextType {
   map: Map | null;
@@ -14,12 +15,10 @@ const GameAssetsContext = createContext<GameAssetsContextType | null>(null)
 
 interface GameAssetsProviderProps {
   children: React.ReactNode;
-  mapUrl: string;
 }
 
 export function GameAssetsProvider({ 
-  children, 
-  mapUrl 
+  children 
 }: GameAssetsProviderProps) {
   const [map, setMap] = useState<Map | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -29,10 +28,10 @@ export function GameAssetsProvider({
     async function loadGameMap() {
       try {
         setError(null)
-        const loadedMap = await loadMap(mapUrl)
+        const loadedMap = await loadMap(gameConfig.mapUrl)
         setMap(loadedMap)
         setLoaded(true)
-        console.log('Map loaded:', mapUrl, `${loadedMap.width}x${loadedMap.height}`)
+        console.log('Map loaded:', gameConfig.mapUrl, `${loadedMap.width}x${loadedMap.height}`)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error loading map'
         console.error('Error loading map:', errorMessage)
@@ -42,7 +41,7 @@ export function GameAssetsProvider({
     }
 
     loadGameMap()
-  }, [mapUrl])
+  }, [])
 
   const contextValue: GameAssetsContextType = {
     map,
