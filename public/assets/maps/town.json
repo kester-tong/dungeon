@@ -10,19 +10,23 @@
         },
         "t": {
             "tileIndex": 71,
-            "type": "chattable"
+            "type": "npc",
+            "npcId": "tavern_keeper"
         },
         "s": {
             "tileIndex": 73,
-            "type": "chattable"
+            "type": "npc",
+            "npcId": "shop_keeper"
         },
         "p": {
             "tileIndex": 75,
-            "type": "chattable"
+            "type": "npc",
+            "npcId": "priest"
         },
         "b": {
             "tileIndex": 2465,
-            "type": "chattable"
+            "type": "npc",
+            "npcId": "blacksmith"
         }
     },
     "data": [

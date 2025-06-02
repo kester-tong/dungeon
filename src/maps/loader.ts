@@ -1,13 +1,8 @@
 import { Map, Tile } from './Map.js';
 
-interface TileDefinition {
-    tileIndex: number;
-    type: "terrain" | "obstacle";
-}
-
 interface MapAsset {
     data: string[];
-    tileMapping: { [key: string]: TileDefinition };
+    tileMapping: { [key: string]: Tile };
 }
 
 export async function loadMap(path: string): Promise<Map> {
@@ -26,7 +21,7 @@ export async function loadMap(path: string): Promise<Map> {
         const data: Tile[][] = mapAsset.data.map(row => 
             Array.from(row).map(char => {
                 const tileDef = mapAsset.tileMapping[char];
-                return tileDef ? { tileIndex: tileDef.tileIndex, type: tileDef.type } : defaultTile;
+                return tileDef || defaultTile;
             })
         );
         

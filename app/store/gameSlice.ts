@@ -26,7 +26,7 @@ export interface InChatLocation {
   messages: string[];
   currentInput: string;
   previousLocation: Position;
-  npcType: string;
+  npcId: string;
 }
 
 /**
@@ -51,7 +51,7 @@ const initialState: GameState = {
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
-  async (params: { message: string; npcType: string }) => {
+  async (params: { message: string; npcId: string }) => {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
@@ -59,7 +59,7 @@ export const sendChatMessage = createAsyncThunk(
       },
       body: JSON.stringify({
         message: params.message,
-        npcType: params.npcType,
+        npcId: params.npcId,
       }),
     })
 
@@ -88,12 +88,11 @@ export const handleKeyPress = createAsyncThunk(
         dispatch(gameSlice.actions.addChatMessage(`> ${message}`))
         dispatch(gameSlice.actions.clearChatInput())
         
-        // Get the NPC type from the current chat context
-        // We'll need to store this when entering chat
-        const npcType = gameState.location.npcType || 'generic'
+        // Get the NPC ID from the current chat context
+        const npcId = gameState.location.npcId
         
         // Send to API and wait for response
-        const response = await dispatch(sendChatMessage({ message, npcType }))
+        const response = await dispatch(sendChatMessage({ message, npcId }))
         
         if (sendChatMessage.fulfilled.match(response)) {
           dispatch(gameSlice.actions.addChatMessage(response.payload))
@@ -110,18 +109,6 @@ export const handleKeyPress = createAsyncThunk(
   }
 )
 
-/**
- * Get NPC type based on tile index for API calls
- */
-function getNpcType(tileIndex: number): string {
-  switch (tileIndex) {
-    case 71: return 'tavern_keeper';
-    case 73: return 'shop_keeper';
-    case 75: return 'priest';
-    case 2465: return 'blacksmith';
-    default: return 'generic';
-  }
-}
 
 /**
  * Get chat messages based on the tile index
@@ -234,16 +221,15 @@ const gameSlice = createSlice({
         
         const targetTile = state.map.data[newY][newX];
         
-        // Check if target tile is chattable - enter chat
-        if (targetTile.type === "chattable") {
+        // Check if target tile is an NPC - enter chat
+        if (targetTile.type === "npc") {
           const chatMessages = getChatMessages(targetTile.tileIndex);
-          const npcType = getNpcType(targetTile.tileIndex);
           state.location = {
             type: 'in_chat',
             messages: chatMessages,
             currentInput: "",
             previousLocation: state.location.player,
-            npcType
+            npcId: targetTile.npcId
           };
           return;
         }
