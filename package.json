@@ -3,15 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prebuild": "node scripts/build-config.js",
-    "build": "tsc",
-    "watch": "tsc -w",
-    "server": "live-server ./dist",
-    "start": "npm run build && concurrently \"npm run watch\" \"npm run server\"",
     "dev": "next dev",
-    "build:next": "next build",
-    "start:next": "next start",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint"
   },
   "keywords": [],
@@ -22,10 +16,8 @@
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
-    "concurrently": "^9.1.2",
     "eslint": "^9.28.0",
     "eslint-config-next": "^15.3.3",
-    "live-server": "^1.2.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
