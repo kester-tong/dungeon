@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { Map } from '../../src/maps/Map'
 
 /**
@@ -25,6 +25,7 @@ export interface InChatLocation {
   messages: string[];
   currentInput: string;
   previousLocation: Position;
+  npcType: string;
 }
 
 /**
@@ -36,12 +37,89 @@ export interface GameState {
   map: Map | null;
   location: Location | null;
   assetsLoaded: boolean;
+  chatLoading: boolean;
 }
 
 const initialState: GameState = {
   map: null,
   location: null,
   assetsLoaded: false,
+  chatLoading: false,
+}
+
+// Async thunk for sending chat messages to NPC
+export const sendChatMessage = createAsyncThunk(
+  'game/sendChatMessage',
+  async (params: { message: string; npcType: string }) => {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: params.message,
+        npcType: params.npcType,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to send message')
+    }
+
+    const data = await response.json()
+    return data.response
+  }
+)
+
+// Async thunk for handling key presses with async logic
+export const handleKeyPress = createAsyncThunk(
+  'game/handleKeyPress',
+  async (key: string, { getState, dispatch }) => {
+    const state = getState() as { game: GameState }
+    const gameState = state.game
+
+    // Handle Enter key in chat - check if we should send to API
+    if (key === 'Enter' && gameState.location?.type === 'in_chat') {
+      const message = gameState.location.currentInput.trim()
+      
+      if (message) {
+        // Add user message to chat
+        dispatch(gameSlice.actions.addChatMessage(`> ${message}`))
+        dispatch(gameSlice.actions.clearChatInput())
+        
+        // Get the NPC type from the current chat context
+        // We'll need to store this when entering chat
+        const npcType = gameState.location.npcType || 'generic'
+        
+        // Send to API and wait for response
+        const response = await dispatch(sendChatMessage({ message, npcType }))
+        
+        if (sendChatMessage.fulfilled.match(response)) {
+          dispatch(gameSlice.actions.addChatMessage(response.payload))
+        } else {
+          dispatch(gameSlice.actions.addChatMessage("Sorry, I couldn't understand that."))
+        }
+      }
+      
+      return
+    }
+
+    // For all other keys, just dispatch the regular keyDown action
+    dispatch(gameSlice.actions.keyDown(key))
+  }
+)
+
+/**
+ * Get NPC type based on tile index for API calls
+ */
+function getNpcType(tileIndex: number): string {
+  switch (tileIndex) {
+    case 71: return 'tavern_keeper';
+    case 73: return 'shop_keeper';
+    case 75: return 'priest';
+    case 2465: return 'blacksmith';
+    default: return 'generic';
+  }
 }
 
 /**
@@ -158,11 +236,13 @@ const gameSlice = createSlice({
         // Check if target tile is chattable - enter chat
         if (targetTile.type === "chattable") {
           const chatMessages = getChatMessages(targetTile.tileIndex);
+          const npcType = getNpcType(targetTile.tileIndex);
           state.location = {
             type: 'in_chat',
             messages: chatMessages,
             currentInput: "",
-            previousLocation: state.location.player
+            previousLocation: state.location.player,
+            npcType
           };
           return;
         }
@@ -174,12 +254,41 @@ const gameSlice = createSlice({
         }
       }
     },
+    
+    // Helper reducers for chat functionality
+    addChatMessage: (state, action: PayloadAction<string>) => {
+      if (state.location?.type === 'in_chat') {
+        state.location.messages.push(action.payload)
+      }
+    },
+    
+    clearChatInput: (state) => {
+      if (state.location?.type === 'in_chat') {
+        state.location.currentInput = ""
+      }
+    },
+  },
+  
+  // Handle async thunk states
+  extraReducers: (builder) => {
+    builder
+      .addCase(sendChatMessage.pending, (state) => {
+        state.chatLoading = true
+      })
+      .addCase(sendChatMessage.fulfilled, (state) => {
+        state.chatLoading = false
+      })
+      .addCase(sendChatMessage.rejected, (state) => {
+        state.chatLoading = false
+      })
   },
 })
 
 export const {
   loadMap,
   keyDown,
+  addChatMessage,
+  clearChatInput,
 } = gameSlice.actions
 
 export default gameSlice.reducer

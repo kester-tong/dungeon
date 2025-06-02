@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react'
 import { useTileset } from './components/TilesetProvider'
 import { useGameAssets } from './components/GameAssetsProvider'
 import { useAppSelector, useAppDispatch } from './store/hooks'
-import { loadMap, keyDown } from './store/gameSlice'
+import { loadMap, handleKeyPress } from './store/gameSlice'
 import { TileRenderer, TileArray } from './components/TileRenderer'
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
@@ -40,10 +40,10 @@ export default function Home() {
     return { tiles }
   }, [gameState.map, gameState.location])
 
-  // Handle keyboard input - just dispatch the key, let reducer handle state logic
+  // Handle keyboard input - use thunk for async chat handling
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      dispatch(keyDown(event.key))
+      dispatch(handleKeyPress(event.key))
     }
 
     window.addEventListener('keydown', handleKeyDown)
