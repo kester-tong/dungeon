@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { Map } from '../../src/maps/Map'
-import { gameConfig } from '../src/config/gameConfig';
+import { gameConfig } from '../../src/config/gameConfig';
 
 /**
  * Position represents x, y coordinates

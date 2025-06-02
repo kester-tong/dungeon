@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Map } from '../../src/maps/Map'
 import { loadMap } from '../../src/maps/loader'
-import { gameConfig } from '../src/config/gameConfig'
+import { gameConfig } from '../../src/config/gameConfig'
 
 interface GameAssetsContextType {
   map: Map | null;
