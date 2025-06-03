@@ -104,6 +104,24 @@ export default function Home() {
           <div>Loading...</div>
         </div>
       )}
+      
+      <div style={{
+        position: 'fixed',
+        bottom: '10px',
+        right: '10px',
+        fontSize: '12px',
+        color: '#666'
+      }}>
+        Tiles (32x32 graphics) by David Gervais, used under{' '}
+        <a 
+          href="https://creativecommons.org/licenses/by/3.0/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ color: '#0066cc' }}
+        >
+          CC BY 3.0
+        </a>
+      </div>
     </main>
   )
 }
