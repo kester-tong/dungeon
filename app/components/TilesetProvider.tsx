@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Tileset } from '@/src/tileset'
-import { gameConfig } from '@/src/config/GameConfig'
+import { gameConfig } from '@/src/config/gameConfig'
 
 interface TilesetContextType {
   tileset: Tileset | null;
