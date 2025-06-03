@@ -3,7 +3,7 @@
  * Processes JSON game data into format ready for game engine
  */
 
-import { Map, Tile } from '../maps/Map';
+import { Map, Tile, Direction } from '../maps/Map';
 import { NPC } from '../npcs/NPC';
 import { TilesetConfig } from '../tileset';
 import gameDataJsonRaw from './gameData.json';
@@ -20,6 +20,7 @@ export interface StartingPosition {
 export interface JsonMapConfig {
   tileMapping: Record<string, Tile>;
   data: string[];
+  neighbors: { [K in Direction]?: string };
 }
 
 export interface JsonGameConfig {
@@ -65,7 +66,8 @@ function processMaps(jsonMaps: Record<string, JsonMapConfig>): Record<string, Ma
     processedMaps[mapId] = {
       width,
       height,
-      data: processedData
+      data: processedData,
+      neighbors: mapConfig.neighbors
     };
   }
   

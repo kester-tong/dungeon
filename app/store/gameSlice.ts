@@ -219,8 +219,48 @@ const gameSlice = createSlice({
         const newX = state.location.player.x + dx;
         const newY = state.location.player.y + dy;
         
-        // Check bounds
+        // Check bounds and handle map transitions
         if (newX < 0 || newX >= currentMap.width || newY < 0 || newY >= currentMap.height) {
+          // Check if there's a neighboring map in the direction we're trying to go
+          let direction: string | null = null;
+          if (newX < 0) direction = 'west';
+          else if (newX >= currentMap.width) direction = 'east';
+          else if (newY < 0) direction = 'north';
+          else if (newY >= currentMap.height) direction = 'south';
+          
+          if (direction) {
+            const neighborMapId = currentMap.neighbors[direction as keyof typeof currentMap.neighbors];
+            if (neighborMapId) {
+              const neighborMap = state.config.maps[neighborMapId];
+              // Calculate entry position on the new map
+              let entryX: number;
+              let entryY: number;
+              
+              if (direction === 'north') {
+                entryX = state.location.player.x;
+                entryY = neighborMap.height - 1;
+              } else if (direction === 'south') {
+                entryX = state.location.player.x;
+                entryY = 0;
+              } else if (direction === 'west') {
+                entryX = neighborMap.width - 1;
+                entryY = state.location.player.y;
+              } else { // east
+                entryX = 0;
+                entryY = state.location.player.y;
+              }
+              
+              // Transition to the new map
+              state.location.player = {
+                x: entryX,
+                y: entryY,
+                mapId: neighborMapId
+              };
+              return;
+            }
+          }
+          
+          // No neighbor found, stop movement
           return;
         }
         

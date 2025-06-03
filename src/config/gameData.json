@@ -46,25 +46,65 @@
           "tileIndex": 2465,
           "type": "npc",
           "npcId": "blacksmith"
+        },
+        "d": {
+          "tileIndex": 67,
+          "type": "npc",
+          "npcId": "guard"
+        }
+      },
+      "data": [
+        "wwwwwwwwwwwdwwwwwwwwwwwww",
+        "w                       w",
+        "w                       w",
+        "w    wwww      wwww     w",
+        "w    wwww      wwww     w",
+        "w    wtww      wsww     w",
+        "w                       w",
+        "w                       w",
+        "w                       w",
+        "w    wwww      wwww     w",
+        "w    wwww      wwww     w",
+        "w    wbww      wpww     w",
+        "w                       w",
+        "w                       w",
+        "wwwwwwwwwwwwwwwwwwwwwwwww"
+      ],
+      "neighbors": {
+        "north": "forest"
+      }
+    },
+    "forest": {
+      "tileMapping": {
+        " ": {
+          "tileIndex": 1686,
+          "type": "terrain"
+        },
+        "T": {
+          "tileIndex": 92,
+          "type": "obstacle"
         }
       },
       "data": [
         "                         ",
         "                         ",
-        "                         ",
-        "     wwww      wwww      ",
-        "     wwww      wwww      ",
-        "     wtww      wsww      ",
-        "                         ",
-        "                         ",
-        "                         ",
-        "     wwww      wwww      ",
-        "     wwww      wwww      ",
-        "     wbww      wpww      ",
-        "                         ",
+        "    TT           TT      ",
+        "   TTT     T    TTT      ",
+        "    T      T     T       ",
+        "           T             ",
+        "      T         T        ",
+        "     TTT       TTT       ",
+        "      T         T        ",
+        "           T             ",
+        "    T      T     T       ",
+        "   TTT     T    TTT      ",
+        "    TT           TT      ",
         "                         ",
         "                         "
-      ]
+      ],
+      "neighbors": {
+        "south": "town"
+      }
     }
   },
   "npcs": {

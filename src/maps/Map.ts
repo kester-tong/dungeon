@@ -16,8 +16,11 @@ export interface NPCTile {
 
 export type Tile = TerrainTile | ObstacleTile | NPCTile;
 
+export type Direction = 'north' | 'south' | 'east' | 'west';
+
 export interface Map {
     data: Tile[][];
     width: number;
     height: number;
+    neighbors: { [K in Direction]?: string };
 };
