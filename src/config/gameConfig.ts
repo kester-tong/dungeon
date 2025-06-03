@@ -4,6 +4,7 @@
  */
 
 import { Map, Tile } from '../maps/Map';
+import { NPC } from '../npcs/NPC';
 import gameDataJsonRaw from './gameData.json';
 
 const gameDataJson = gameDataJsonRaw as JsonGameConfig;
@@ -23,12 +24,6 @@ export interface StartingPosition {
   mapId: string;
 }
 
-export interface NPCConfig {
-  intro_text: string;
-  first_message: string;
-  prompt: string;
-}
-
 export interface JsonMapConfig {
   tileMapping: Record<string, Tile>;
   data: string[];
@@ -42,7 +37,7 @@ export interface JsonGameConfig {
     height: number;
   };
   maps: Record<string, JsonMapConfig>;
-  npcs: Record<string, NPCConfig>;
+  npcs: Record<string, NPC>;
 }
 
 export interface GameConfig {
@@ -53,7 +48,7 @@ export interface GameConfig {
     height: number;
   };
   maps: Record<string, Map>;
-  npcs: Record<string, NPCConfig>;
+  npcs: Record<string, NPC>;
 }
 
 // Process maps from JSON format to machine-readable format
