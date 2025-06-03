@@ -1,16 +1,12 @@
+import { TilesetConfig } from './TilesetConfig';
+
 export class Tileset {
     private image: HTMLImageElement;
-    private tileSize: number;
-    private tilesetWidth: number;
-    private tilesetHeight: number;
-    private columnWidth: number;
+    private config: TilesetConfig;
 
-    constructor(image: HTMLImageElement, tileSize: number, tilesetWidth: number, tilesetHeight: number, columnWidth: number) {
+    constructor(image: HTMLImageElement, config: TilesetConfig) {
         this.image = image;
-        this.tileSize = tileSize;
-        this.tilesetWidth = tilesetWidth;
-        this.tilesetHeight = tilesetHeight;
-        this.columnWidth = columnWidth;
+        this.config = config;
     }
 
     public drawTile(ctx: CanvasRenderingContext2D, tileIndex: number, x: number, y: number): void {
@@ -21,35 +17,35 @@ export class Tileset {
             this.image,
             sourceCoords.x,
             sourceCoords.y,
-            this.tileSize,
-            this.tileSize,
+            this.config.tileSize,
+            this.config.tileSize,
             x,
             y,
-            this.tileSize,
-            this.tileSize
+            this.config.tileSize,
+            this.config.tileSize
         );
     }
 
     public getTileCoordinatesForIndex(tileIndex: number): { x: number, y: number } {
-        if (tileIndex < 0 || tileIndex >= this.tilesetWidth * this.tilesetHeight) {
+        if (tileIndex < 0 || tileIndex >= this.config.width * this.config.height) {
             throw new Error(`Tile index out of range: ${tileIndex}`);
         }
 
         // Determine which column the tile is in
-        const column = Math.floor(tileIndex / (this.tilesetHeight * this.columnWidth));
+        const column = Math.floor(tileIndex / (this.config.height * this.config.columnWidth));
         
         // Calculate the index within the column
-        const indexInColumn = tileIndex % (this.tilesetHeight * this.columnWidth);
+        const indexInColumn = tileIndex % (this.config.height * this.config.columnWidth);
         
         // Calculate row within the column
-        const rowInColumn = Math.floor(indexInColumn / this.columnWidth);
+        const rowInColumn = Math.floor(indexInColumn / this.config.columnWidth);
         
         // Calculate column within the 32-tile wide sub-column
-        const colInSubColumn = indexInColumn % this.columnWidth;
+        const colInSubColumn = indexInColumn % this.config.columnWidth;
         
         // Calculate the pixel coordinates
-        const x = (column * this.columnWidth + colInSubColumn) * this.tileSize;
-        const y = rowInColumn * this.tileSize;
+        const x = (column * this.config.columnWidth + colInSubColumn) * this.config.tileSize;
+        const y = rowInColumn * this.config.tileSize;
         
         return { x, y };
     }
@@ -63,6 +59,6 @@ export class Tileset {
     }
 
     public getTileSize(): number {
-        return this.tileSize;
+        return this.config.tileSize;
     }
 }

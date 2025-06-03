@@ -5,18 +5,11 @@
 
 import { Map, Tile } from '../maps/Map';
 import { NPC } from '../npcs/NPC';
+import { TilesetConfig } from '../tileset';
 import gameDataJsonRaw from './gameData.json';
 
 const gameDataJson = gameDataJsonRaw as JsonGameConfig;
 
-export interface TilesetConfig {
-  imagePath: string;
-  tileSize: number;
-  width: number;
-  height: number;
-  columnWidth: number;
-  characterTileIndex: number;
-}
 
 export interface StartingPosition {
   x: number;

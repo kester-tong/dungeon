@@ -27,13 +27,7 @@ export function TilesetProvider({
     
     image.onload = () => {
       console.log('Tileset loaded:', gameConfig.tileset.imagePath)
-      const newTileset = new Tileset(
-        image, 
-        gameConfig.tileset.tileSize,
-        gameConfig.tileset.width,
-        gameConfig.tileset.height,
-        gameConfig.tileset.columnWidth
-      )
+      const newTileset = new Tileset(image, gameConfig.tileset)
       setTileset(newTileset)
       setLoaded(true)
     }
