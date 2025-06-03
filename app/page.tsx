@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useTileset } from './components/TilesetProvider'
 import { useAppSelector, useAppDispatch } from './store/hooks'
 import { handleKeyPress } from './store/gameSlice'
+import { selectIsWaitingForAI, selectIsUserTurn } from './store/selectors'
 import { TileRenderer, TileArray } from './components/TileRenderer'
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
@@ -15,6 +16,8 @@ function GameContent() {
   const { tileset, loaded } = useTileset()
   const dispatch = useAppDispatch()
   const gameState = useAppSelector(state => state.game)
+  const isWaitingForAI = useAppSelector(selectIsWaitingForAI)
+  const isUserTurn = useAppSelector(selectIsUserTurn)
 
   // Convert Redux state to TileArray format for rendering
   const tileArray: TileArray | null = useMemo(() => {
@@ -81,7 +84,7 @@ function GameContent() {
       gameState.location.messages.map(message => 
         (message.role === 'user' ? '> ' : '') + message.content
       ).join('\n\n') + 
-      (gameState.chatLoading ? '' : '\n\n> ' + gameState.location.currentInput + '█')
+      (isUserTurn ? '\n\n> ' + gameState.location.currentInput + '█' : '')
 
     return (
       <main style={{ padding: '1rem' }}>
@@ -106,7 +109,7 @@ function GameContent() {
           margin: 0,
         }}>
           {chatContent}
-          {gameState.chatLoading && (
+          {isWaitingForAI && (
             <span className="blinking-cursor">{'\n\n█'}</span>
           )}
         </pre>

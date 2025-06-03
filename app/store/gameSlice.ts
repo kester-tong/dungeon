@@ -28,6 +28,10 @@ export interface ChatMessage {
 
 /**
  * InChatLocation represents the player in a chat/dialog interface
+ * Turn semantics:
+ * - If messages is empty, it's the user's turn by default
+ * - Otherwise, it's whoever's turn is next based on the last message
+ * - If it's AI's turn, we're waiting for AI response
  */
 export interface InChatLocation {
   type: 'in_chat';
@@ -46,7 +50,6 @@ export type Location = NavigatingLocation | InChatLocation;
 export interface GameState {
   config: typeof gameConfig;
   location: Location | null;
-  chatLoading: boolean;
 }
 
 const initialState: GameState = {
@@ -55,32 +58,47 @@ const initialState: GameState = {
     type: 'navigating',
     player: gameConfig.startingPosition
   },
-  chatLoading: false,
 }
-
 
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
-  async (params: { messages: ChatMessage[]; npcId: string; accessKey: string }) => {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: params.messages,
-        npcId: params.npcId,
-        accessKey: params.accessKey,
-      }),
-    })
+  async (params: { messages: ChatMessage[]; npcId: string; accessKey: string }, { dispatch }) => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: params.messages,
+          npcId: params.npcId,
+          accessKey: params.accessKey,
+        }),
+      })
 
-    if (!response.ok) {
-      throw new Error('Failed to send message')
+      if (!response.ok) {
+        throw new Error('Failed to send message')
+      }
+
+      const data = await response.json()
+      
+      // Add AI response to chat
+      dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: data.response.text }))
+      
+      // Handle tool use if present
+      if (data.response.tool_use) {
+        setTimeout(() => {
+          dispatch(gameSlice.actions.handleNpcToolUse(data.response.tool_use))
+        }, 500)
+      }
+      
+      return data.response
+    } catch (error) {
+      // Add fallback message on error
+      dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: "Sorry, I couldn't understand that." }))
+      throw error
     }
-
-    const data = await response.json()
-    return data.response
   }
 )
 
@@ -104,20 +122,8 @@ export const handleKeyPress = createAsyncThunk(
         dispatch(gameSlice.actions.addChatMessage({ role: 'user', content: message }))
         dispatch(gameSlice.actions.clearChatInput())
 
-        // Send all messages to API and wait for response
-        const response = await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId, accessKey }))
-
-        if (sendChatMessage.fulfilled.match(response)) {
-          dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: response.payload.text }))
-
-          if (response.payload.tool_use) {
-            setTimeout(() => {
-              dispatch(gameSlice.actions.handleNpcToolUse(response.payload.tool_use))
-            }, 500)
-          }
-        } else {
-          dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: "Sorry, I couldn't understand that." }))
-        }
+        // Send all messages to API (response handling is done in the thunk)
+        await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId, accessKey }))
       }
 
       return
@@ -308,20 +314,6 @@ const gameSlice = createSlice({
           }
       }
     },
-  },
-
-  // Handle async thunk states
-  extraReducers: (builder) => {
-    builder
-      .addCase(sendChatMessage.pending, (state) => {
-        state.chatLoading = true
-      })
-      .addCase(sendChatMessage.fulfilled, (state) => {
-        state.chatLoading = false
-      })
-      .addCase(sendChatMessage.rejected, (state) => {
-        state.chatLoading = false
-      })
   },
 })
 
