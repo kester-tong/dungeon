@@ -58,31 +58,6 @@ const initialState: GameState = {
   chatLoading: false,
 }
 
-// Thunk for loading NPC intro messages from config
-export const loadNPCChat = createAsyncThunk(
-  'game/loadNPCChat',
-  async (params: { npcId: string; previousLocation: Position }, { getState }) => {
-    const state = getState() as { game: GameState }
-    const npc = state.game.config.npcs[params.npcId]
-    
-    if (!npc) {
-      throw new Error(`NPC not found: ${params.npcId}`)
-    }
-    
-    // Return intro_text and first_message if available
-    const messages: ChatMessage[] = []
-    if (npc.first_message) {
-      messages.push({ role: 'assistant', content: npc.first_message })
-    }
-    
-    return {
-      intro_text: npc.intro_text,
-      messages,
-      npcId: params.npcId,
-      previousLocation: params.previousLocation
-    }
-  }
-)
 
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
@@ -140,18 +115,8 @@ export const handleKeyPress = createAsyncThunk(
       return
     }
 
-    // First, dispatch the regular keyDown action
+    // Dispatch the keyDown action
     dispatch(gameSlice.actions.keyDown(key))
-    
-    // Then check if we entered chat and need to load NPC data
-    const newState = getState() as { game: GameState }
-    if (newState.game.location?.type === 'in_chat' && newState.game.location.intro_text === null) {
-      // We just entered chat but have no messages - load NPC intro
-      await dispatch(loadNPCChat({ 
-        npcId: newState.game.location.npcId, 
-        previousLocation: newState.game.location.previousLocation 
-      }))
-    }
   }
 )
 
@@ -266,12 +231,19 @@ const gameSlice = createSlice({
         
         const targetTile = currentMap.data[newY][newX];
         
-        // Check if target tile is an NPC - enter chat with empty messages
+        // Check if target tile is an NPC - enter chat
         if (targetTile.type === "npc") {
+          const npc = state.config.npcs[targetTile.npcId];
+          const messages: ChatMessage[] = [];
+          
+          if (npc?.first_message) {
+            messages.push({ role: 'assistant', content: npc.first_message });
+          }
+          
           state.location = {
             type: 'in_chat',
-            intro_text: null,  // Signal to load intro text and messages with async thunk
-            messages: [],
+            intro_text: npc?.intro_text || null,
+            messages,
             currentInput: "",
             previousLocation: state.location.player,
             npcId: targetTile.npcId
@@ -305,12 +277,6 @@ const gameSlice = createSlice({
   // Handle async thunk states
   extraReducers: (builder) => {
     builder
-      .addCase(loadNPCChat.fulfilled, (state, action) => {
-        if (state.location?.type === 'in_chat') {
-          state.location.intro_text = action.payload.intro_text
-          state.location.messages = action.payload.messages
-        }
-      })
       .addCase(sendChatMessage.pending, (state) => {
         state.chatLoading = true
       })
