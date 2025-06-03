@@ -1,46 +1,40 @@
 {
   "compilerOptions": {
-    "target": "ES2015", // Or newer, like ES2020. Target modern JavaScript features.
-    "module": "esnext", // Use ES modules for browser compatibility.
-    "moduleResolution": "node", // How modules get resolved.
-    "outDir": "./dist/js", // Where to output compiled JavaScript.
-    // "rootDir": "./src", // Removed to allow Next.js app directory
-    "strict": true, // Enable all strict type-checking options.
-    "esModuleInterop": true, // Allows default imports from commonjs modules.
-    "skipLibCheck": true, // Skip type checking of declaration files.
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true, // Generate source maps for easier debugging.
+    "target": "ES2017",
     "lib": [
-      "DOM",
-      "ES2015",
-      "ES2016",
-      "ES2017"
-    ] // Include DOM library for browser APIs
-    ,
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
     "noEmit": true,
-    "incremental": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    },
+    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
   },
   "include": [
-    "src/**/*", // Which files to include in compilation.
-    "app/**/*", // Next.js app directory
-    ".next/types/**/*.ts",
-    "next-env.d.ts"
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "**/*.spec.ts" // Exclude test files if any.
+    "node_modules"
   ]
 }
