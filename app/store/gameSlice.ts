@@ -1,13 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { Map } from '../../src/maps/Map'
-import { gameConfig } from '../../src/config/gameConfig';
+import { gameConfig } from '../../src/config/GameConfig';
 
 /**
- * Position represents x, y coordinates
+ * Position represents x, y coordinates and map location
  */
 export interface Position {
   x: number;
   y: number;
+  mapId: string;
 }
 
 /**
@@ -44,28 +44,30 @@ export interface InChatLocation {
 export type Location = NavigatingLocation | InChatLocation;
 
 export interface GameState {
-  map: Map | null;
+  config: typeof gameConfig;
   location: Location | null;
-  assetsLoaded: boolean;
   chatLoading: boolean;
 }
 
 const initialState: GameState = {
-  map: null,
-  location: null,
-  assetsLoaded: false,
+  config: gameConfig,
+  location: {
+    type: 'navigating',
+    player: gameConfig.startingPosition
+  },
   chatLoading: false,
 }
 
-// Async thunk for loading NPC intro messages
+// Thunk for loading NPC intro messages from config
 export const loadNPCChat = createAsyncThunk(
   'game/loadNPCChat',
-  async (params: { npcId: string; previousLocation: Position }) => {
-    const response = await fetch(`/assets/npcs/${params.npcId}.json`)
-    if (!response.ok) {
-      throw new Error(`Failed to load NPC ${params.npcId}`)
+  async (params: { npcId: string; previousLocation: Position }, { getState }) => {
+    const state = getState() as { game: GameState }
+    const npc = state.game.config.npcs[params.npcId]
+    
+    if (!npc) {
+      throw new Error(`NPC not found: ${params.npcId}`)
     }
-    const npc = await response.json()
     
     // Return intro_text and first_message if available
     const messages: ChatMessage[] = []
@@ -159,15 +161,6 @@ const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    loadMap: (state, action: PayloadAction<Map>) => {
-      state.map = action.payload;
-      // Initialize player at starting position when map loads
-      state.location = {
-        type: 'navigating',
-        player: gameConfig.startingPosition
-      };
-      state.assetsLoaded = true;
-    },
     
     keyDown: (state, action: PayloadAction<string>) => {
       const key = action.payload;
@@ -196,7 +189,9 @@ const gameSlice = createSlice({
       }
       
       // Handle movement keys when navigating
-      if (state.location?.type === 'navigating' && state.map) {
+      if (state.location?.type === 'navigating') {
+        const currentMap = state.config.maps[state.location.player.mapId];
+        if (!currentMap) return;
         let dx = 0;
         let dy = 0;
         
@@ -225,11 +220,11 @@ const gameSlice = createSlice({
         const newY = state.location.player.y + dy;
         
         // Check bounds
-        if (newX < 0 || newX >= state.map.width || newY < 0 || newY >= state.map.height) {
+        if (newX < 0 || newX >= currentMap.width || newY < 0 || newY >= currentMap.height) {
           return;
         }
         
-        const targetTile = state.map.data[newY][newX];
+        const targetTile = currentMap.data[newY][newX];
         
         // Check if target tile is an NPC - enter chat with empty messages
         if (targetTile.type === "npc") {
@@ -248,6 +243,7 @@ const gameSlice = createSlice({
         if (targetTile.type === "terrain") {
           state.location.player.x = newX;
           state.location.player.y = newY;
+          // mapId stays the same when moving within the same map
         }
       }
     },
@@ -288,7 +284,6 @@ const gameSlice = createSlice({
 })
 
 export const {
-  loadMap,
   keyDown,
   addChatMessage,
   clearChatInput,

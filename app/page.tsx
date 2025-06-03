@@ -2,34 +2,30 @@
 
 import { useEffect, useMemo } from 'react'
 import { useTileset } from './components/TilesetProvider'
-import { useGameAssets } from './components/GameAssetsProvider'
 import { useAppSelector, useAppDispatch } from './store/hooks'
-import { loadMap, handleKeyPress } from './store/gameSlice'
+import { handleKeyPress } from './store/gameSlice'
 import { TileRenderer, TileArray } from './components/TileRenderer'
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
 export default function Home() {
   const { tileset, loaded } = useTileset()
-  const { map, loaded: mapLoaded, error } = useGameAssets()
   const dispatch = useAppDispatch()
   const gameState = useAppSelector(state => state.game)
 
-  // Load map into Redux when assets are ready
-  useEffect(() => {
-    if (mapLoaded && map && !gameState.map) {
-      dispatch(loadMap(map))
-    }
-  }, [mapLoaded, map, gameState.map, dispatch])
-
   // Convert Redux state to TileArray format for rendering
   const tileArray: TileArray | null = useMemo(() => {
-    if (!gameState.map || !gameState.location || gameState.location.type !== 'navigating') {
+    if (!gameState.location || gameState.location.type !== 'navigating') {
+      return null
+    }
+    
+    const currentMap = gameState.config.maps[gameState.location.player.mapId]
+    if (!currentMap) {
       return null
     }
     
     // Extract tile indices from map data
-    const tiles: number[][][] = gameState.map.data.map(row => 
+    const tiles: number[][][] = currentMap.data.map(row => 
       row.map(tile => [tile.tileIndex])
     )
     
@@ -38,7 +34,7 @@ export default function Home() {
     tiles[player.y][player.x].push(CHARACTER_TILE_INDEX)
     
     return { tiles }
-  }, [gameState.map, gameState.location])
+  }, [gameState.config.maps, gameState.location])
 
   // Handle keyboard input - use thunk for async chat handling
   useEffect(() => {
@@ -91,7 +87,7 @@ export default function Home() {
 
   return (
     <main style={{ padding: '1rem' }}>
-      {loaded && tileset && gameState.assetsLoaded && tileArray ? (
+      {loaded && tileset && tileArray ? (
         <TileRenderer tileset={tileset} tileArray={tileArray} width={800} height={480} />
       ) : (
         <div style={{ 

@@ -1,0 +1,92 @@
+{
+  "tileset": {
+    "imagePath": "/assets/images/tileset.png",
+    "tileSize": 32,
+    "width": 64,
+    "height": 71,
+    "columnWidth": 32,
+    "characterTileIndex": 576
+  },
+  "startingPosition": {
+    "x": 5,
+    "y": 7,
+    "mapId": "town"
+  },
+  "canvas": {
+    "width": 800,
+    "height": 480
+  },
+  "maps": {
+    "town": {
+      "tileMapping": {
+        " ": {
+          "tileIndex": 2,
+          "type": "terrain"
+        },
+        "w": {
+          "tileIndex": 21,
+          "type": "obstacle"
+        },
+        "t": {
+          "tileIndex": 71,
+          "type": "npc",
+          "npcId": "tavern_keeper"
+        },
+        "s": {
+          "tileIndex": 73,
+          "type": "npc",
+          "npcId": "shop_keeper"
+        },
+        "p": {
+          "tileIndex": 75,
+          "type": "npc",
+          "npcId": "priest"
+        },
+        "b": {
+          "tileIndex": 2465,
+          "type": "npc",
+          "npcId": "blacksmith"
+        }
+      },
+      "data": [
+        "                         ",
+        "                         ",
+        "                         ",
+        "     wwww      wwww      ",
+        "     wwww      wwww      ",
+        "     wtww      wsww      ",
+        "                         ",
+        "                         ",
+        "                         ",
+        "     wwww      wwww      ",
+        "     wwww      wwww      ",
+        "     wbww      wpww      ",
+        "                         ",
+        "                         ",
+        "                         "
+      ]
+    }
+  },
+  "npcs": {
+    "blacksmith": {
+      "intro_text": "A burly blacksmith with soot-stained hands and a passion for metalwork",
+      "first_message": "The forge burns hot today! What brings you to my smithy?",
+      "prompt": "You are a skilled blacksmith in a fantasy RPG. You repair equipment and craft weapons/armor. Keep responses short (1-2 sentences), gruff but skilled. You're passionate about your craft and metalwork. You take pride in quality smithing and know the value of good steel."
+    },
+    "priest": {
+      "intro_text": "A serene priest in white robes, radiating calm wisdom",
+      "first_message": "Blessings upon you, traveler. How may I guide you today?",
+      "prompt": "You are a wise priest in a fantasy temple. You offer healing, blessings, and spiritual guidance. Keep responses short (1-2 sentences), calm, and spiritually insightful. You speak with gentle wisdom and serve the Temple of Light."
+    },
+    "shop_keeper": {
+      "intro_text": "A shrewd merchant with keen eyes and well-organized shelves",
+      "first_message": "Welcome to my shop! I have the finest goods in town.",
+      "prompt": "You are a general store merchant in a fantasy RPG. You sell supplies, weapons, and armor. Keep responses short (1-2 sentences), business-minded but helpful. You know about local goods and prices. You're proud of your quality merchandise and fair dealing."
+    },
+    "tavern_keeper": {
+      "intro_text": "A friendly tavern keeper with a warm smile and flour-dusted apron",
+      "first_message": "Welcome to the Rusty Anchor Tavern! What can I get you today?",
+      "prompt": "You are a friendly tavern keeper in a fantasy RPG. You serve ale, food, and rent rooms. Keep responses short (1-2 sentences), warm, and in character. You're always busy but happy to help travelers. Your tavern is called the Rusty Anchor and you're proud of your hearty stew and fresh bread."
+    }
+  }
+}

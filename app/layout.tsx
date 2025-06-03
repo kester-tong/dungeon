@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { TilesetProvider } from './components/TilesetProvider'
-import { GameAssetsProvider } from './components/GameAssetsProvider'
 import { ReduxProvider } from './store/Provider'
 
 export const metadata: Metadata = {
@@ -18,9 +17,7 @@ export default function RootLayout({
       <body>
         <ReduxProvider>
           <TilesetProvider>
-            <GameAssetsProvider>
-              {children}
-            </GameAssetsProvider>
+            {children}
           </TilesetProvider>
         </ReduxProvider>
       </body>

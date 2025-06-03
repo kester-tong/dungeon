@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { loadNPC } from '../../../src/npcs/loader'
+import { gameConfig } from '../../../src/config/GameConfig'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
       throw new Error('Anthropic API key not configured')
     }
 
-    const npc = await loadNPC(npcId)
+    const npc = gameConfig.npcs[npcId]
+    if (!npc) {
+      throw new Error(`NPC not found: ${npcId}`)
+    }
     const systemPrompt = npc.prompt
 
     const response = await anthropic.messages.create({
