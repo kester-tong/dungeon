@@ -40,13 +40,32 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Anthropic API Response:', response)
 
-    const responseText = response.content[0]?.type === 'text' 
-      ? response.content[0].text 
-      : "I'm not sure how to respond to that."
+    let textResponse : string | undefined = undefined;
+    let tool_use: {
+        name: string;
+        // TODO: check if this signature is correct, probably not.
+        input: unknown;
+    } | undefined = undefined;
+    response.content.forEach(block => {
+      if (block.type === 'text') {
+        textResponse = (textResponse || '') + block.text;
+      } else if (block.type === 'tool_use') {
+        tool_use = {
+          name: block.name,
+          input: block.input
+        }
+      }
+    })
 
+    const npcResponse : NPCResponse = textResponse || tool_use ? {
+      text: textResponse,
+      tool_use,
+    } : {
+      text: 'Error'
+    }
     return NextResponse.json({
       success: true,
-      response: responseText
+      response: npcResponse,
     })
   } catch (error) {
     console.error('Chat API error:', error)
@@ -54,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Return a fallback response instead of exposing the error
     return NextResponse.json({
       success: true,
-      response: "I'm sorry, I'm having trouble hearing you right now. Could you try again?"
+      response: {text: "I'm sorry, I'm having trouble hearing you right now. Could you try again?"}
     })
   }
 }

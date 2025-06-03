@@ -93,25 +93,31 @@ export const handleKeyPress = createAsyncThunk(
     // Handle Enter key in chat - check if we should send to API
     if (key === 'Enter' && gameState.location?.type === 'in_chat') {
       const message = gameState.location.currentInput.trim()
-      
+
       if (message) {
         // Build messages array including the new user message
         const allMessages = [...gameState.location.messages, { role: 'user' as const, content: message }]
-        
+
         // Add user message to chat and clear input
         dispatch(gameSlice.actions.addChatMessage({ role: 'user', content: message }))
         dispatch(gameSlice.actions.clearChatInput())
-        
+
         // Send all messages to API and wait for response
         const response = await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId }))
-        
+
         if (sendChatMessage.fulfilled.match(response)) {
-          dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: response.payload }))
+          dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: response.payload.text }))
+
+          if (response.payload.tool_use) {
+            setTimeout(() => {
+              dispatch(gameSlice.actions.handleNpcToolUse(response.payload.tool_use))
+            }, 500)
+          }
         } else {
           dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: "Sorry, I couldn't understand that." }))
         }
       }
-      
+
       return
     }
 
@@ -126,10 +132,10 @@ const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    
+
     keyDown: (state, action: PayloadAction<string>) => {
       const key = action.payload;
-      
+
       // Handle ESC key to exit chat
       if (key === 'Escape' && state.location?.type === 'in_chat') {
         state.location = {
@@ -138,7 +144,7 @@ const gameSlice = createSlice({
         };
         return;
       }
-      
+
       // If we're in chat, handle text input
       if (state.location?.type === 'in_chat') {
         if (key === 'Enter') {
@@ -152,14 +158,14 @@ const gameSlice = createSlice({
         }
         return;
       }
-      
+
       // Handle movement keys when navigating
       if (state.location?.type === 'navigating') {
         const currentMap = state.config.maps[state.location.player.mapId];
         if (!currentMap) return;
         let dx = 0;
         let dy = 0;
-        
+
         switch (key) {
           case 'ArrowLeft':
           case 'a':
@@ -180,10 +186,10 @@ const gameSlice = createSlice({
           default:
             return;
         }
-        
+
         const newX = state.location.player.x + dx;
         const newY = state.location.player.y + dy;
-        
+
         // Check bounds and handle map transitions
         if (newX < 0 || newX >= currentMap.width || newY < 0 || newY >= currentMap.height) {
           // Check if there's a neighboring map in the direction we're trying to go
@@ -192,7 +198,7 @@ const gameSlice = createSlice({
           else if (newX >= currentMap.width) direction = 'east';
           else if (newY < 0) direction = 'north';
           else if (newY >= currentMap.height) direction = 'south';
-          
+
           if (direction) {
             const neighborMapId = currentMap.neighbors[direction as keyof typeof currentMap.neighbors];
             if (neighborMapId) {
@@ -200,7 +206,7 @@ const gameSlice = createSlice({
               // Calculate entry position on the new map
               let entryX: number;
               let entryY: number;
-              
+
               if (direction === 'north') {
                 entryX = state.location.player.x;
                 entryY = neighborMap.height - 1;
@@ -214,7 +220,7 @@ const gameSlice = createSlice({
                 entryX = 0;
                 entryY = state.location.player.y;
               }
-              
+
               // Transition to the new map
               state.location.player = {
                 x: entryX,
@@ -224,22 +230,22 @@ const gameSlice = createSlice({
               return;
             }
           }
-          
+
           // No neighbor found, stop movement
           return;
         }
-        
+
         const targetTile = currentMap.data[newY][newX];
-        
+
         // Check if target tile is an NPC - enter chat
         if (targetTile.type === "npc") {
           const npc = state.config.npcs[targetTile.npcId];
           const messages: ChatMessage[] = [];
-          
+
           if (npc?.first_message) {
             messages.push({ role: 'assistant', content: npc.first_message });
           }
-          
+
           state.location = {
             type: 'in_chat',
             intro_text: npc?.intro_text || null,
@@ -250,7 +256,7 @@ const gameSlice = createSlice({
           };
           return;
         }
-        
+
         // Check if target tile is walkable (terrain)
         if (targetTile.type === "terrain") {
           state.location.player.x = newX;
@@ -259,21 +265,49 @@ const gameSlice = createSlice({
         }
       }
     },
-    
+
     // Helper reducers for chat functionality
     addChatMessage: (state, action: PayloadAction<ChatMessage>) => {
       if (state.location?.type === 'in_chat') {
         state.location.messages.push(action.payload)
       }
     },
-    
+
     clearChatInput: (state) => {
       if (state.location?.type === 'in_chat') {
         state.location.currentInput = ""
       }
     },
+
+    handleNpcToolUse: (state, action: PayloadAction<ToolUse>) => {
+      switch (action.payload.name) {
+        case 'open_door':
+          if (state.location?.type === 'in_chat') {
+            // If play is on the town side of the door, move them to the forest
+            if (state.location.previousLocation.mapId === 'town') {
+              state.location = {
+                type: 'navigating',
+                player: {
+                  mapId: 'forest',
+                  x: 11,
+                  y: 13,
+                }
+              }
+            } else {
+              state.location = {
+                type: 'navigating',
+                player: {
+                  mapId: 'town',
+                  x: 11,
+                  y: 1,
+                }
+              }
+            }
+          }
+      }
+    },
   },
-  
+
   // Handle async thunk states
   extraReducers: (builder) => {
     builder

@@ -80,9 +80,18 @@
           "tileIndex": 1686,
           "type": "terrain"
         },
+        "w": {
+          "tileIndex": 21,
+          "type": "obstacle"
+        },
         "T": {
           "tileIndex": 92,
           "type": "obstacle"
+        },
+        "d": {
+          "tileIndex": 67,
+          "type": "npc",
+          "npcId": "guard"
         }
       },
       "data": [
@@ -100,7 +109,7 @@
         "   TTT     T    TTT      ",
         "    TT           TT      ",
         "                         ",
-        "                         "
+        "wwwwwwwwwwwdwwwwwwwwwwwww"
       ],
       "neighbors": {
         "south": "town"
