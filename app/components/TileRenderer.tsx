@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect, useCallback } from 'react'
-import { Tileset } from '../../src/tileset'
+import { Tileset } from '@/src/tileset'
 
 /**
  * TileArray represents a tile-based view to be rendered.
