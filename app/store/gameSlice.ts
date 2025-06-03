@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { gameConfig } from '@/src/config/gameConfig';
+import { gameConfig } from '@/src/config/gameConfig'
+import type { RootState } from './store'
 
 /**
  * Position represents x, y coordinates and map location
@@ -63,7 +64,13 @@ const initialState: GameState = {
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
-  async (params: { messages: ChatMessage[]; npcId: string; accessKey: string }, { dispatch }) => {
+  async (params: { messages: ChatMessage[]; npcId: string }, { dispatch, getState }) => {
+    const state = getState() as RootState
+    const accessKey = state.auth.accessKey
+    
+    if (!accessKey) {
+      throw new Error('No access key available')
+    }
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -73,7 +80,7 @@ export const sendChatMessage = createAsyncThunk(
         body: JSON.stringify({
           messages: params.messages,
           npcId: params.npcId,
-          accessKey: params.accessKey,
+          accessKey: accessKey,
         }),
       })
 
@@ -105,9 +112,9 @@ export const sendChatMessage = createAsyncThunk(
 // Async thunk for handling key presses with async logic
 export const handleKeyPress = createAsyncThunk(
   'game/handleKeyPress',
-  async (params: { key: string; accessKey: string }, { getState, dispatch }) => {
-    const { key, accessKey } = params
-    const state = getState() as { game: GameState }
+  async (params: { key: string }, { getState, dispatch }) => {
+    const { key } = params
+    const state = getState() as RootState
     const gameState = state.game
 
     // Handle Enter key in chat - check if we should send to API
@@ -123,7 +130,7 @@ export const handleKeyPress = createAsyncThunk(
         dispatch(gameSlice.actions.clearChatInput())
 
         // Send all messages to API (response handling is done in the thunk)
-        await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId, accessKey }))
+        await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId }))
       }
 
       return

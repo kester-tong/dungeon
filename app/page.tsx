@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useTileset } from './components/TilesetProvider'
 import { useAppSelector, useAppDispatch } from './store/hooks'
 import { handleKeyPress } from './store/gameSlice'
+import { setAccessKey } from './store/authSlice'
 import { selectIsWaitingForAI, selectIsUserTurn } from './store/selectors'
 import { TileRenderer, TileArray } from './components/TileRenderer'
 
@@ -12,12 +13,20 @@ const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
 function GameContent() {
   const searchParams = useSearchParams()
-  const accessKey = searchParams.get('access_key')
+  const urlAccessKey = searchParams.get('access_key')
   const { tileset, loaded } = useTileset()
   const dispatch = useAppDispatch()
   const gameState = useAppSelector(state => state.game)
+  const accessKey = useAppSelector(state => state.auth.accessKey)
   const isWaitingForAI = useAppSelector(selectIsWaitingForAI)
   const isUserTurn = useAppSelector(selectIsUserTurn)
+
+  // Set access key from URL params into state
+  useEffect(() => {
+    if (urlAccessKey && urlAccessKey !== accessKey) {
+      dispatch(setAccessKey(urlAccessKey))
+    }
+  }, [urlAccessKey, accessKey, dispatch])
 
   // Convert Redux state to TileArray format for rendering
   const tileArray: TileArray | null = useMemo(() => {
@@ -45,12 +54,12 @@ function GameContent() {
   // Handle keyboard input - use thunk for async chat handling
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      dispatch(handleKeyPress({ key: event.key, accessKey: accessKey || '' }))
+      dispatch(handleKeyPress({ key: event.key }))
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [dispatch, accessKey])
+  }, [dispatch])
 
   // Check password protection
   if (!accessKey) {
