@@ -31,7 +31,7 @@ export interface ChatMessage {
  */
 export interface InChatLocation {
   type: 'in_chat';
-  intro_text: string | null;
+  intro_text: string;
   messages: ChatMessage[];
   currentInput: string;
   previousLocation: Position;
@@ -250,7 +250,7 @@ const gameSlice = createSlice({
 
           state.location = {
             type: 'in_chat',
-            intro_text: npc?.intro_text || null,
+            intro_text: npc.intro_text,
             messages,
             currentInput: "",
             previousLocation: state.location.player,
