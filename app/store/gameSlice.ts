@@ -62,7 +62,7 @@ const initialState: GameState = {
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
-  async (params: { messages: ChatMessage[]; npcId: string }) => {
+  async (params: { messages: ChatMessage[]; npcId: string; accessKey: string }) => {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
@@ -71,6 +71,7 @@ export const sendChatMessage = createAsyncThunk(
       body: JSON.stringify({
         messages: params.messages,
         npcId: params.npcId,
+        accessKey: params.accessKey,
       }),
     })
 
@@ -86,7 +87,8 @@ export const sendChatMessage = createAsyncThunk(
 // Async thunk for handling key presses with async logic
 export const handleKeyPress = createAsyncThunk(
   'game/handleKeyPress',
-  async (key: string, { getState, dispatch }) => {
+  async (params: { key: string; accessKey: string }, { getState, dispatch }) => {
+    const { key, accessKey } = params
     const state = getState() as { game: GameState }
     const gameState = state.game
 
@@ -103,7 +105,7 @@ export const handleKeyPress = createAsyncThunk(
         dispatch(gameSlice.actions.clearChatInput())
 
         // Send all messages to API and wait for response
-        const response = await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId }))
+        const response = await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId, accessKey }))
 
         if (sendChatMessage.fulfilled.match(response)) {
           dispatch(gameSlice.actions.addChatMessage({ role: 'assistant', content: response.payload.text }))

@@ -9,7 +9,14 @@ const anthropic = new Anthropic({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { messages, npcId } = body
+    const { messages, npcId, accessKey } = body
+    
+    // Validate access key
+    if (!accessKey || accessKey !== process.env.APP_PASSWORD) {
+      return NextResponse.json({
+        error: 'Invalid access key'
+      }, { status: 401 })
+    }
     
     console.log(`💬 Chat request for NPC: ${npcId} with ${messages.length} messages`)
 

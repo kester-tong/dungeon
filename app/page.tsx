@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTileset } from './components/TilesetProvider'
 import { useAppSelector, useAppDispatch } from './store/hooks'
 import { handleKeyPress } from './store/gameSlice'
@@ -9,9 +10,37 @@ import { TileRenderer, TileArray } from './components/TileRenderer'
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
 export default function Home() {
+  const searchParams = useSearchParams()
+  const accessKey = searchParams.get('access_key')
   const { tileset, loaded } = useTileset()
   const dispatch = useAppDispatch()
   const gameState = useAppSelector(state => state.game)
+
+  // Check password protection
+  if (!accessKey) {
+    return (
+      <main style={{ padding: '1rem' }}>
+        <div style={{ 
+          border: '2px solid #333', 
+          width: '800px', 
+          height: '480px', 
+          backgroundColor: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontFamily: 'monospace',
+          flexDirection: 'column',
+          gap: '20px'
+        }}>
+          <div>Access Key Required</div>
+          <div style={{ fontSize: '14px', opacity: 0.7 }}>
+            Add ?access_key=YOUR_KEY to the URL
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   // Convert Redux state to TileArray format for rendering
   const tileArray: TileArray | null = useMemo(() => {
@@ -39,12 +68,12 @@ export default function Home() {
   // Handle keyboard input - use thunk for async chat handling
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      dispatch(handleKeyPress(event.key))
+      dispatch(handleKeyPress({ key: event.key, accessKey: accessKey || '' }))
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [dispatch])
+  }, [dispatch, accessKey])
 
   // Render chat window if in chat mode
   if (gameState.location?.type === 'in_chat') {
