@@ -70,7 +70,7 @@ export default function ChatView() {
           <span className="blinking-cursor">{'\n\n█'}</span>
         )}
         {isPausing && (
-          <span className="action-pending">{'\n\n⌛'}</span>
+          <span className="action-pending">{'\n\n█'}</span>
         )}
       </pre>
     </main>
