@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect, useCallback } from 'react'
-import { Tileset } from '@/src/tileset'
+import { useTileset } from './TilesetProvider'
 
 /**
  * TileArray represents a tile-based view to be rendered.
@@ -17,17 +17,18 @@ export interface TileArray {
 }
 
 interface TileRendererProps {
-  tileset: Tileset;
   tileArray: TileArray;
   width: number;
   height: number;
 }
 
-export function TileRenderer({ tileset, tileArray, width, height }: TileRendererProps) {
+export function TileRenderer({ tileArray, width, height }: TileRendererProps) {
+  const { tileset } = useTileset()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const currentTileArrayRef = useRef<TileArray | null>(null)
 
   const renderTileLayers = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, tileIndices: number[]) => {
+    if (!tileset) return
     const tileSize = tileset.getTileSize()
     const pixelX = x * tileSize
     const pixelY = y * tileSize
@@ -66,6 +67,7 @@ export function TileRenderer({ tileset, tileArray, width, height }: TileRenderer
   }, [])
 
   const renderTileArrayDiff = useCallback((ctx: CanvasRenderingContext2D, newTiles: TileArray, currentTiles: TileArray) => {
+    if (!tileset) return
     const tileSize = tileset.getTileSize()
     
     for (let y = 0; y < newTiles.tiles.length; y++) {
@@ -117,6 +119,11 @@ export function TileRenderer({ tileset, tileArray, width, height }: TileRenderer
     // Update the current tile array
     currentTileArrayRef.current = JSON.parse(JSON.stringify(tileArray))
   }, [tileset, tileArray, renderFullTileArray, renderTileArrayDiff])
+
+  // Don't render if tileset isn't loaded yet
+  if (!tileset) {
+    return null
+  }
 
   return (
     <canvas

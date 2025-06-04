@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useCallback } from 'react'
-import { useTileset } from './TilesetProvider'
 import { useAppSelector, useAppDispatch } from '../store/hooks'
 import { handleKeyPress } from '../store/gameSlice'
 import { selectIsWaitingForAI, selectIsUserTurn } from '../store/selectors'
@@ -11,7 +10,6 @@ import InputController from './InputController'
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
 export default function Game() {
-  const { tileset, loaded } = useTileset()
   const dispatch = useAppDispatch()
   const gameState = useAppSelector(state => state.game)
   const isWaitingForAI = useAppSelector(selectIsWaitingForAI)
@@ -91,41 +89,9 @@ export default function Game() {
     <>
       <InputController onKeyDown={onKeyDown} />
       <main style={{ padding: '1rem' }}>
-        {loaded && tileset && tileArray ? (
-          <TileRenderer tileset={tileset} tileArray={tileArray} width={800} height={480} />
-        ) : (
-          <div style={{ 
-            border: '2px solid #333', 
-            width: '800px', 
-            height: '480px', 
-            backgroundColor: '#000',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontFamily: 'monospace'
-          }}>
-            <div>Loading...</div>
-          </div>
+        {tileArray && (
+          <TileRenderer tileArray={tileArray} width={800} height={480} />
         )}
-        
-        <div style={{
-          position: 'fixed',
-          bottom: '10px',
-          right: '10px',
-          fontSize: '12px',
-          color: '#666'
-        }}>
-          Tiles (32x32 graphics) by David Gervais, used under{' '}
-          <a 
-            href="https://creativecommons.org/licenses/by/3.0/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ color: '#0066cc' }}
-          >
-            CC BY 3.0
-          </a>
-        </div>
       </main>
     </>
   )
