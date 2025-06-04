@@ -17,12 +17,6 @@ export default function ChatView() {
   // Don't show user input prompt when pausing for tool use
   const showUserPrompt = isUserTurn && !isPausing
 
-  const chatContent = gameState.location.intro_text + '\n\nPress ESC to exit\n\n' +
-    gameState.location.messages.map(message => 
-      (message.role === 'user' ? '> ' : '') + message.content
-    ).join('\n\n') + 
-    (showUserPrompt ? '\n\n> ' + gameState.location.currentInput + '█' : '')
-
   return (
     <main style={{ padding: '1rem' }}>
       <style jsx>{`
@@ -36,10 +30,17 @@ export default function ChatView() {
         }
         .blinking-cursor {
           animation: blink 1s infinite;
+          color: #87ceeb;
         }
         .action-pending {
           animation: pulse 1.5s infinite;
           color: #ffaa00;
+        }
+        .user-message {
+          color: #00ff00;
+        }
+        .npc-message {
+          color: #87ceeb;
         }
       `}</style>
       <pre style={{
@@ -53,7 +54,18 @@ export default function ChatView() {
         whiteSpace: 'pre-wrap',
         margin: 0,
       }}>
-        {chatContent}
+        {gameState.location.intro_text}{'\n\nPress ESC to exit\n\n'}
+        {gameState.location.messages.map((message, index) => (
+          <span key={index}>
+            {index > 0 && '\n\n'}
+            <span className={message.role === 'user' ? 'user-message' : 'npc-message'}>
+              {message.role === 'user' ? '> ' : ''}{message.content}
+            </span>
+          </span>
+        ))}
+        {showUserPrompt && (
+          <span className="user-message">{'\n\n> ' + gameState.location.currentInput + '█'}</span>
+        )}
         {isWaitingForAI && !isPausing && (
           <span className="blinking-cursor">{'\n\n█'}</span>
         )}
