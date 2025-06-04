@@ -8,7 +8,7 @@ export default function ChatView() {
   const isWaitingForAI = useAppSelector(selectIsWaitingForAI)
   const isUserTurn = useAppSelector(selectIsUserTurn)
 
-  if (gameState.location?.type !== 'in_chat') {
+  if (gameState.location.type !== 'in_chat') {
     return null
   }
 

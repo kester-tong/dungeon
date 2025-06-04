@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import { useAppDispatch } from '../store/hooks'
-import { handleKeyPress } from '../store/gameSlice'
+import { handleKeyPress } from '../store/thunks'
 import InputController from './InputController'
 import ChatView from './ChatView'
 import NavigationView from './NavigationView'

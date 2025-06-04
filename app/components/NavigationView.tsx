@@ -11,7 +11,7 @@ export default function NavigationView() {
 
   // Convert Redux state to TileArray format for rendering
   const tileArray: TileArray | null = useMemo(() => {
-    if (!gameState.location || gameState.location.type !== 'navigating') {
+    if (gameState.location.type !== 'navigating') {
       return null
     }
     
@@ -32,7 +32,7 @@ export default function NavigationView() {
     return { tiles }
   }, [gameState.config.maps, gameState.location])
 
-  if (gameState.location?.type !== 'navigating') {
+  if (gameState.location.type !== 'navigating') {
     return null
   }
 

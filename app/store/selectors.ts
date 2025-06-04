@@ -8,7 +8,7 @@ import { InChatLocation } from './gameSlice'
  */
 export const selectIsUserTurn = (state: RootState): boolean => {
   const location = state.game.location
-  if (!location || location.type !== 'in_chat') {
+  if (location.type !== 'in_chat') {
     return false
   }
   
@@ -30,7 +30,7 @@ export const selectIsUserTurn = (state: RootState): boolean => {
  */
 export const selectIsWaitingForAI = (state: RootState): boolean => {
   const location = state.game.location
-  if (!location || location.type !== 'in_chat') {
+  if (location.type !== 'in_chat') {
     return false
   }
   
@@ -42,7 +42,7 @@ export const selectIsWaitingForAI = (state: RootState): boolean => {
  */
 export const selectChatLocation = (state: RootState): InChatLocation | null => {
   const location = state.game.location
-  if (!location || location.type !== 'in_chat') {
+  if (location.type !== 'in_chat') {
     return null
   }
   
