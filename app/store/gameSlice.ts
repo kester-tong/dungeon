@@ -40,6 +40,7 @@ export interface InChatLocation {
   currentInput: string;
   previousLocation: Position;
   npcId: string;
+  pausingForToolUse: boolean;
 }
 
 /**
@@ -140,7 +141,8 @@ function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' 
       messages,
       currentInput: "",
       previousLocation: state.location.player,
-      npcId: targetTile.npcId
+      npcId: targetTile.npcId,
+      pausingForToolUse: false
     }
     return
   }
@@ -186,16 +188,26 @@ const gameSlice = createSlice({
       }
     },
 
-    // Helper reducers for chat functionality
-    addChatMessage: (state, action: PayloadAction<ChatMessage>) => {
+    // Chat functionality
+    sendChatToNpc: (state) => {
       if (state.location.type === 'in_chat') {
-        state.location.messages.push(action.payload)
+        const message = state.location.currentInput.trim()
+        if (message) {
+          state.location.messages.push({ role: 'user', content: message })
+          state.location.currentInput = ""
+        }
       }
     },
 
-    clearChatInput: (state) => {
+    receiveChatFromNpc: (state, action: PayloadAction<string>) => {
       if (state.location.type === 'in_chat') {
-        state.location.currentInput = ""
+        state.location.messages.push({ role: 'assistant', content: action.payload })
+      }
+    },
+
+    pauseForToolUse: (state) => {
+      if (state.location.type === 'in_chat') {
+        state.location.pausingForToolUse = true
       }
     },
 
@@ -225,6 +237,11 @@ const gameSlice = createSlice({
             }
           }
       }
+      
+      // Reset pausing state after tool use is handled
+      if (state.location.type === 'in_chat') {
+        state.location.pausingForToolUse = false
+      }
     },
   },
 })
@@ -234,8 +251,9 @@ export const {
   deleteCharFromInput,
   addCharToInput,
   movePlayer,
-  addChatMessage,
-  clearChatInput,
+  sendChatToNpc,
+  receiveChatFromNpc,
+  pauseForToolUse,
   handleNpcToolUse,
 } = gameSlice.actions
 

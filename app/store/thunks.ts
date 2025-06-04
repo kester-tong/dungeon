@@ -2,8 +2,9 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import type { RootState } from './store'
 import type { ChatMessage } from './gameSlice'
 import { 
-  addChatMessage, 
-  clearChatInput, 
+  sendChatToNpc,
+  receiveChatFromNpc,
+  pauseForToolUse,
   handleNpcToolUse,
   exitChat,
   deleteCharFromInput,
@@ -11,16 +12,36 @@ import {
   movePlayer,
 } from './gameSlice'
 
+// Utility function for sleeping
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
   'game/sendChatMessage',
-  async (params: { messages: ChatMessage[]; npcId: string }, { dispatch, getState }) => {
+  async (_, { dispatch, getState }) => {
     const state = getState() as RootState
+    const gameState = state.game
     const accessKey = state.auth.accessKey
     
     if (!accessKey) {
       throw new Error('No access key available')
     }
+
+    if (gameState.location.type !== 'in_chat') {
+      throw new Error('Not in chat mode')
+    }
+
+    const message = gameState.location.currentInput.trim()
+    if (!message) {
+      return // Nothing to send
+    }
+
+    // Add user message to chat and clear input
+    dispatch(sendChatToNpc())
+
+    // Build messages array including the new user message  
+    const allMessages = [...gameState.location.messages, { role: 'user' as const, content: message }]
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -28,8 +49,8 @@ export const sendChatMessage = createAsyncThunk(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: params.messages,
-          npcId: params.npcId,
+          messages: allMessages,
+          npcId: gameState.location.npcId,
           accessKey: accessKey,
         }),
       })
@@ -41,19 +62,20 @@ export const sendChatMessage = createAsyncThunk(
       const data = await response.json()
       
       // Add AI response to chat
-      dispatch(addChatMessage({ role: 'assistant', content: data.response.text }))
+      dispatch(receiveChatFromNpc(data.response.text))
       
       // Handle tool use if present
       if (data.response.tool_use) {
-        setTimeout(() => {
-          dispatch(handleNpcToolUse(data.response.tool_use))
-        }, 500)
+        // Pause to let user read the message
+        dispatch(pauseForToolUse())
+        await sleep(2000) // 2 second pause
+        dispatch(handleNpcToolUse(data.response.tool_use))
       }
       
       return data.response
     } catch (error) {
       // Add fallback message on error
-      dispatch(addChatMessage({ role: 'assistant', content: "Sorry, I couldn't understand that." }))
+      dispatch(receiveChatFromNpc("Sorry, I couldn't understand that."))
       throw error
     }
   }
@@ -67,30 +89,14 @@ export const handleKeyPress = createAsyncThunk(
     const state = getState() as RootState
     const gameState = state.game
 
-    // Handle Enter key in chat - check if we should send to API
-    if (key === 'Enter' && gameState.location.type === 'in_chat') {
-      const message = gameState.location.currentInput.trim()
-
-      if (message) {
-        // Build messages array including the new user message
-        const allMessages = [...gameState.location.messages, { role: 'user' as const, content: message }]
-
-        // Add user message to chat and clear input
-        dispatch(addChatMessage({ role: 'user', content: message }))
-        dispatch(clearChatInput())
-
-        // Send all messages to API (response handling is done in the thunk)
-        await dispatch(sendChatMessage({ messages: allMessages, npcId: gameState.location.npcId }))
-      }
-
-      return
-    }
-
     // Dispatch appropriate action based on location type and key
     const locationType = gameState.location.type
 
     if (locationType === 'in_chat') {
       switch (key) {
+        case 'Enter':
+          await dispatch(sendChatMessage())
+          break
         case 'Escape':
           dispatch(exitChat())
           break
