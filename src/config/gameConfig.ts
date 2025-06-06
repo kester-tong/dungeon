@@ -10,7 +10,6 @@ import gameDataJsonRaw from './gameData.json';
 
 const gameDataJson = gameDataJsonRaw as JsonGameConfig;
 
-
 export interface StartingPosition {
   x: number;
   y: number;
@@ -46,15 +45,17 @@ export interface GameConfig {
 }
 
 // Process maps from JSON format to machine-readable format
-function processMaps(jsonMaps: Record<string, JsonMapConfig>): Record<string, Map> {
+function processMaps(
+  jsonMaps: Record<string, JsonMapConfig>
+): Record<string, Map> {
   const processedMaps: Record<string, Map> = {};
-  
+
   for (const [mapId, mapConfig] of Object.entries(jsonMaps)) {
     const height = mapConfig.data.length;
     const width = mapConfig.data[0]?.length || 0;
-    
-    const processedData = mapConfig.data.map(row => 
-      row.split('').map(char => {
+
+    const processedData = mapConfig.data.map((row) =>
+      row.split('').map((char) => {
         const tile = mapConfig.tileMapping[char];
         if (!tile) {
           throw new Error(`Unknown tile character: '${char}' in map ${mapId}`);
@@ -67,10 +68,10 @@ function processMaps(jsonMaps: Record<string, JsonMapConfig>): Record<string, Ma
       width,
       height,
       data: processedData,
-      neighbors: mapConfig.neighbors
+      neighbors: mapConfig.neighbors,
     };
   }
-  
+
   return processedMaps;
 }
 
@@ -79,5 +80,5 @@ export const gameConfig: GameConfig = {
   startingPosition: gameDataJson.startingPosition,
   canvas: gameDataJson.canvas,
   maps: processMaps(gameDataJson.maps),
-  npcs: gameDataJson.npcs
+  npcs: gameDataJson.npcs,
 };

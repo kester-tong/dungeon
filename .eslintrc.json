@@ -1,3 +1,16 @@
 {
-  "extends": ["next/core-web-vitals"]
+  "extends": ["next/core-web-vitals", "next/typescript", "prettier"],
+  "plugins": ["prettier"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        // Allow _ and common redux arg names to be ignored.
+        "argsIgnorePattern": "^_$|^state$|^getState$",
+        "varsIgnorePattern": "^_$"
+      }
+    ],
+    "@typescript-eslint/no-explicit-any": "off",
+    "prettier/prettier": "error"
+  }
 }

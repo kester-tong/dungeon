@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { gameConfig } from '@/src/config/gameConfig'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { gameConfig } from '@/src/config/gameConfig';
+import { ToolUse } from '@/src/npcs/NPCResponse';
 
 /**
  * Position represents x, y coordinates and map location
@@ -41,96 +42,106 @@ export interface GameState {
 const initialState: GameState = {
   player: gameConfig.startingPosition,
   chatWindow: null,
-}
+};
 
 // Helper function for movement logic
-function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' | 'west') {
-  if (state.chatWindow !== null) return // Can't move while in chat
+function handleMovement(
+  state: GameState,
+  direction: 'north' | 'south' | 'east' | 'west'
+) {
+  if (state.chatWindow !== null) return; // Can't move while in chat
 
-  const currentMap = gameConfig.maps[state.player.mapId]
-  if (!currentMap) return
+  const currentMap = gameConfig.maps[state.player.mapId];
+  if (!currentMap) return;
 
   // Calculate new position based on direction
-  let newX = state.player.x
-  let newY = state.player.y
+  let newX = state.player.x;
+  let newY = state.player.y;
 
   switch (direction) {
     case 'west':
-      newX = state.player.x - 1
-      break
+      newX = state.player.x - 1;
+      break;
     case 'east':
-      newX = state.player.x + 1
-      break
+      newX = state.player.x + 1;
+      break;
     case 'north':
-      newY = state.player.y - 1
-      break
+      newY = state.player.y - 1;
+      break;
     case 'south':
-      newY = state.player.y + 1
-      break
+      newY = state.player.y + 1;
+      break;
   }
 
   // Check bounds and handle map transitions
-  if (newX < 0 || newX >= currentMap.width || newY < 0 || newY >= currentMap.height) {
+  if (
+    newX < 0 ||
+    newX >= currentMap.width ||
+    newY < 0 ||
+    newY >= currentMap.height
+  ) {
     // Check if there's a neighboring map in the direction we're trying to go
-    const neighborMapId = currentMap.neighbors[direction as keyof typeof currentMap.neighbors]
+    const neighborMapId =
+      currentMap.neighbors[direction as keyof typeof currentMap.neighbors];
     if (neighborMapId) {
-      const neighborMap = gameConfig.maps[neighborMapId]
+      const neighborMap = gameConfig.maps[neighborMapId];
       // Calculate entry position on the new map
-      let entryX: number
-      let entryY: number
+      let entryX: number;
+      let entryY: number;
 
       if (direction === 'north') {
-        entryX = state.player.x
-        entryY = neighborMap.height - 1
+        entryX = state.player.x;
+        entryY = neighborMap.height - 1;
       } else if (direction === 'south') {
-        entryX = state.player.x
-        entryY = 0
+        entryX = state.player.x;
+        entryY = 0;
       } else if (direction === 'west') {
-        entryX = neighborMap.width - 1
-        entryY = state.player.y
-      } else { // east
-        entryX = 0
-        entryY = state.player.y
+        entryX = neighborMap.width - 1;
+        entryY = state.player.y;
+      } else {
+        // east
+        entryX = 0;
+        entryY = state.player.y;
       }
 
       // Transition to the new map
       state.player = {
         x: entryX,
         y: entryY,
-        mapId: neighborMapId
-      }
-      return
+        mapId: neighborMapId,
+      };
+      return;
     }
 
     // No neighbor found, stop movement
-    return
+    return;
   }
 
-  const targetTile = currentMap.data[newY][newX]
+  const targetTile = currentMap.data[newY][newX];
 
   // Check if target tile is an NPC - enter chat
-  if (targetTile.type === "npc") {
-    const npc = gameConfig.npcs[targetTile.npcId]
-    const messages: ChatMessage[] = []
+  if (targetTile.type === 'npc') {
+    const npc = gameConfig.npcs[targetTile.npcId];
+    const messages: ChatMessage[] = [];
 
     if (npc?.first_message) {
-      messages.push({ role: 'assistant', content: npc.first_message })
+      messages.push({ role: 'assistant', content: npc.first_message });
     }
 
     state.chatWindow = {
       intro_text: npc.intro_text,
       messages,
-      currentInput: "",
+      currentInput: '',
       npcId: targetTile.npcId,
-      pausingForToolUse: false
-    }
-    return
+      pausingForToolUse: false,
+    };
+    return;
   }
 
   // Check if target tile is walkable (terrain)
-  if (targetTile.type === "terrain") {
-    state.player.x = newX
-    state.player.y = newY
+  if (targetTile.type === 'terrain') {
+    state.player.x = newX;
+    state.player.y = newY;
     // mapId stays the same when moving within the same map
   }
 }
@@ -139,50 +150,58 @@ const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-
     // Functional actions
     exitChat: (state) => {
-      state.chatWindow = null
+      state.chatWindow = null;
     },
 
     deleteCharFromInput: (state) => {
       if (state.chatWindow) {
-        state.chatWindow.currentInput = state.chatWindow.currentInput.slice(0, -1)
+        state.chatWindow.currentInput = state.chatWindow.currentInput.slice(
+          0,
+          -1
+        );
       }
     },
 
     addCharToInput: (state, action: PayloadAction<string>) => {
       if (state.chatWindow) {
-        state.chatWindow.currentInput += action.payload
+        state.chatWindow.currentInput += action.payload;
       }
     },
 
-    movePlayer: (state, action: PayloadAction<'north' | 'south' | 'east' | 'west'>) => {
+    movePlayer: (
+      state,
+      action: PayloadAction<'north' | 'south' | 'east' | 'west'>
+    ) => {
       if (!state.chatWindow) {
-        handleMovement(state, action.payload)
+        handleMovement(state, action.payload);
       }
     },
 
     // Chat functionality
     sendChatToNpc: (state) => {
       if (state.chatWindow) {
-        const message = state.chatWindow.currentInput.trim()
+        const message = state.chatWindow.currentInput.trim();
         if (message) {
-          state.chatWindow.messages.push({ role: 'user', content: message })
-          state.chatWindow.currentInput = ""
+          state.chatWindow.messages.push({ role: 'user', content: message });
+          state.chatWindow.currentInput = '';
         }
       }
     },
 
     receiveChatFromNpc: (state, action: PayloadAction<string>) => {
       if (state.chatWindow) {
-        state.chatWindow.messages.push({ role: 'assistant', content: action.payload })
+        state.chatWindow.messages.push({
+          role: 'assistant',
+          content: action.payload,
+        });
       }
     },
 
     pauseForToolUse: (state) => {
       if (state.chatWindow) {
-        state.chatWindow.pausingForToolUse = true
+        state.chatWindow.pausingForToolUse = true;
       }
     },
 
@@ -196,26 +215,26 @@ const gameSlice = createSlice({
                 mapId: 'forest',
                 x: 11,
                 y: 13,
-              }
+              };
             } else {
               state.player = {
                 mapId: 'town',
                 x: 11,
                 y: 1,
-              }
+              };
             }
             // Close chat window after tool action
-            state.chatWindow = null
+            state.chatWindow = null;
           }
       }
-      
+
       // Reset pausing state after tool use is handled
       if (state.chatWindow) {
-        state.chatWindow.pausingForToolUse = false
+        state.chatWindow.pausingForToolUse = false;
       }
     },
   },
-})
+});
 
 export const {
   exitChat,
@@ -226,6 +245,6 @@ export const {
   receiveChatFromNpc,
   pauseForToolUse,
   handleNpcToolUse,
-} = gameSlice.actions
+} = gameSlice.actions;
 
-export default gameSlice.reducer
+export default gameSlice.reducer;

@@ -1,19 +1,22 @@
-'use client'
+'use client';
 
-import { useCallback } from 'react'
-import { useAppDispatch } from '../store/hooks'
-import { handleKeyPress } from '../store/thunks'
-import InputController from './InputController'
-import ChatView from './ChatView'
-import NavigationView from './NavigationView'
+import { useCallback } from 'react';
+import { useAppDispatch } from '../store/hooks';
+import { handleKeyPress } from '../store/thunks';
+import InputController from './InputController';
+import ChatView from './ChatView';
+import NavigationView from './NavigationView';
 
 export default function Game() {
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
   // Handle keyboard input via InputController
-  const onKeyDown = useCallback((key: string) => {
-    dispatch(handleKeyPress({ key }))
-  }, [dispatch])
+  const onKeyDown = useCallback(
+    (key: string) => {
+      dispatch(handleKeyPress({ key }));
+    },
+    [dispatch]
+  );
 
   return (
     <>
@@ -21,5 +24,5 @@ export default function Game() {
       <ChatView />
       <NavigationView />
     </>
-  )
+  );
 }
