@@ -18,98 +18,3084 @@
   },
   "maps": {
     "forest": {
-      "tileMapping": {
-        " ": {
-          "tileIndex": 1686,
-          "type": "terrain"
-        },
-        "w": {
-          "tileIndex": 21,
-          "type": "obstacle"
-        },
-        "T": {
-          "tileIndex": 92,
-          "type": "obstacle"
-        },
-        "d": {
-          "tileIndex": 67,
-          "type": "npc",
-          "npcId": "guard"
-        }
-      },
+      "width": 25,
+      "height": 15,
       "data": [
-        "                         ",
-        "                         ",
-        "    TT           TT      ",
-        "   TTT     T    TTT      ",
-        "    T      T     T       ",
-        "           T             ",
-        "      T         T        ",
-        "     TTT       TTT       ",
-        "      T         T        ",
-        "           T             ",
-        "    T      T     T       ",
-        "   TTT     T    TTT      ",
-        "    TT           TT      ",
-        "                         ",
-        "wwwwwwwwwwwdwwwwwwwwwwwww"
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 92,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 1686,
+            "type": "terrain"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 67,
+            "type": "npc",
+            "npcId": "guard"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ]
       ],
       "neighbors": {
         "south": "town"
       }
     },
     "town": {
-      "tileMapping": {
-        " ": {
-          "tileIndex": 2,
-          "type": "terrain"
-        },
-        "w": {
-          "tileIndex": 21,
-          "type": "obstacle"
-        },
-        "t": {
-          "tileIndex": 71,
-          "type": "npc",
-          "npcId": "shop_keeper"
-        },
-        "s": {
-          "tileIndex": 73,
-          "type": "npc",
-          "npcId": "weapons_master"
-        },
-        "p": {
-          "tileIndex": 2464,
-          "type": "npc",
-          "npcId": "mayor"
-        },
-        "b": {
-          "tileIndex": 2465,
-          "type": "npc",
-          "npcId": "tavern_keeper"
-        },
-        "d": {
-          "tileIndex": 67,
-          "type": "npc",
-          "npcId": "guard"
-        }
-      },
+      "width": 25,
+      "height": 15,
       "data": [
-        "wwwwwwwwwwwdwwwwwwwwwwwww",
-        "w                       w",
-        "w                       w",
-        "w    wwww      wwww     w",
-        "w    wwww      wwww     w",
-        "w    wtww      wsww     w",
-        "w                       w",
-        "w                       w",
-        "w                       w",
-        "w    wwww      wwww     w",
-        "w    wwww      wwww     w",
-        "w    wbww      wpww     w",
-        "w                       w",
-        "w                       w",
-        "wwwwwwwwwwwwwwwwwwwwwwwww"
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 67,
+            "type": "npc",
+            "npcId": "guard"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 71,
+            "type": "npc",
+            "npcId": "shop_keeper"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 73,
+            "type": "npc",
+            "npcId": "weapons_master"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2465,
+            "type": "npc",
+            "npcId": "tavern_keeper"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2464,
+            "type": "npc",
+            "npcId": "mayor"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 2,
+            "type": "terrain"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ],
+        [
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          },
+          {
+            "tileIndex": 21,
+            "type": "obstacle"
+          }
+        ]
       ],
       "neighbors": {
         "north": "forest"
