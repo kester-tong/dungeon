@@ -2,6 +2,31 @@
 
 import { useAppSelector } from '../store/hooks';
 import { selectIsWaitingForAI, selectIsUserTurn } from '../store/selectors';
+import { ContentBlock } from '@/src/npcs/ContentBlocks';
+
+// Helper function to render content blocks
+function renderContentBlocks(content: ContentBlock[] | string): string {
+  // Handle legacy string content
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  // Handle content blocks array
+  return content
+    .map((block) => {
+      switch (block.type) {
+        case 'text':
+          return block.text;
+        case 'tool_use':
+          return `[Using tool: ${block.name}]`;
+        case 'tool_result':
+          return `[Tool result: ${block.content}]`;
+        default:
+          return '[Unknown content block]';
+      }
+    })
+    .join('');
+}
 
 export default function ChatView() {
   const gameState = useAppSelector((state) => state.game);
@@ -78,7 +103,7 @@ export default function ChatView() {
               }
             >
               {message.role === 'user' ? '> ' : ''}
-              {message.content}
+              {renderContentBlocks(message.content)}
             </span>
           </span>
         ))}

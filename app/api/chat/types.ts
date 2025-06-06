@@ -1,9 +1,6 @@
-import { NPCResponse } from '@/src/npcs/NPCResponse';
+import { ChatMessage, ContentBlock } from '@/src/npcs/ContentBlocks';
 
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+export type { ChatMessage };
 
 export interface ChatRequest {
   messages: ChatMessage[];
@@ -13,7 +10,9 @@ export interface ChatRequest {
 
 export interface ChatSuccessResponse {
   success: true;
-  response: NPCResponse;
+  response: {
+    content: ContentBlock[];
+  };
 }
 
 export interface ChatErrorResponse {

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
-import { ToolUse } from '@/src/npcs/NPCResponse';
+import { ChatMessage, ContentBlock } from '@/src/npcs/ContentBlocks';
 
 /**
  * Position represents x, y coordinates and map location
@@ -11,13 +11,7 @@ export interface Position {
   mapId: string;
 }
 
-/**
- * ChatMessage represents a single message in a conversation
- */
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+export type { ChatMessage };
 
 /**
  * ChatWindow represents the chat/dialog interface
@@ -125,7 +119,10 @@ function handleMovement(
     const messages: ChatMessage[] = [];
 
     if (npc?.first_message) {
-      messages.push({ role: 'assistant', content: npc.first_message });
+      messages.push({
+        role: 'assistant',
+        content: [{ type: 'text', text: npc.first_message }],
+      });
     }
 
     state.chatWindow = {
@@ -184,18 +181,48 @@ const gameSlice = createSlice({
       if (state.chatWindow) {
         const message = state.chatWindow.currentInput.trim();
         if (message) {
-          state.chatWindow.messages.push({ role: 'user', content: message });
+          state.chatWindow.messages.push({
+            role: 'user',
+            content: [{ type: 'text', text: message }],
+          });
           state.chatWindow.currentInput = '';
         }
       }
     },
 
-    receiveChatFromNpc: (state, action: PayloadAction<string>) => {
+    receiveChatFromNpc: (state, action: PayloadAction<ContentBlock[]>) => {
       if (state.chatWindow) {
+        // Add the message with content blocks
         state.chatWindow.messages.push({
           role: 'assistant',
           content: action.payload,
         });
+
+        // Check for tool use in the content blocks and handle immediately
+        for (const block of action.payload) {
+          if (block.type === 'tool_use') {
+            // Handle the tool use immediately
+            switch (block.name) {
+              case 'open_door':
+                // If player is on the town side of the door, move them to the forest
+                if (state.player.mapId === 'town') {
+                  state.player = {
+                    mapId: 'forest',
+                    x: 11,
+                    y: 13,
+                  };
+                } else {
+                  state.player = {
+                    mapId: 'town',
+                    x: 11,
+                    y: 1,
+                  };
+                }
+                break;
+            }
+            break; // Only handle the first tool use
+          }
+        }
       }
     },
 
@@ -205,29 +232,7 @@ const gameSlice = createSlice({
       }
     },
 
-    handleNpcToolUse: (state, action: PayloadAction<ToolUse>) => {
-      switch (action.payload.name) {
-        case 'open_door':
-          if (state.chatWindow) {
-            // If player is on the town side of the door, move them to the forest
-            if (state.player.mapId === 'town') {
-              state.player = {
-                mapId: 'forest',
-                x: 11,
-                y: 13,
-              };
-            } else {
-              state.player = {
-                mapId: 'town',
-                x: 11,
-                y: 1,
-              };
-            }
-            // Close chat window after tool action
-            state.chatWindow = null;
-          }
-      }
-
+    resumeFromToolUse: (state) => {
       // Reset pausing state after tool use is handled
       if (state.chatWindow) {
         state.chatWindow.pausingForToolUse = false;
@@ -244,7 +249,7 @@ export const {
   sendChatToNpc,
   receiveChatFromNpc,
   pauseForToolUse,
-  handleNpcToolUse,
+  resumeFromToolUse,
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

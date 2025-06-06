@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { gameConfig } from '@/src/config/gameConfig';
-import { NPCResponse } from '@/src/npcs/NPCResponse';
 import { ChatRequest, ChatResponse } from './types';
+import { ContentBlock } from '@/src/npcs/ContentBlocks';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -57,34 +57,32 @@ export async function POST(
 
     console.log('✅ Anthropic API Response:', response);
 
-    let textResponse: string | undefined = undefined;
-    let tool_use:
-      | {
-          name: string;
-          // TODO: check if this signature is correct, probably not.
-          input: unknown;
-        }
-      | undefined = undefined;
-    response.content.forEach((block) => {
+    // Convert Anthropic content blocks to our format
+    const convertedContent: ContentBlock[] = response.content.map((block) => {
       if (block.type === 'text') {
-        textResponse = (textResponse || '') + block.text;
+        return {
+          type: 'text',
+          text: block.text,
+        };
       } else if (block.type === 'tool_use') {
-        tool_use = {
+        return {
+          type: 'tool_use',
+          id: block.id,
           name: block.name,
           input: block.input,
+        };
+      } else {
+        // Handle any other types by converting to text
+        return {
+          type: 'text',
+          text: `[Unsupported content type: ${block.type}]`,
         };
       }
     });
 
-    const npcResponse: NPCResponse =
-      textResponse || tool_use
-        ? {
-            text: textResponse,
-            tool_use,
-          }
-        : {
-            text: 'Error',
-          };
+    const npcResponse = {
+      content: convertedContent,
+    };
     return NextResponse.json<ChatResponse>({
       success: true,
       response: npcResponse,
@@ -96,7 +94,12 @@ export async function POST(
     return NextResponse.json<ChatResponse>({
       success: true,
       response: {
-        text: "I'm sorry, I'm having trouble hearing you right now. Could you try again?",
+        content: [
+          {
+            type: 'text',
+            text: "I'm sorry, I'm having trouble hearing you right now. Could you try again?",
+          },
+        ],
       },
     });
   }

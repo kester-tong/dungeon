@@ -4,7 +4,7 @@ import {
   sendChatToNpc,
   receiveChatFromNpc,
   pauseForToolUse,
-  handleNpcToolUse,
+  resumeFromToolUse,
   exitChat,
   deleteCharFromInput,
   addCharToInput,
@@ -42,7 +42,10 @@ export const sendChatMessage = createAsyncThunk(
     // Build messages array including the new user message
     const allMessages = [
       ...gameState.chatWindow.messages,
-      { role: 'user' as const, content: message },
+      {
+        role: 'user' as const,
+        content: [{ type: 'text' as const, text: message }],
+      },
     ];
 
     try {
@@ -72,21 +75,29 @@ export const sendChatMessage = createAsyncThunk(
 
       const npcResponse = data.response;
 
-      // Add AI response to chat
-      dispatch(receiveChatFromNpc(npcResponse.text || ''));
+      // Check if there's tool use in the content blocks (for pausing logic)
+      const hasToolUse = npcResponse.content.some(
+        (block) => block.type === 'tool_use'
+      );
 
-      // Handle tool use if present
-      if (npcResponse.tool_use) {
-        // Pause to let user read the message
+      // Add AI response to chat (this will handle tool use automatically)
+      dispatch(receiveChatFromNpc(npcResponse.content));
+
+      // If there was tool use, pause briefly to let user read the message
+      if (hasToolUse) {
         dispatch(pauseForToolUse());
         await sleep(2000); // 2 second pause
-        dispatch(handleNpcToolUse(npcResponse.tool_use));
+        dispatch(resumeFromToolUse());
       }
 
       return data.response;
     } catch (error) {
       // Add fallback message on error
-      dispatch(receiveChatFromNpc("Sorry, I couldn't understand that."));
+      dispatch(
+        receiveChatFromNpc([
+          { type: 'text', text: "Sorry, I couldn't understand that." },
+        ])
+      );
       throw error;
     }
   }
