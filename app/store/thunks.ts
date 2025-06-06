@@ -27,11 +27,11 @@ export const sendChatMessage = createAsyncThunk(
       throw new Error('No access key available')
     }
 
-    if (gameState.location.type !== 'in_chat') {
+    if (!gameState.chatWindow) {
       throw new Error('Not in chat mode')
     }
 
-    const message = gameState.location.currentInput.trim()
+    const message = gameState.chatWindow.currentInput.trim()
     if (!message) {
       return // Nothing to send
     }
@@ -40,7 +40,7 @@ export const sendChatMessage = createAsyncThunk(
     dispatch(sendChatToNpc())
 
     // Build messages array including the new user message  
-    const allMessages = [...gameState.location.messages, { role: 'user' as const, content: message }]
+    const allMessages = [...gameState.chatWindow.messages, { role: 'user' as const, content: message }]
 
     try {
       const response = await fetch('/api/chat', {
@@ -50,7 +50,7 @@ export const sendChatMessage = createAsyncThunk(
         },
         body: JSON.stringify({
           messages: allMessages,
-          npcId: gameState.location.npcId,
+          npcId: gameState.chatWindow.npcId,
           accessKey: accessKey,
         }),
       })
@@ -89,10 +89,10 @@ export const handleKeyPress = createAsyncThunk(
     const state = getState() as RootState
     const gameState = state.game
 
-    // Dispatch appropriate action based on location type and key
-    const locationType = gameState.location.type
+    // Dispatch appropriate action based on whether we're in chat or not
+    const inChat = gameState.chatWindow !== null
 
-    if (locationType === 'in_chat') {
+    if (inChat) {
       switch (key) {
         case 'Enter':
           await dispatch(sendChatMessage())
@@ -110,7 +110,7 @@ export const handleKeyPress = createAsyncThunk(
           }
           break
       }
-    } else if (locationType === 'navigating') {
+    } else {
       switch (key) {
         case 'ArrowLeft':
         case 'a':

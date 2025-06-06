@@ -8,11 +8,11 @@ export default function ChatView() {
   const isWaitingForAI = useAppSelector(selectIsWaitingForAI)
   const isUserTurn = useAppSelector(selectIsUserTurn)
 
-  if (gameState.location.type !== 'in_chat') {
+  if (!gameState.chatWindow) {
     return null
   }
 
-  const isPausing = gameState.location.pausingForToolUse
+  const isPausing = gameState.chatWindow.pausingForToolUse
   
   // Don't show user input prompt when pausing for tool use
   const showUserPrompt = isUserTurn && !isPausing
@@ -54,8 +54,8 @@ export default function ChatView() {
         whiteSpace: 'pre-wrap',
         margin: 0,
       }}>
-        {gameState.location.intro_text}{'\n\nPress ESC to exit\n\n'}
-        {gameState.location.messages.map((message, index) => (
+        {gameState.chatWindow.intro_text}{'\n\nPress ESC to exit\n\n'}
+        {gameState.chatWindow.messages.map((message, index) => (
           <span key={index}>
             {index > 0 && '\n\n'}
             <span className={message.role === 'user' ? 'user-message' : 'npc-message'}>
@@ -64,7 +64,7 @@ export default function ChatView() {
           </span>
         ))}
         {showUserPrompt && (
-          <span className="user-message">{'\n\n> ' + gameState.location.currentInput + '█'}</span>
+          <span className="user-message">{'\n\n> ' + gameState.chatWindow.currentInput + '█'}</span>
         )}
         {isWaitingForAI && !isPausing && (
           <span className="blinking-cursor">{'\n\n█'}</span>

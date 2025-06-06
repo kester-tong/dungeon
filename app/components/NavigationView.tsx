@@ -11,11 +11,11 @@ export default function NavigationView() {
 
   // Convert Redux state to TileArray format for rendering
   const tileArray: TileArray | null = useMemo(() => {
-    if (gameState.location.type !== 'navigating') {
+    if (gameState.chatWindow !== null) {
       return null
     }
     
-    const currentMap = gameState.config.maps[gameState.location.player.mapId]
+    const currentMap = gameState.config.maps[gameState.player.mapId]
     if (!currentMap) {
       return null
     }
@@ -26,13 +26,13 @@ export default function NavigationView() {
     )
     
     // Add character at player position
-    const player = gameState.location.player
+    const player = gameState.player
     tiles[player.y][player.x].push(CHARACTER_TILE_INDEX)
     
     return { tiles }
-  }, [gameState.config.maps, gameState.location])
+  }, [gameState.config.maps, gameState.player, gameState.chatWindow])
 
-  if (gameState.location.type !== 'navigating') {
+  if (gameState.chatWindow !== null) {
     return null
   }
 

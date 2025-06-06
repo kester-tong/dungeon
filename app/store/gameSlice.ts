@@ -11,14 +11,6 @@ export interface Position {
 }
 
 /**
- * NavigatingLocation represents the player moving around the game world
- */
-export interface NavigatingLocation {
-  type: 'navigating';
-  player: Position;
-}
-
-/**
  * ChatMessage represents a single message in a conversation
  */
 export interface ChatMessage {
@@ -27,63 +19,55 @@ export interface ChatMessage {
 }
 
 /**
- * InChatLocation represents the player in a chat/dialog interface
+ * ChatWindow represents the chat/dialog interface
  * Turn semantics:
  * - If messages is empty, it's the user's turn by default
  * - Otherwise, it's whoever's turn is next based on the last message
  * - If it's AI's turn, we're waiting for AI response
  */
-export interface InChatLocation {
-  type: 'in_chat';
+export interface ChatWindow {
   intro_text: string;
   messages: ChatMessage[];
   currentInput: string;
-  previousLocation: Position;
   npcId: string;
   pausingForToolUse: boolean;
 }
 
-/**
- * Location is a labeled union representing where/how the player is currently located
- */
-export type Location = NavigatingLocation | InChatLocation;
-
 export interface GameState {
   config: typeof gameConfig;
-  location: Location;
+  player: Position;
+  chatWindow: ChatWindow | null;
 }
 
 const initialState: GameState = {
   config: gameConfig,
-  location: {
-    type: 'navigating',
-    player: gameConfig.startingPosition
-  },
+  player: gameConfig.startingPosition,
+  chatWindow: null,
 }
 
 // Helper function for movement logic
 function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' | 'west') {
-  if (state.location.type !== 'navigating') return
+  if (state.chatWindow !== null) return // Can't move while in chat
 
-  const currentMap = state.config.maps[state.location.player.mapId]
+  const currentMap = state.config.maps[state.player.mapId]
   if (!currentMap) return
 
   // Calculate new position based on direction
-  let newX = state.location.player.x
-  let newY = state.location.player.y
+  let newX = state.player.x
+  let newY = state.player.y
 
   switch (direction) {
     case 'west':
-      newX = state.location.player.x - 1
+      newX = state.player.x - 1
       break
     case 'east':
-      newX = state.location.player.x + 1
+      newX = state.player.x + 1
       break
     case 'north':
-      newY = state.location.player.y - 1
+      newY = state.player.y - 1
       break
     case 'south':
-      newY = state.location.player.y + 1
+      newY = state.player.y + 1
       break
   }
 
@@ -98,21 +82,21 @@ function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' 
       let entryY: number
 
       if (direction === 'north') {
-        entryX = state.location.player.x
+        entryX = state.player.x
         entryY = neighborMap.height - 1
       } else if (direction === 'south') {
-        entryX = state.location.player.x
+        entryX = state.player.x
         entryY = 0
       } else if (direction === 'west') {
         entryX = neighborMap.width - 1
-        entryY = state.location.player.y
+        entryY = state.player.y
       } else { // east
         entryX = 0
-        entryY = state.location.player.y
+        entryY = state.player.y
       }
 
       // Transition to the new map
-      state.location.player = {
+      state.player = {
         x: entryX,
         y: entryY,
         mapId: neighborMapId
@@ -135,12 +119,10 @@ function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' 
       messages.push({ role: 'assistant', content: npc.first_message })
     }
 
-    state.location = {
-      type: 'in_chat',
+    state.chatWindow = {
       intro_text: npc.intro_text,
       messages,
       currentInput: "",
-      previousLocation: state.location.player,
       npcId: targetTile.npcId,
       pausingForToolUse: false
     }
@@ -149,8 +131,8 @@ function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' 
 
   // Check if target tile is walkable (terrain)
   if (targetTile.type === "terrain") {
-    state.location.player.x = newX
-    state.location.player.y = newY
+    state.player.x = newX
+    state.player.y = newY
     // mapId stays the same when moving within the same map
   }
 }
@@ -162,85 +144,76 @@ const gameSlice = createSlice({
 
     // Functional actions
     exitChat: (state) => {
-      if (state.location.type === 'in_chat') {
-        state.location = {
-          type: 'navigating',
-          player: state.location.previousLocation
-        }
-      }
+      state.chatWindow = null
     },
 
     deleteCharFromInput: (state) => {
-      if (state.location.type === 'in_chat') {
-        state.location.currentInput = state.location.currentInput.slice(0, -1)
+      if (state.chatWindow) {
+        state.chatWindow.currentInput = state.chatWindow.currentInput.slice(0, -1)
       }
     },
 
     addCharToInput: (state, action: PayloadAction<string>) => {
-      if (state.location.type === 'in_chat') {
-        state.location.currentInput += action.payload
+      if (state.chatWindow) {
+        state.chatWindow.currentInput += action.payload
       }
     },
 
     movePlayer: (state, action: PayloadAction<'north' | 'south' | 'east' | 'west'>) => {
-      if (state.location.type === 'navigating') {
+      if (!state.chatWindow) {
         handleMovement(state, action.payload)
       }
     },
 
     // Chat functionality
     sendChatToNpc: (state) => {
-      if (state.location.type === 'in_chat') {
-        const message = state.location.currentInput.trim()
+      if (state.chatWindow) {
+        const message = state.chatWindow.currentInput.trim()
         if (message) {
-          state.location.messages.push({ role: 'user', content: message })
-          state.location.currentInput = ""
+          state.chatWindow.messages.push({ role: 'user', content: message })
+          state.chatWindow.currentInput = ""
         }
       }
     },
 
     receiveChatFromNpc: (state, action: PayloadAction<string>) => {
-      if (state.location.type === 'in_chat') {
-        state.location.messages.push({ role: 'assistant', content: action.payload })
+      if (state.chatWindow) {
+        state.chatWindow.messages.push({ role: 'assistant', content: action.payload })
       }
     },
 
     pauseForToolUse: (state) => {
-      if (state.location.type === 'in_chat') {
-        state.location.pausingForToolUse = true
+      if (state.chatWindow) {
+        state.chatWindow.pausingForToolUse = true
       }
     },
 
     handleNpcToolUse: (state, action: PayloadAction<ToolUse>) => {
       switch (action.payload.name) {
         case 'open_door':
-          if (state.location.type === 'in_chat') {
-            // If play is on the town side of the door, move them to the forest
-            if (state.location.previousLocation.mapId === 'town') {
-              state.location = {
-                type: 'navigating',
-                player: {
-                  mapId: 'forest',
-                  x: 11,
-                  y: 13,
-                }
+          if (state.chatWindow) {
+            // If player is on the town side of the door, move them to the forest
+            if (state.player.mapId === 'town') {
+              state.player = {
+                mapId: 'forest',
+                x: 11,
+                y: 13,
               }
             } else {
-              state.location = {
-                type: 'navigating',
-                player: {
-                  mapId: 'town',
-                  x: 11,
-                  y: 1,
-                }
+              state.player = {
+                mapId: 'town',
+                x: 11,
+                y: 1,
               }
             }
+            // Close chat window after tool action
+            state.chatWindow = null
           }
       }
       
       // Reset pausing state after tool use is handled
-      if (state.location.type === 'in_chat') {
-        state.location.pausingForToolUse = false
+      if (state.chatWindow) {
+        state.chatWindow.pausingForToolUse = false
       }
     },
   },
