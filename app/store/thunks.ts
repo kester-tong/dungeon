@@ -10,7 +10,7 @@ import {
   addCharToInput,
   movePlayer,
 } from './gameSlice';
-import { NPCResponse } from '@/src/npcs/NPCResponse';
+import { ChatRequest, ChatResponse } from '../api/chat/types';
 
 // Utility function for sleeping
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -46,24 +46,31 @@ export const sendChatMessage = createAsyncThunk(
     ];
 
     try {
+      const requestBody: ChatRequest = {
+        messages: allMessages,
+        npcId: gameState.chatWindow.npcId,
+        accessKey: accessKey,
+      };
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          messages: allMessages,
-          npcId: gameState.chatWindow.npcId,
-          accessKey: accessKey,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         throw new Error('Failed to send message');
       }
 
-      const data = await response.json();
-      const npcResponse = data.response as NPCResponse;
+      const data: ChatResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+
+      const npcResponse = data.response;
 
       // Add AI response to chat
       dispatch(receiveChatFromNpc(npcResponse.text || ''));

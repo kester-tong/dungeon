@@ -2,20 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { gameConfig } from '@/src/config/gameConfig';
 import { NPCResponse } from '@/src/npcs/NPCResponse';
+import { ChatRequest, ChatResponse } from './types';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse<ChatResponse>> {
   try {
-    const body = await request.json();
+    const body: ChatRequest = await request.json();
     const { messages, npcId, accessKey } = body;
 
     // Validate access key
     if (!accessKey || accessKey !== process.env.APP_PASSWORD) {
-      return NextResponse.json(
+      return NextResponse.json<ChatResponse>(
         {
+          success: false,
           error: 'Invalid access key',
         },
         { status: 401 }
@@ -81,7 +85,7 @@ export async function POST(request: NextRequest) {
         : {
             text: 'Error',
           };
-    return NextResponse.json({
+    return NextResponse.json<ChatResponse>({
       success: true,
       response: npcResponse,
     });
@@ -89,7 +93,7 @@ export async function POST(request: NextRequest) {
     console.error('Chat API error:', error);
 
     // Return a fallback response instead of exposing the error
-    return NextResponse.json({
+    return NextResponse.json<ChatResponse>({
       success: true,
       response: {
         text: "I'm sorry, I'm having trouble hearing you right now. Could you try again?",
