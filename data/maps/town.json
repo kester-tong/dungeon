@@ -1,0 +1,57 @@
+{
+  "tileMapping": {
+    " ": {
+      "tileIndex": 2,
+      "type": "terrain"
+    },
+    "w": {
+      "tileIndex": 21,
+      "type": "obstacle"
+    },
+    "t": {
+      "tileIndex": 71,
+      "type": "npc",
+      "npcId": "shop_keeper"
+    },
+    "s": {
+      "tileIndex": 73,
+      "type": "npc",
+      "npcId": "weapons_master"
+    },
+    "p": {
+      "tileIndex": 2464,
+      "type": "npc",
+      "npcId": "mayor"
+    },
+    "b": {
+      "tileIndex": 2465,
+      "type": "npc",
+      "npcId": "tavern_keeper"
+    },
+    "d": {
+      "tileIndex": 67,
+      "type": "npc",
+      "npcId": "guard"
+    }
+  },
+  "data": [
+    "wwwwwwwwwwwdwwwwwwwwwwwww",
+    "w                       w",
+    "w                       w",
+    "w    wwww      wwww     w",
+    "w    wwww      wwww     w",
+    "w    wtww      wsww     w",
+    "w                       w",
+    "w                       w",
+    "w                       w",
+    "w    wwww      wwww     w",
+    "w    wwww      wwww     w",
+    "w    wbww      wpww     w",
+    "w                       w",
+    "w                       w",
+    "wwwwwwwwwwwwwwwwwwwwwwwww"
+  ],
+  "neighbors": {
+    "north": "forest"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "tileset": {
+    "imagePath": "/assets/images/tileset.png",
+    "tileSize": 32,
+    "width": 64,
+    "height": 71,
+    "columnWidth": 32,
+    "characterTileIndex": 576
+  },
+  "startingPosition": {
+    "x": 5,
+    "y": 7,
+    "mapId": "town"
+  },
+  "canvas": {
+    "width": 800,
+    "height": 480
+  }
+}

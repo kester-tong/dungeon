@@ -1,0 +1,41 @@
+{
+  "tileMapping": {
+    " ": {
+      "tileIndex": 1686,
+      "type": "terrain"
+    },
+    "w": {
+      "tileIndex": 21,
+      "type": "obstacle"
+    },
+    "T": {
+      "tileIndex": 92,
+      "type": "obstacle"
+    },
+    "d": {
+      "tileIndex": 67,
+      "type": "npc",
+      "npcId": "guard"
+    }
+  },
+  "data": [
+    "                         ",
+    "                         ",
+    "    TT           TT      ",
+    "   TTT     T    TTT      ",
+    "    T      T     T       ",
+    "           T             ",
+    "      T         T        ",
+    "     TTT       TTT       ",
+    "      T         T        ",
+    "           T             ",
+    "    T      T     T       ",
+    "   TTT     T    TTT      ",
+    "    TT           TT      ",
+    "                         ",
+    "wwwwwwwwwwwdwwwwwwwwwwwww"
+  ],
+  "neighbors": {
+    "south": "town"
+  }
+}
