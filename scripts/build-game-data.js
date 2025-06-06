@@ -26,8 +26,18 @@ function loadAllJsonFiles(directory) {
           const data = loadJsonFile(filePath);
           if (data) {
             const key = path.basename(file, '.json');
+            
+            // Load corresponding .txt file if it exists
+            const txtFile = path.join(directory, `${key}.txt`);
+            if (fs.existsSync(txtFile)) {
+              const mapData = fs.readFileSync(txtFile, 'utf8').split('\n');
+              data.data = mapData;
+              console.log(`Loaded ${key} from ${file} with data from ${key}.txt`);
+            } else {
+              console.log(`Loaded ${key} from ${file}`);
+            }
+            
             result[key] = data;
-            console.log(`Loaded ${key} from ${file}`);
           }
         }
       }
