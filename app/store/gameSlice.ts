@@ -34,13 +34,11 @@ export interface ChatWindow {
 }
 
 export interface GameState {
-  config: typeof gameConfig;
   player: Position;
   chatWindow: ChatWindow | null;
 }
 
 const initialState: GameState = {
-  config: gameConfig,
   player: gameConfig.startingPosition,
   chatWindow: null,
 }
@@ -49,7 +47,7 @@ const initialState: GameState = {
 function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' | 'west') {
   if (state.chatWindow !== null) return // Can't move while in chat
 
-  const currentMap = state.config.maps[state.player.mapId]
+  const currentMap = gameConfig.maps[state.player.mapId]
   if (!currentMap) return
 
   // Calculate new position based on direction
@@ -76,7 +74,7 @@ function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' 
     // Check if there's a neighboring map in the direction we're trying to go
     const neighborMapId = currentMap.neighbors[direction as keyof typeof currentMap.neighbors]
     if (neighborMapId) {
-      const neighborMap = state.config.maps[neighborMapId]
+      const neighborMap = gameConfig.maps[neighborMapId]
       // Calculate entry position on the new map
       let entryX: number
       let entryY: number
@@ -112,7 +110,7 @@ function handleMovement(state: GameState, direction: 'north' | 'south' | 'east' 
 
   // Check if target tile is an NPC - enter chat
   if (targetTile.type === "npc") {
-    const npc = state.config.npcs[targetTile.npcId]
+    const npc = gameConfig.npcs[targetTile.npcId]
     const messages: ChatMessage[] = []
 
     if (npc?.first_message) {

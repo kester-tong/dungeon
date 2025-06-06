@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useAppSelector } from '../store/hooks'
 import { TileRenderer, TileArray } from './TileRenderer'
+import { gameConfig } from '@/src/config/gameConfig'
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
@@ -15,7 +16,7 @@ export default function NavigationView() {
       return null
     }
     
-    const currentMap = gameState.config.maps[gameState.player.mapId]
+    const currentMap = gameConfig.maps[gameState.player.mapId]
     if (!currentMap) {
       return null
     }
@@ -30,7 +31,7 @@ export default function NavigationView() {
     tiles[player.y][player.x].push(CHARACTER_TILE_INDEX)
     
     return { tiles }
-  }, [gameState.config.maps, gameState.player, gameState.chatWindow])
+  }, [gameState.player, gameState.chatWindow])
 
   if (gameState.chatWindow !== null) {
     return null
