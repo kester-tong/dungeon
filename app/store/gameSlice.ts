@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
-import { ContentBlock, MessageParam } from '@/src/npcs/Anthropic';
+import { MessageParam } from '@/src/npcs/Anthropic';
 import { Message } from '@/src/npcs/Anthropic';
+import { ChatRequest, ChatResponse } from '../api/chat/types';
 
 /**
  * Position represents x, y coordinates and map location
@@ -20,11 +21,24 @@ export type { Message as ChatMessage };
  * - If messages is empty, it's the user's turn by default
  * - Otherwise, it's whoever's turn is next based on the last message
  * - If it's AI's turn, we're waiting for AI response
+ * - If it's the user's turn and it's a regular conversation turn then
+ *   currentMessage is non-null
+ * - If it's the user's turn and confirmation of an action (e.g. buy/sell)
+ *   is needed then currentMessage is null.
  */
 export interface ChatWindow {
   intro_text: string;
   messages: MessageParam[];
-  currentInput: string;
+  // These fields are used to request middleware to dispatch async actions.
+  // They are necessary to keep game logic in the reducer.
+  pendingChatRequest?: ChatRequest;
+  // Setting this allows the reducer to request middleware to sleep for a
+  // given interval before exiting the chat.  This usually is due to some
+  // action e.g. a guard opening a gate.
+  pendingAnimateEndChatRequest?: number;
+  animatingBeforeEndChat: boolean;
+  // The current message the user is typing.
+  currentMessage: string | null;
   npcId: string;
 }
 
@@ -128,8 +142,9 @@ function handleMovement(
     state.chatWindow = {
       intro_text: npc.intro_text,
       messages,
-      currentInput: '',
+      currentMessage: '',
       npcId: targetTile.npcId,
+      animatingBeforeEndChat: false,
     };
     return;
   }
@@ -152,8 +167,8 @@ const gameSlice = createSlice({
     },
 
     deleteCharFromInput: (state) => {
-      if (state.chatWindow) {
-        state.chatWindow.currentInput = state.chatWindow.currentInput.slice(
+      if (state.chatWindow && state.chatWindow.currentMessage !== null) {
+        state.chatWindow.currentMessage = state.chatWindow.currentMessage.slice(
           0,
           -1
         );
@@ -161,8 +176,8 @@ const gameSlice = createSlice({
     },
 
     addCharToInput: (state, action: PayloadAction<string>) => {
-      if (state.chatWindow) {
-        state.chatWindow.currentInput += action.payload;
+      if (state.chatWindow && state.chatWindow.currentMessage !== null) {
+        state.chatWindow.currentMessage += action.payload;
       }
     },
 
@@ -177,28 +192,57 @@ const gameSlice = createSlice({
 
     // Chat functionality
     sendChatToNpc: (state) => {
-      if (state.chatWindow) {
-        const message = state.chatWindow.currentInput.trim();
-        if (message) {
-          state.chatWindow.messages.push({
-            role: 'user',
-            content: [{ type: 'text', text: message }],
-          });
-          state.chatWindow.currentInput = '';
-        }
+      if (state.chatWindow && state.chatWindow.currentMessage !== null) {
+        state.chatWindow.messages.push({
+          role: 'user',
+          content: [{ type: 'text', text: state.chatWindow.currentMessage }],
+        });
+        state.chatWindow.currentMessage = null;
+        state.chatWindow.pendingChatRequest = {
+          accessKey: '', // TODO: make this optional
+          npcId: state.chatWindow.npcId,
+          messages: state.chatWindow.messages,
+        };
       }
     },
 
-    receiveChatFromNpc: (state, action: PayloadAction<ContentBlock[]>) => {
-      if (state.chatWindow) {
-        // Add the message with content blocks
-        state.chatWindow.messages.push({
-          role: 'assistant',
-          content: action.payload,
-        });
+    // Called to indicate that the call has started
+    chatToNpcStarted: (state) => {
+      if (state.chatWindow !== null) {
+        state.chatWindow.pendingChatRequest = undefined;
+      }
+    },
+
+    // Called to indicate that the call has started
+    animateEndChatStarted: (state) => {
+      if (state.chatWindow !== null) {
+        state.chatWindow.pendingAnimateEndChatRequest = undefined;
+      }
+    },
+
+    // sendToolResultToNpc: (state, action: PayloadAction<ToolResultBlock>) => {
+    //   if (state.chatWindow && state.chatWindow.currentTurn.type === 'user') {
+    //     state.chatWindow.messages.push({
+    //       role: 'user',
+    //       content: [action.payload],
+    //     });
+    //     state.chatWindow.currentTurn = {
+    //       type: 'assistant',
+    //       content: [],
+    //     };
+    //   }
+    // },
+
+    handleChatResponse: (state, action: PayloadAction<ChatResponse>) => {
+      if (state.chatWindow && state.chatWindow.currentMessage === null) {
+        // TODO: handle errors
+        if (!action.payload.success) {
+          return;
+        }
 
         // Check for tool use in the content blocks and handle immediately
-        for (const block of action.payload) {
+        const blocks = action.payload.response.message.content;
+        for (const block of blocks) {
           if (block.type === 'tool_use') {
             // Handle the tool use immediately
             switch (block.name) {
@@ -222,6 +266,21 @@ const gameSlice = createSlice({
             break; // Only handle the first tool use
           }
         }
+
+        state.chatWindow.messages.push({
+          role: 'assistant',
+          content: blocks,
+        });
+        const lastBlock = blocks.length > 0 ? blocks[blocks.length - 1] : null;
+        if (lastBlock && lastBlock.type === 'tool_use') {
+          // Currently there is only one tool whic opens the gate.  In that case
+          // we exit the chat after pausing to let the user read the message
+          state.chatWindow.pendingAnimateEndChatRequest = 2000;
+          state.chatWindow.animatingBeforeEndChat = true;
+        } else {
+          // Set to user's turn with new empty message.
+          state.chatWindow.currentMessage = '';
+        }
       }
     },
   },
@@ -233,7 +292,9 @@ export const {
   addCharToInput,
   movePlayer,
   sendChatToNpc,
-  receiveChatFromNpc,
+  chatToNpcStarted,
+  handleChatResponse,
+  animateEndChatStarted,
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

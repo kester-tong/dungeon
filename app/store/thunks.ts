@@ -2,57 +2,58 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 import {
   sendChatToNpc,
-  receiveChatFromNpc,
   exitChat,
   deleteCharFromInput,
   addCharToInput,
   movePlayer,
+  handleChatResponse,
+  chatToNpcStarted,
+  animateEndChatStarted,
 } from './gameSlice';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
-import { MessageParam } from '@/src/npcs/Anthropic';
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const maybeAnimateEndChat = createAsyncThunk(
+  'game/maybeAnimateEndChat',
+  async (_, { dispatch, getState }) => {
+    const state = getState() as RootState;
+    const gameState = state.game;
+    if (
+      gameState.chatWindow === null ||
+      gameState.chatWindow.pendingAnimateEndChatRequest === undefined
+    ) {
+      return;
+    }
+    dispatch(animateEndChatStarted());
+    await sleep(gameState.chatWindow.pendingAnimateEndChatRequest);
+    dispatch(exitChat());
+  }
+);
 
 // Async thunk for sending chat messages to NPC
-export const sendChatMessage = createAsyncThunk(
-  'game/sendChatMessage',
+const maybeSendChatMessage = createAsyncThunk(
+  'game/maybeSendChatMessage',
   async (_, { dispatch, getState }) => {
     const state = getState() as RootState;
     const gameState = state.game;
     const accessKey = state.auth.accessKey;
 
-    if (!accessKey) {
-      throw new Error('No access key available');
+    if (
+      !accessKey ||
+      gameState.chatWindow === null ||
+      !gameState.chatWindow.pendingChatRequest
+    ) {
+      return;
     }
 
-    if (!gameState.chatWindow) {
-      throw new Error('Not in chat mode');
-    }
-
-    const message = gameState.chatWindow.currentInput.trim();
-    if (!message) {
-      return; // Nothing to send
-    }
-
-    // Add user message to chat and clear input
-    dispatch(sendChatToNpc());
-
-    // Build messages array including the new user message
-    const allMessages: MessageParam[] = [
-      ...gameState.chatWindow.messages,
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: message,
-          },
-        ],
-      },
-    ];
+    dispatch(chatToNpcStarted());
 
     try {
       const requestBody: ChatRequest = {
-        messages: allMessages,
-        npcId: gameState.chatWindow.npcId,
+        ...gameState.chatWindow.pendingChatRequest,
         accessKey: accessKey,
       };
 
@@ -68,26 +69,22 @@ export const sendChatMessage = createAsyncThunk(
         throw new Error('Failed to send message');
       }
 
-      const data: ChatResponse = await response.json();
+      const chatResponse: ChatResponse = await response.json();
 
-      if (!data.success) {
-        throw new Error(data.error);
-      }
-
-      const npcResponse = data.response;
-
-      // Add AI response to chat (this will handle tool use automatically)
-      dispatch(receiveChatFromNpc(npcResponse.message.content));
-
-      return data.response;
+      dispatch(handleChatResponse(chatResponse));
+      dispatch(maybeSendChatMessage());
+      dispatch(maybeAnimateEndChat());
     } catch (error) {
       // Add fallback message on error
       dispatch(
-        receiveChatFromNpc([
-          { type: 'text', text: "Sorry, I couldn't understand that." },
-        ])
+        handleChatResponse({
+          success: false,
+          error:
+            typeof error === 'string'
+              ? error
+              : "Sorry, I couldn't undersand that",
+        })
       );
-      throw error;
     }
   }
 );
@@ -100,26 +97,39 @@ export const handleKeyPress = createAsyncThunk(
     const state = getState() as RootState;
     const gameState = state.game;
 
-    // Dispatch appropriate action based on whether we're in chat or not
-    const inChat = gameState.chatWindow !== null;
-
-    if (inChat) {
-      switch (key) {
-        case 'Enter':
-          await dispatch(sendChatMessage());
-          break;
-        case 'Escape':
-          dispatch(exitChat());
-          break;
-        case 'Backspace':
-          dispatch(deleteCharFromInput());
-          break;
-        default:
-          // For regular characters in chat mode
-          if (key.length === 1) {
-            dispatch(addCharToInput(key));
-          }
-          break;
+    if (gameState.chatWindow) {
+      // Case 1: It's the user's turn
+      if (gameState.chatWindow.currentMessage !== null) {
+        switch (key) {
+          case 'Enter':
+            dispatch(sendChatToNpc());
+            break;
+          case 'Escape':
+            dispatch(exitChat());
+            break;
+          case 'Backspace':
+            dispatch(deleteCharFromInput());
+            break;
+          default:
+            // For regular characters in chat mode
+            if (key.length === 1) {
+              dispatch(addCharToInput(key));
+            }
+            break;
+        }
+      } else {
+        const messages = gameState.chatWindow.messages;
+        const lastMessage =
+          messages.length > 0 ? messages[messages.length - 1] : null;
+        const lastBlock =
+          lastMessage && lastMessage.content.length > 0
+            ? lastMessage.content[lastMessage.content.length - 1]
+            : null;
+        if (lastBlock?.type === 'tool_use') {
+          // TODO: handle user input while waiting for an action.
+        } else {
+          // TODO handle user input while waiting for AI to respond.
+        }
       }
     } else {
       switch (key) {
@@ -145,5 +155,11 @@ export const handleKeyPress = createAsyncThunk(
           break;
       }
     }
+    // This call will detect whether the game state now means a new
+    // chat message should be sent.  This is a workaround for redux's
+    // one directional flow.  It's necessary to avoid having to split
+    // the game logic between thunks and the reducer.
+    dispatch(maybeSendChatMessage());
+    dispatch(maybeAnimateEndChat());
   }
 );

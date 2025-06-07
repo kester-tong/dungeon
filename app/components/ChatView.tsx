@@ -8,8 +8,20 @@ import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
 function renderToolUseBlock(block: ToolUseBlock) {
   switch (block.name) {
     case 'open_door':
-      return 'The gate swings open and you pass through [press any key to continue]';
+      return 'The gate swings open and you pass through';
   }
+}
+
+/**
+ * Output of flattening blocks from all messages.
+ *
+ * For the purpose of display it's easier to flatten all blocks into a single array.
+ * In order to display them we then need to also keep track of which role the block
+ * belonged to.
+ */
+interface FlattenedBlock {
+  role: 'user' | 'assistant';
+  block: ContentBlock;
 }
 
 // Helper function to render content blocks
@@ -33,7 +45,8 @@ function renderContentBlocks(role: 'user' | 'assistant', block: ContentBlock) {
         </span>
       );
     case 'tool_result':
-      return `[Tool result: ${block.content}]`;
+      // Currently only action is open_door whose result doesn't need displaying (always success)
+      return null;
     default:
       return '[Unknown content block]';
   }
@@ -45,18 +58,9 @@ export default function ChatView() {
     return null;
   }
 
-  const lastMessage = chatWindow.messages.length > 0 ? chatWindow.messages[chatWindow.messages.length - 1] : null;
-
-  const isWaitingForAI = lastMessage && lastMessage.role === 'user';
-  const toolUseInProgress = lastMessage && lastMessage.role === 'assistant' && lastMessage.content.length > 0 && lastMessage.content[lastMessage.content.length - 1].type === 'tool_use';
-  const isUserTurn = !isWaitingForAI && !toolUseInProgress;
-
-  // TODO: use this when waiting to complete an action that doesn't
-  // require user response.
-  const isPausing = false;
-
-  // Don't show user input prompt when pausing for tool use
-  const showUserPrompt = isUserTurn && !isPausing;
+  const flattenedBlocks: FlattenedBlock[] = chatWindow.messages.flatMap(
+    ({ role, content }) => content.map((block) => ({ role, block }))
+  );
 
   return (
     <main style={{ padding: '1rem' }}>
@@ -75,20 +79,22 @@ export default function ChatView() {
       >
         {chatWindow.intro_text}
         {'\n\nPress ESC to exit\n\n'}
-        {chatWindow.messages.flatMap((message) =>
-          message.content.map((block) =>
-            renderContentBlocks(message.role, block)
-          )
+        {flattenedBlocks.map(({ role, block }) =>
+          renderContentBlocks(role, block)
         )}
-        {showUserPrompt && (
+        {chatWindow.currentMessage !== null && (
           <span className={styles['user-message']}>
-            {'> ' + chatWindow.currentInput + '█'}
+            {'> ' + chatWindow.currentMessage + '█'}
           </span>
         )}
-        {isWaitingForAI && !isPausing && (
-          <span className={styles['blinking-cursor']}>{'█'}</span>
-        )}
-        {isPausing && <span className={styles['action-pending']}>{'█'}</span>}
+        {chatWindow.currentMessage === null &&
+          chatWindow.animatingBeforeEndChat && (
+            <span className={styles['action-pending']}>{'█'}</span>
+          )}
+        {chatWindow.currentMessage === null &&
+          !chatWindow.animatingBeforeEndChat && (
+            <span className={styles['blinking-cursor']}>{'█'}</span>
+          )}
       </pre>
     </main>
   );
