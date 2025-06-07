@@ -23,8 +23,7 @@ function renderContentBlocks(role: 'user' | 'assistant', block: ContentBlock) {
             role === 'user' ? styles['user-message'] : styles['npc-message']
           }
         >
-          {role === 'user' ? '> ' : ''}
-          {block.text + '\n\n'}
+          {'> ' + block.text + '\n\n'}
         </span>
       );
     case 'tool_use':
@@ -79,14 +78,14 @@ export default function ChatView() {
           )
         )}
         {showUserPrompt && (
-          <span className="user-message">
+          <span className={styles['user-message']}>
             {'> ' + gameState.chatWindow.currentInput + '█'}
           </span>
         )}
         {isWaitingForAI && !isPausing && (
-          <span className="blinking-cursor">{'█'}</span>
+          <span className={styles['blinking-cursor']}>{'█'}</span>
         )}
-        {isPausing && <span className="action-pending">{'█'}</span>}
+        {isPausing && <span className={styles['action-pending']}>{'█'}</span>}
       </pre>
     </main>
   );
