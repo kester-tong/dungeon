@@ -2,7 +2,7 @@
 import styles from './ChatView.module.css';
 
 import { useAppSelector } from '../store/hooks';
-import { selectIsWaitingForAI, selectIsUserTurn } from '../store/selectors';
+import { selectChatWindow } from '../store/selectors';
 import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
 
 function renderToolUseBlock(block: ToolUseBlock) {
@@ -40,13 +40,16 @@ function renderContentBlocks(role: 'user' | 'assistant', block: ContentBlock) {
 }
 
 export default function ChatView() {
-  const gameState = useAppSelector((state) => state.game);
-  const isWaitingForAI = useAppSelector(selectIsWaitingForAI);
-  const isUserTurn = useAppSelector(selectIsUserTurn);
-
-  if (!gameState.chatWindow) {
+  const chatWindow = useAppSelector(selectChatWindow);
+  if (chatWindow === null) {
     return null;
   }
+
+  const lastMessage = chatWindow.messages.length > 0 ? chatWindow.messages[chatWindow.messages.length - 1] : null;
+
+  const isWaitingForAI = lastMessage && lastMessage.role === 'user';
+  const toolUseInProgress = lastMessage && lastMessage.role === 'assistant' && lastMessage.content.length > 0 && lastMessage.content[lastMessage.content.length - 1].type === 'tool_use';
+  const isUserTurn = !isWaitingForAI && !toolUseInProgress;
 
   // TODO: use this when waiting to complete an action that doesn't
   // require user response.
@@ -70,16 +73,16 @@ export default function ChatView() {
           margin: 0,
         }}
       >
-        {gameState.chatWindow.intro_text}
+        {chatWindow.intro_text}
         {'\n\nPress ESC to exit\n\n'}
-        {gameState.chatWindow.messages.flatMap((message) =>
+        {chatWindow.messages.flatMap((message) =>
           message.content.map((block) =>
             renderContentBlocks(message.role, block)
           )
         )}
         {showUserPrompt && (
           <span className={styles['user-message']}>
-            {'> ' + gameState.chatWindow.currentInput + '█'}
+            {'> ' + chatWindow.currentInput + '█'}
           </span>
         )}
         {isWaitingForAI && !isPausing && (
