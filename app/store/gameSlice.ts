@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
-import { ChatMessage, ContentBlock } from '@/src/npcs/ContentBlocks';
+import { ContentBlock, MessageParam } from '@/src/npcs/Anthropic';
+import { Message } from '@/src/npcs/Anthropic';
 
 /**
  * Position represents x, y coordinates and map location
@@ -11,7 +12,7 @@ export interface Position {
   mapId: string;
 }
 
-export type { ChatMessage };
+export type { Message as ChatMessage };
 
 /**
  * ChatWindow represents the chat/dialog interface
@@ -22,10 +23,9 @@ export type { ChatMessage };
  */
 export interface ChatWindow {
   intro_text: string;
-  messages: ChatMessage[];
+  messages: MessageParam[];
   currentInput: string;
   npcId: string;
-  pausingForToolUse: boolean;
 }
 
 export interface GameState {
@@ -116,7 +116,7 @@ function handleMovement(
   // Check if target tile is an NPC - enter chat
   if (targetTile.type === 'npc') {
     const npc = gameConfig.npcs[targetTile.npcId];
-    const messages: ChatMessage[] = [];
+    const messages: MessageParam[] = [];
 
     if (npc?.first_message) {
       messages.push({
@@ -130,7 +130,6 @@ function handleMovement(
       messages,
       currentInput: '',
       npcId: targetTile.npcId,
-      pausingForToolUse: false,
     };
     return;
   }
@@ -225,19 +224,6 @@ const gameSlice = createSlice({
         }
       }
     },
-
-    pauseForToolUse: (state) => {
-      if (state.chatWindow) {
-        state.chatWindow.pausingForToolUse = true;
-      }
-    },
-
-    resumeFromToolUse: (state) => {
-      // Reset pausing state after tool use is handled
-      if (state.chatWindow) {
-        state.chatWindow.pausingForToolUse = false;
-      }
-    },
   },
 });
 
@@ -248,8 +234,6 @@ export const {
   movePlayer,
   sendChatToNpc,
   receiveChatFromNpc,
-  pauseForToolUse,
-  resumeFromToolUse,
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

@@ -1,0 +1,46 @@
+@keyframes blink {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.blinking-cursor {
+    animation: blink 1s infinite;
+    color: #87ceeb;
+}
+
+.action-pending {
+    animation: pulse 1.5s infinite;
+    color: #ffaa00;
+}
+
+.action {
+    color: #ffaa00;
+}
+
+.user-message {
+    color: #00ff00;
+}
+
+.npc-message {
+    color: #87ceeb;
+}

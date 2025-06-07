@@ -3,17 +3,13 @@ import type { RootState } from './store';
 import {
   sendChatToNpc,
   receiveChatFromNpc,
-  pauseForToolUse,
-  resumeFromToolUse,
   exitChat,
   deleteCharFromInput,
   addCharToInput,
   movePlayer,
 } from './gameSlice';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
-
-// Utility function for sleeping
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { MessageParam } from '@/src/npcs/Anthropic';
 
 // Async thunk for sending chat messages to NPC
 export const sendChatMessage = createAsyncThunk(
@@ -40,11 +36,16 @@ export const sendChatMessage = createAsyncThunk(
     dispatch(sendChatToNpc());
 
     // Build messages array including the new user message
-    const allMessages = [
+    const allMessages: MessageParam[] = [
       ...gameState.chatWindow.messages,
       {
-        role: 'user' as const,
-        content: [{ type: 'text' as const, text: message }],
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: message,
+          },
+        ],
       },
     ];
 
@@ -75,20 +76,8 @@ export const sendChatMessage = createAsyncThunk(
 
       const npcResponse = data.response;
 
-      // Check if there's tool use in the content blocks (for pausing logic)
-      const hasToolUse = npcResponse.content.some(
-        (block) => block.type === 'tool_use'
-      );
-
       // Add AI response to chat (this will handle tool use automatically)
-      dispatch(receiveChatFromNpc(npcResponse.content));
-
-      // If there was tool use, pause briefly to let user read the message
-      if (hasToolUse) {
-        dispatch(pauseForToolUse());
-        await sleep(2000); // 2 second pause
-        dispatch(resumeFromToolUse());
-      }
+      dispatch(receiveChatFromNpc(npcResponse.message.content));
 
       return data.response;
     } catch (error) {

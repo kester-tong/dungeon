@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { gameConfig } from '@/src/config/gameConfig';
 import { ChatRequest, ChatResponse } from './types';
-import { ContentBlock } from '@/src/npcs/ContentBlocks';
+import { ContentBlock } from '@/src/npcs/Anthropic';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -80,27 +80,23 @@ export async function POST(
       }
     });
 
-    const npcResponse = {
-      content: convertedContent,
-    };
     return NextResponse.json<ChatResponse>({
       success: true,
-      response: npcResponse,
+      response: {
+        message: {
+          role: 'assistant',
+          content: convertedContent,
+          stop_reason: response.stop_reason,
+        },
+      },
     });
   } catch (error) {
     console.error('Chat API error:', error);
 
     // Return a fallback response instead of exposing the error
     return NextResponse.json<ChatResponse>({
-      success: true,
-      response: {
-        content: [
-          {
-            type: 'text',
-            text: "I'm sorry, I'm having trouble hearing you right now. Could you try again?",
-          },
-        ],
-      },
+      success: false,
+      error: error!.toString(),
     });
   }
 }

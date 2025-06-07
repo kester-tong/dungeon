@@ -1,31 +1,43 @@
 'use client';
+import styles from './ChatView.module.css';
 
 import { useAppSelector } from '../store/hooks';
 import { selectIsWaitingForAI, selectIsUserTurn } from '../store/selectors';
-import { ContentBlock } from '@/src/npcs/ContentBlocks';
+import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
+
+function renderToolUseBlock(block: ToolUseBlock) {
+  switch (block.name) {
+    case 'open_door':
+      return 'The gate swings open and you pass through [press any key to continue]';
+  }
+}
 
 // Helper function to render content blocks
-function renderContentBlocks(content: ContentBlock[] | string): string {
-  // Handle legacy string content
-  if (typeof content === 'string') {
-    return content;
-  }
-
+function renderContentBlocks(role: 'user' | 'assistant', block: ContentBlock) {
   // Handle content blocks array
-  return content
-    .map((block) => {
-      switch (block.type) {
-        case 'text':
-          return block.text;
-        case 'tool_use':
-          return `[Using tool: ${block.name}]`;
-        case 'tool_result':
-          return `[Tool result: ${block.content}]`;
-        default:
-          return '[Unknown content block]';
-      }
-    })
-    .join('');
+  switch (block.type) {
+    case 'text':
+      return (
+        <span
+          className={
+            role === 'user' ? styles['user-message'] : styles['npc-message']
+          }
+        >
+          {role === 'user' ? '> ' : ''}
+          {block.text + '\n\n'}
+        </span>
+      );
+    case 'tool_use':
+      return (
+        <span className={styles.action}>
+          {renderToolUseBlock(block) + '\n\n'}
+        </span>
+      );
+    case 'tool_result':
+      return `[Tool result: ${block.content}]`;
+    default:
+      return '[Unknown content block]';
+  }
 }
 
 export default function ChatView() {
@@ -37,48 +49,15 @@ export default function ChatView() {
     return null;
   }
 
-  const isPausing = gameState.chatWindow.pausingForToolUse;
+  // TODO: use this when waiting to complete an action that doesn't
+  // require user response.
+  const isPausing = false;
 
   // Don't show user input prompt when pausing for tool use
   const showUserPrompt = isUserTurn && !isPausing;
 
   return (
     <main style={{ padding: '1rem' }}>
-      <style jsx>{`
-        @keyframes blink {
-          0%,
-          50% {
-            opacity: 1;
-          }
-          51%,
-          100% {
-            opacity: 0;
-          }
-        }
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 1;
-          }
-        }
-        .blinking-cursor {
-          animation: blink 1s infinite;
-          color: #87ceeb;
-        }
-        .action-pending {
-          animation: pulse 1.5s infinite;
-          color: #ffaa00;
-        }
-        .user-message {
-          color: #00ff00;
-        }
-        .npc-message {
-          color: #87ceeb;
-        }
-      `}</style>
       <pre
         style={{
           width: '804px',
@@ -94,28 +73,20 @@ export default function ChatView() {
       >
         {gameState.chatWindow.intro_text}
         {'\n\nPress ESC to exit\n\n'}
-        {gameState.chatWindow.messages.map((message, index) => (
-          <span key={index}>
-            {index > 0 && '\n\n'}
-            <span
-              className={
-                message.role === 'user' ? 'user-message' : 'npc-message'
-              }
-            >
-              {message.role === 'user' ? '> ' : ''}
-              {renderContentBlocks(message.content)}
-            </span>
-          </span>
-        ))}
+        {gameState.chatWindow.messages.flatMap((message) =>
+          message.content.map((block) =>
+            renderContentBlocks(message.role, block)
+          )
+        )}
         {showUserPrompt && (
           <span className="user-message">
-            {'\n\n> ' + gameState.chatWindow.currentInput + '█'}
+            {'> ' + gameState.chatWindow.currentInput + '█'}
           </span>
         )}
         {isWaitingForAI && !isPausing && (
-          <span className="blinking-cursor">{'\n\n█'}</span>
+          <span className="blinking-cursor">{'█'}</span>
         )}
-        {isPausing && <span className="action-pending">{'\n\n█'}</span>}
+        {isPausing && <span className="action-pending">{'█'}</span>}
       </pre>
     </main>
   );

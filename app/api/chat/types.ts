@@ -1,9 +1,7 @@
-import { ChatMessage, ContentBlock } from '@/src/npcs/ContentBlocks';
-
-export type { ChatMessage };
+import { Message, MessageParam } from '@/src/npcs/Anthropic';
 
 export interface ChatRequest {
-  messages: ChatMessage[];
+  messages: MessageParam[];
   npcId: string;
   accessKey: string;
 }
@@ -11,7 +9,7 @@ export interface ChatRequest {
 export interface ChatSuccessResponse {
   success: true;
   response: {
-    content: ContentBlock[];
+    message: Message;
   };
 }
 
