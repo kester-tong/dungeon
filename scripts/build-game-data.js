@@ -116,7 +116,7 @@ function assembleGameData() {
   const globalConfig = loadJsonFile(path.join(dataDir, 'config', 'globalConfig.json'));
   
   console.log('Loading prompt chunks...');
-  const promptChunks = loadPromptChunks(path.join(dataDir, 'config', 'prompt_chunks'));
+  const promptChunks = loadPromptChunks(path.join(dataDir, 'prompt_chunks'));
   
   console.log('Loading maps...');
   const jsonMaps = loadAllJsonFiles(path.join(dataDir, 'maps'));
