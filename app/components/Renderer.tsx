@@ -300,7 +300,7 @@ export function Renderer({ view, width, height }: RendererProps) {
 
     // Update the current view
     previousPropsRef.current = { view, width, height };
-  }, [tileset, view, renderFullTileArray, renderViewDiff]);
+  }, [tileset, view, height, width, renderFullTileArray, renderViewDiff]);
 
   // Don't render if tileset isn't loaded yet
   if (!tileset) {
