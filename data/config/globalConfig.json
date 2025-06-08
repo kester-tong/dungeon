@@ -44,5 +44,6 @@
     ],
     "maxSlots": 10
   },
-  "initialSplashText": "You awake with no memory of how you got here. The last thing you remember is a blinding flash of light, and now you find yourself in this unfamiliar place. Your head throbs as fragments of forgotten dreams slip away like morning mist."
+  "initialSplashText": "You awake with no memory of how you got here. The last thing you remember is a blinding flash of light, and now you find yourself in this unfamiliar place. Your head throbs as fragments of forgotten dreams slip away like morning mist.",
+  "endOfMapText": "Congratulations on making it this far! You've reached the end of the map. Please contact the developer if you'd like to continue your adventures."
 }

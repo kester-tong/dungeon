@@ -126,7 +126,8 @@ function handleMovement(
       return;
     }
 
-    // No neighbor found, stop movement
+    // No neighbor found - player has reached the end of the map
+    state.splashText = gameConfig.endOfMapText;
     return;
   }
 

@@ -29,6 +29,7 @@ export interface GameConfig {
   };
   initialInventory: Inventory;
   initialSplashText: string;
+  endOfMapText: string;
   maps: Record<string, Map>;
   npcs: Record<string, NPC>;
 }
