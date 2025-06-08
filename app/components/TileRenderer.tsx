@@ -16,16 +16,137 @@ export interface TileArray {
   tiles: number[][][];
 }
 
+/**
+ * TextBox represents a text box that is overlaid on the TileArray
+ */
+export interface TextBox {
+  // Coordinates in tile coordinates so one unit is the tile width/height
+  // Start is inclusive end is exclusive.
+  startx: number;
+  starty: number;
+  endx: number;
+  endy: number;
+  text: string;
+  scrollOffset?: number; // Number of lines to scroll from the bottom (0 = show bottom)
+}
+
 interface TileRendererProps {
   tileArray: TileArray;
+  textBoxes: TextBox[];
   width: number;
   height: number;
 }
 
-export function TileRenderer({ tileArray, width, height }: TileRendererProps) {
+/**
+ * Returns true if the given tile is contained within any of the text boxes
+ * 
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param textBoxes The set of text boxes
+ */
+function isContainedInTextBoxes(x: number, y: number, textBoxes: TextBox[]) {
+  return textBoxes.some(({startx, starty, endx, endy}) => startx <= x && x < endx && starty <= y && y < endy);
+}
+
+function renderTextBox(ctx: CanvasRenderingContext2D, textBox: TextBox, tileSize: number) {
+  const { startx, starty, endx, endy, text, scrollOffset = 0 } = textBox;
+  
+  // Convert tile coordinates to pixel coordinates
+  const pixelX = startx * tileSize;
+  const pixelY = starty * tileSize;
+  const pixelWidth = (endx - startx) * tileSize;
+  const pixelHeight = (endy - starty) * tileSize;
+  
+  // Draw background with slight transparency
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+  ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
+  
+  // Draw border strictly within tile boundaries
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(pixelX + 0.5, pixelY + 0.5, pixelWidth - 1, pixelHeight - 1);
+  
+  // Set up text properties
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  
+  // Add padding
+  const padding = 4;
+  const textX = pixelX + padding;
+  const textY = pixelY + padding;
+  const textWidth = pixelWidth - (padding * 2);
+  const textHeight = pixelHeight - (padding * 2);
+  
+  // Handle newlines and word wrap the text
+  const paragraphs = text.split('\n');
+  const lines: string[] = [];
+  
+  for (const paragraph of paragraphs) {
+    if (paragraph === '') {
+      lines.push('');
+      continue;
+    }
+    
+    const words = paragraph.split(' ');
+    let currentLine = '';
+    
+    for (const word of words) {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      const metrics = ctx.measureText(testLine);
+      
+      if (metrics.width > textWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+  }
+  
+  // Calculate scrolling
+  const lineHeight = 14;
+  const maxVisibleLines = Math.floor(textHeight / lineHeight);
+  const totalLines = lines.length;
+  
+  // Determine which lines to display based on scroll offset
+  let startLine = 0;
+  let endLine = totalLines;
+  
+  if (totalLines > maxVisibleLines) {
+    // If scrollOffset is 0, show the bottom (most recent content)
+    // If scrollOffset > 0, scroll up from the bottom
+    endLine = totalLines - scrollOffset;
+    startLine = Math.max(0, endLine - maxVisibleLines);
+    endLine = Math.min(totalLines, startLine + maxVisibleLines);
+  }
+  
+  // Set up clipping to prevent text from rendering outside the text box
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(textX, textY, textWidth, textHeight);
+  ctx.clip();
+  
+  // Draw visible lines
+  for (let i = startLine; i < endLine; i++) {
+    const line = lines[i];
+    const lineY = textY + ((i - startLine) * lineHeight);
+    ctx.fillText(line, textX, lineY);
+  }
+  
+  ctx.restore();
+}
+
+export function TileRenderer({ tileArray, textBoxes, width, height }: TileRendererProps) {
   const { tileset } = useTileset();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const currentTileArrayRef = useRef<TileArray | null>(null);
+  // Props from the last render so we can render just the parts that changed.
+  const previousPropsRef = useRef<TileRendererProps | null>(null);
 
   const renderTileLayers = useCallback(
     (
@@ -59,8 +180,11 @@ export function TileRenderer({ tileArray, width, height }: TileRendererProps) {
           renderTileLayers(ctx, x, y, tiles.tiles[y][x]);
         }
       }
+      if (tileset) {
+        textBoxes.forEach(textBox => renderTextBox(ctx, textBox, tileset.getTileSize()));
+      }
     },
-    [width, height, renderTileLayers]
+    [width, height, renderTileLayers, tileset, textBoxes]
   );
 
   const areTileLayersEqual = useCallback(
@@ -83,25 +207,32 @@ export function TileRenderer({ tileArray, width, height }: TileRendererProps) {
   const renderTileArrayDiff = useCallback(
     (
       ctx: CanvasRenderingContext2D,
-      newTiles: TileArray,
-      currentTiles: TileArray
+      tileArray: TileArray,
+      previousTiles: TileArray,
+      textBoxes: TextBox[],
+      previousTextBoxes: TextBox[]
     ) => {
       if (!tileset) return;
       const tileSize = tileset.getTileSize();
 
-      for (let y = 0; y < newTiles.tiles.length; y++) {
-        for (let x = 0; x < newTiles.tiles[y].length; x++) {
+      for (let y = 0; y < tileArray.tiles.length; y++) {
+        for (let x = 0; x < tileArray.tiles[y].length; x++) {
           if (
-            !areTileLayersEqual(newTiles.tiles[y][x], currentTiles.tiles[y][x])
+            !areTileLayersEqual(tileArray.tiles[y][x], previousTiles.tiles[y][x])
+            || isContainedInTextBoxes(x, y, previousTextBoxes)
+            || isContainedInTextBoxes(x, y, textBoxes)
           ) {
             // Clear this tile position with black
             ctx.fillStyle = '#000';
             ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
 
             // Render the new tile layers
-            renderTileLayers(ctx, x, y, newTiles.tiles[y][x]);
+            renderTileLayers(ctx, x, y, tileArray.tiles[y][x]);
           }
         }
+      }
+      if (tileset) {
+        textBoxes.forEach(textBox => renderTextBox(ctx, textBox, tileset.getTileSize()));
       }
     },
     [tileset, areTileLayersEqual, renderTileLayers]
@@ -115,29 +246,29 @@ export function TileRenderer({ tileArray, width, height }: TileRendererProps) {
     if (!ctx) return;
 
     // Initialize currentTileArray if it's null
-    if (!currentTileArrayRef.current) {
-      currentTileArrayRef.current = JSON.parse(JSON.stringify(tileArray));
+    if (!previousPropsRef.current) {
+      previousPropsRef.current = {tileArray, textBoxes, width, height};
       renderFullTileArray(ctx, tileArray);
       return;
     }
 
-    const currentTileArray = currentTileArrayRef.current;
+    const {tileArray: previousTileArray, textBoxes: previousTextBoxes} = previousPropsRef.current;
 
     // Ensure dimensions match or default to full render
     if (
-      tileArray.tiles.length !== currentTileArray.tiles.length ||
-      tileArray.tiles[0].length !== currentTileArray.tiles[0].length
+      tileArray.tiles.length !== previousTileArray.tiles.length ||
+      tileArray.tiles[0].length !== previousTileArray.tiles[0].length
     ) {
-      currentTileArrayRef.current = JSON.parse(JSON.stringify(tileArray));
+      previousPropsRef.current = {tileArray, textBoxes, width, height};
       renderFullTileArray(ctx, tileArray);
       return;
     }
 
     // Perform diffing and update only changed tiles
-    renderTileArrayDiff(ctx, tileArray, currentTileArray);
+    renderTileArrayDiff(ctx, tileArray, previousTileArray, textBoxes, previousTextBoxes);
 
     // Update the current tile array
-    currentTileArrayRef.current = JSON.parse(JSON.stringify(tileArray));
+    previousPropsRef.current = {tileArray, textBoxes, width, height};
   }, [tileset, tileArray, renderFullTileArray, renderTileArrayDiff]);
 
   // Don't render if tileset isn't loaded yet

@@ -21,7 +21,6 @@ export default function Game() {
   return (
     <>
       <InputController onKeyDown={onKeyDown} />
-      <ChatView />
       <NavigationView />
     </>
   );
