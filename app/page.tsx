@@ -92,7 +92,7 @@ function MainContent() {
     );
   }
 
-  // Render the game once authenticated (TileRenderer handles its own loading)
+  // Render the game once authenticated (Renderer handles its own loading)
   return (
     <>
       <Game />

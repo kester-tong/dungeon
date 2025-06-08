@@ -1,14 +1,16 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useAppDispatch } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { handleKeyPress } from '../store/thunks';
+import { selectChatWindowText, selectTileArray } from '../store/selectors';
 import InputController from './InputController';
-import ChatView from './ChatView';
-import NavigationView from './NavigationView';
+import { Renderer } from './Renderer';
 
 export default function Game() {
   const dispatch = useAppDispatch();
+  const tileArray = useAppSelector(selectTileArray);
+  const chatText = useAppSelector(selectChatWindowText);
 
   // Handle keyboard input via InputController
   const onKeyDown = useCallback(
@@ -21,7 +23,18 @@ export default function Game() {
   return (
     <>
       <InputController onKeyDown={onKeyDown} />
-      <NavigationView />
+      <main style={{ padding: '1rem' }}>
+        {tileArray && (
+          <Renderer
+            tileArray={tileArray}
+            textBoxes={chatText ? [
+              { text: chatText, startx: 2, starty: 2, endx: 23, endy: 13 },
+            ] : []}
+            width={800}
+            height={480}
+          />
+        )}
+      </main>
     </>
   );
 }

@@ -142,7 +142,7 @@ function renderTextBox(ctx: CanvasRenderingContext2D, textBox: TextBox, tileSize
   ctx.restore();
 }
 
-export function TileRenderer({ tileArray, textBoxes, width, height }: TileRendererProps) {
+export function Renderer({ tileArray, textBoxes, width, height }: TileRendererProps) {
   const { tileset } = useTileset();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Props from the last render so we can render just the parts that changed.
