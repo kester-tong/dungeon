@@ -143,7 +143,7 @@ export const selectInventoryDisplay = (state: RootState) => {
 
   // Add inventory header text box
   textBoxes.push({
-    text: [{ text: 'INVENTORY', color: UI_COLORS.NARRATIVE_TEXT }],
+    text: [{ text: 'Inventory', color: UI_COLORS.INSTRUCTION_TEXT }],
     startx: 25,
     starty: 0,
     endx: 33,
