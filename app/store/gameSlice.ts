@@ -3,6 +3,7 @@ import { gameConfig } from '@/src/config/gameConfig';
 import { MessageParam } from '@/src/npcs/Anthropic';
 import { Message } from '@/src/npcs/Anthropic';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
+import { Inventory } from '@/src/items';
 
 /**
  * Position represents x, y coordinates and map location
@@ -45,11 +46,13 @@ export interface ChatWindow {
 export interface GameState {
   player: Position;
   chatWindow: ChatWindow | null;
+  inventory: Inventory;
 }
 
 const initialState: GameState = {
   player: gameConfig.startingPosition,
   chatWindow: null,
+  inventory: gameConfig.initialInventory,
 };
 
 // Helper function for movement logic

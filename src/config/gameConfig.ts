@@ -6,6 +6,7 @@
 import { Map } from '../maps/Map';
 import { NPC } from '../npcs/NPC';
 import { TilesetConfig } from '../tileset';
+import { Inventory } from '../items';
 import gameDataJsonRaw from './gameData.json';
 
 const gameDataJson = gameDataJsonRaw as GameConfig;
@@ -26,6 +27,7 @@ export interface GameConfig {
   sidepane: {
     width: number; // Width in tiles
   };
+  initialInventory: Inventory;
   maps: Record<string, Map>;
   npcs: Record<string, NPC>;
 }

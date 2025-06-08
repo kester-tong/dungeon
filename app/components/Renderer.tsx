@@ -44,6 +44,8 @@ export interface TextBox {
   endy: number;
   text: TextSegment[];
   scrollOffset?: number; // Number of lines to scroll from the bottom (0 = show bottom)
+  borderColor?: string; // Optional border color, no border if not provided
+  backgroundColor?: string; // Optional background color, defaults to 'rgba(0, 0, 0, 0.8)'
 }
 
 interface RendererProps {
@@ -71,7 +73,16 @@ function renderTextBox(
   textBox: TextBox,
   tileSize: number
 ) {
-  const { startx, starty, endx, endy, text, scrollOffset = 0 } = textBox;
+  const {
+    startx,
+    starty,
+    endx,
+    endy,
+    text,
+    scrollOffset = 0,
+    borderColor,
+    backgroundColor,
+  } = textBox;
 
   // Convert tile coordinates to pixel coordinates
   const pixelX = startx * tileSize;
@@ -79,14 +90,22 @@ function renderTextBox(
   const pixelWidth = (endx - startx) * tileSize;
   const pixelHeight = (endy - starty) * tileSize;
 
-  // Draw background with slight transparency
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-  ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
+  // Draw background if specified or default
+  if (backgroundColor !== undefined) {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
+  } else if (borderColor) {
+    // Only draw default background if there's a border
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
+  }
 
-  // Draw border strictly within tile boundaries
-  ctx.strokeStyle = '#666';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(pixelX + 0.5, pixelY + 0.5, pixelWidth - 1, pixelHeight - 1);
+  // Draw border only if borderColor is specified
+  if (borderColor) {
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(pixelX + 0.5, pixelY + 0.5, pixelWidth - 1, pixelHeight - 1);
+  }
 
   // Set up text properties
   ctx.font = '12px monospace';

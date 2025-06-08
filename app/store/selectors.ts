@@ -26,12 +26,20 @@ export const selectTileArray = (state: RootState): TileArray | null => {
   const sidepaneWidth = gameConfig.sidepane.width;
   const tiles: number[][][] = currentMap.data.map(
     (row) =>
-      row.map((tile) => [tile.tileIndex]).concat(Array(sidepaneWidth).fill([1])) // Add blank tiles (tile index 1) for sidepane
+      row.map((tile) => [tile.tileIndex]).concat(Array(sidepaneWidth).fill([])) // Add empty arrays for sidepane
   );
 
   // Add character at player position
   const player = state.game.player;
   tiles[player.y][player.x].push(CHARACTER_TILE_INDEX);
+
+  // Add inventory tiles (replace empty arrays with single tile)
+  const inventoryDisplay = selectInventoryDisplay(state);
+  for (const inventoryTile of inventoryDisplay.inventoryTiles) {
+    if (inventoryTile.y < tiles.length && inventoryTile.x < tiles[0].length) {
+      tiles[inventoryTile.y][inventoryTile.x] = [inventoryTile.tileIndex];
+    }
+  }
 
   return { tiles };
 };
@@ -113,20 +121,92 @@ export const selectChatWindowText = (
 };
 
 /**
+ * Selector to get inventory as separate text boxes and tiles for proper alignment
+ */
+export const selectInventoryDisplay = (state: RootState) => {
+  const inventory = state.game.inventory;
+  const textBoxes = [];
+  const inventoryTiles = [];
+
+  // Add inventory header text box
+  textBoxes.push({
+    text: [{ text: 'INVENTORY', color: '#ffaa00' }],
+    startx: 25,
+    starty: 0,
+    endx: 33,
+    endy: 1,
+  });
+
+  if (inventory.items.length === 0) {
+    textBoxes.push({
+      text: [{ text: 'Empty', color: '#666' }],
+      startx: 25,
+      starty: 2,
+      endx: 33,
+      endy: 3,
+    });
+  } else {
+    // Add each item as separate text box with corresponding tile
+    for (let i = 0; i < inventory.items.length; i++) {
+      const slot = inventory.items[i];
+      const startY = 1 + i; // Start immediately after header (no gap)
+
+      // Add item tile to the tile array at appropriate position
+      if (slot.item.tileIndex) {
+        inventoryTiles.push({
+          x: 25,
+          y: startY,
+          tileIndex: slot.item.tileIndex,
+        });
+      }
+
+      // Add item name text box (positioned next to tile)
+      const quantityText = slot.quantity > 1 ? ` (${slot.quantity})` : '';
+      textBoxes.push({
+        text: [{ text: slot.item.name + quantityText, color: '#fff' }],
+        startx: 26,
+        starty: startY,
+        endx: 33,
+        endy: startY + 1,
+      });
+    }
+  }
+
+  return { textBoxes, inventoryTiles };
+};
+
+/**
  * Selector to get the complete view including tiles and text overlays
  */
 export const selectView = (state: RootState): View | null => {
   const tileArray = selectTileArray(state);
   const chatText = selectChatWindowText(state);
+  const inventoryDisplay = selectInventoryDisplay(state);
 
   if (!tileArray) {
     return null;
   }
 
+  const textBoxes = [];
+
+  // Add chat text box if there's chat content
+  if (chatText) {
+    textBoxes.push({
+      text: chatText,
+      startx: 2,
+      starty: 2,
+      endx: 23,
+      endy: 13,
+      borderColor: '#666',
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    });
+  }
+
+  // Add inventory text boxes
+  textBoxes.push(...inventoryDisplay.textBoxes);
+
   return {
     tileArray,
-    textBoxes: chatText
-      ? [{ text: chatText, startx: 2, starty: 2, endx: 23, endy: 13 }]
-      : [],
+    textBoxes,
   };
 };
