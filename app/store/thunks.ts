@@ -3,6 +3,7 @@ import type { RootState } from './store';
 import {
   sendChatToNpc,
   exitChat,
+  dismissSplashText,
   deleteCharFromInput,
   addCharToInput,
   movePlayer,
@@ -97,7 +98,12 @@ export const handleKeyPress = createAsyncThunk(
     const state = getState() as RootState;
     const gameState = state.game;
 
-    if (gameState.chatWindow) {
+    if (gameState.splashText) {
+      // Handle splash text (only escape dismisses it)
+      if (key === 'Escape') {
+        dispatch(dismissSplashText());
+      }
+    } else if (gameState.chatWindow) {
       // Case 1: It's the user's turn
       if (gameState.chatWindow.currentMessage !== null) {
         switch (key) {

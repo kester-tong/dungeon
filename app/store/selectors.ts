@@ -4,6 +4,15 @@ import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
 import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
 
+// UI Color Constants
+const UI_COLORS = {
+  NARRATIVE_TEXT: '#ffaa00', // Brown/orange for game world descriptions, actions, and system text
+  USER_INPUT: '#00ff00', // Green for user input text
+  ASSISTANT_TEXT: '#87ceeb', // Light blue for assistant/NPC responses
+  INSTRUCTION_TEXT: '#fff', // White for user instructions like "Press ESC"
+  MUTED_TEXT: '#666', // Gray for empty states and borders
+} as const;
+
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
 
 /**
@@ -49,10 +58,10 @@ function renderToolUseBlockText(block: ToolUseBlock): TextSegment {
     case 'open_door':
       return {
         text: 'The gate swings open and you pass through\n\n',
-        color: '#ffaa00',
+        color: UI_COLORS.NARRATIVE_TEXT,
       };
     default:
-      return { text: '', color: '#fff' };
+      return { text: '', color: UI_COLORS.INSTRUCTION_TEXT };
   }
 }
 
@@ -62,15 +71,19 @@ function renderContentBlockText(
 ): TextSegment {
   switch (block.type) {
     case 'text':
-      const color = role === 'user' ? '#00ff00' : '#87ceeb';
+      const color =
+        role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
       return { text: '> ' + block.text + '\n\n', color };
     case 'tool_use':
       return renderToolUseBlockText(block);
     case 'tool_result':
       // Currently only action is open_door whose result doesn't need displaying (always success)
-      return { text: '', color: '#fff' };
+      return { text: '', color: UI_COLORS.INSTRUCTION_TEXT };
     default:
-      return { text: '[Unknown content block]', color: '#fff' };
+      return {
+        text: '[Unknown content block]',
+        color: UI_COLORS.INSTRUCTION_TEXT,
+      };
   }
 }
 
@@ -87,11 +100,11 @@ export const selectChatWindowText = (
 
   const segments: TextSegment[] = [];
 
-  // Add intro text
-  segments.push({
-    text: chatWindow.intro_text + '\n\nPress ESC to exit\n\n',
-    color: '#87ceeb',
-  });
+  // Add intro text with brown description and white instruction
+  segments.push(
+    { text: chatWindow.intro_text, color: UI_COLORS.NARRATIVE_TEXT },
+    { text: '\n\nPress ESC to exit\n\n', color: UI_COLORS.INSTRUCTION_TEXT }
+  );
 
   // Flatten and render all message blocks
   const flattenedBlocks = chatWindow.messages.flatMap(({ role, content }) =>
@@ -109,12 +122,12 @@ export const selectChatWindowText = (
   if (chatWindow.currentMessage !== null) {
     segments.push({
       text: '> ' + chatWindow.currentMessage + '█',
-      color: '#00ff00',
+      color: UI_COLORS.USER_INPUT,
     });
   } else if (chatWindow.animatingBeforeEndChat) {
-    segments.push({ text: '█', color: '#ffaa00' });
+    segments.push({ text: '█', color: UI_COLORS.NARRATIVE_TEXT });
   } else {
-    segments.push({ text: '█', color: '#87ceeb' });
+    segments.push({ text: '█', color: UI_COLORS.ASSISTANT_TEXT });
   }
 
   return segments;
@@ -130,7 +143,7 @@ export const selectInventoryDisplay = (state: RootState) => {
 
   // Add inventory header text box
   textBoxes.push({
-    text: [{ text: 'INVENTORY', color: '#ffaa00' }],
+    text: [{ text: 'INVENTORY', color: UI_COLORS.NARRATIVE_TEXT }],
     startx: 25,
     starty: 0,
     endx: 33,
@@ -139,7 +152,7 @@ export const selectInventoryDisplay = (state: RootState) => {
 
   if (inventory.items.length === 0) {
     textBoxes.push({
-      text: [{ text: 'Empty', color: '#666' }],
+      text: [{ text: 'Empty', color: UI_COLORS.MUTED_TEXT }],
       startx: 25,
       starty: 2,
       endx: 33,
@@ -163,7 +176,12 @@ export const selectInventoryDisplay = (state: RootState) => {
       // Add item name text box (positioned next to tile)
       const quantityText = slot.quantity > 1 ? ` (${slot.quantity})` : '';
       textBoxes.push({
-        text: [{ text: slot.item.name + quantityText, color: '#fff' }],
+        text: [
+          {
+            text: slot.item.name + quantityText,
+            color: UI_COLORS.INSTRUCTION_TEXT,
+          },
+        ],
         startx: 26,
         starty: startY,
         endx: 33,
@@ -182,12 +200,32 @@ export const selectView = (state: RootState): View | null => {
   const tileArray = selectTileArray(state);
   const chatText = selectChatWindowText(state);
   const inventoryDisplay = selectInventoryDisplay(state);
+  const splashText = state.game.splashText;
 
   if (!tileArray) {
     return null;
   }
 
   const textBoxes = [];
+
+  // Add splash text if present
+  if (splashText) {
+    textBoxes.push({
+      text: [
+        { text: splashText, color: UI_COLORS.NARRATIVE_TEXT },
+        {
+          text: '\n\nPress ESC to continue...',
+          color: UI_COLORS.INSTRUCTION_TEXT,
+        },
+      ],
+      startx: 2,
+      starty: 2,
+      endx: 23,
+      endy: 13,
+      borderColor: UI_COLORS.MUTED_TEXT,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    });
+  }
 
   // Add chat text box if there's chat content
   if (chatText) {

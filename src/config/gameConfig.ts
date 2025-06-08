@@ -28,6 +28,7 @@ export interface GameConfig {
     width: number; // Width in tiles
   };
   initialInventory: Inventory;
+  initialSplashText: string;
   maps: Record<string, Map>;
   npcs: Record<string, NPC>;
 }

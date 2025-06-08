@@ -47,12 +47,14 @@ export interface GameState {
   player: Position;
   chatWindow: ChatWindow | null;
   inventory: Inventory;
+  splashText: string | null;
 }
 
 const initialState: GameState = {
   player: gameConfig.startingPosition,
   chatWindow: null,
   inventory: gameConfig.initialInventory,
+  splashText: gameConfig.initialSplashText,
 };
 
 // Helper function for movement logic
@@ -167,6 +169,10 @@ const gameSlice = createSlice({
     // Functional actions
     exitChat: (state) => {
       state.chatWindow = null;
+    },
+
+    dismissSplashText: (state) => {
+      state.splashText = null;
     },
 
     deleteCharFromInput: (state) => {
@@ -291,6 +297,7 @@ const gameSlice = createSlice({
 
 export const {
   exitChat,
+  dismissSplashText,
   deleteCharFromInput,
   addCharToInput,
   movePlayer,
