@@ -15,5 +15,8 @@
   "canvas": {
     "width": 800,
     "height": 480
+  },
+  "sidepane": {
+    "width": 8
   }
 }

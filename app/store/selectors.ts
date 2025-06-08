@@ -1,7 +1,7 @@
 import { RootState } from './store';
 import { ChatWindow } from './gameSlice';
 import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
-import { TileArray, TextSegment } from '../components/Renderer';
+import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
@@ -22,9 +22,11 @@ export const selectTileArray = (state: RootState): TileArray | null => {
     return null;
   }
 
-  // Extract tile indices from map data
-  const tiles: number[][][] = currentMap.data.map((row) =>
-    row.map((tile) => [tile.tileIndex])
+  // Extract tile indices from map data and extend with sidepane
+  const sidepaneWidth = gameConfig.sidepane.width;
+  const tiles: number[][][] = currentMap.data.map(
+    (row) =>
+      row.map((tile) => [tile.tileIndex]).concat(Array(sidepaneWidth).fill([1])) // Add blank tiles (tile index 1) for sidepane
   );
 
   // Add character at player position
@@ -37,13 +39,19 @@ export const selectTileArray = (state: RootState): TileArray | null => {
 function renderToolUseBlockText(block: ToolUseBlock): TextSegment {
   switch (block.name) {
     case 'open_door':
-      return { text: 'The gate swings open and you pass through\n\n', color: '#ffaa00' };
+      return {
+        text: 'The gate swings open and you pass through\n\n',
+        color: '#ffaa00',
+      };
     default:
       return { text: '', color: '#fff' };
   }
 }
 
-function renderContentBlockText(role: 'user' | 'assistant', block: ContentBlock): TextSegment {
+function renderContentBlockText(
+  role: 'user' | 'assistant',
+  block: ContentBlock
+): TextSegment {
   switch (block.type) {
     case 'text':
       const color = role === 'user' ? '#00ff00' : '#87ceeb';
@@ -61,7 +69,9 @@ function renderContentBlockText(role: 'user' | 'assistant', block: ContentBlock)
 /**
  * Selector to get the chat window content as TextSegment array for TextBox
  */
-export const selectChatWindowText = (state: RootState): TextSegment[] | null => {
+export const selectChatWindowText = (
+  state: RootState
+): TextSegment[] | null => {
   const chatWindow = state.game.chatWindow;
   if (chatWindow === null) {
     return null;
@@ -70,11 +80,14 @@ export const selectChatWindowText = (state: RootState): TextSegment[] | null => 
   const segments: TextSegment[] = [];
 
   // Add intro text
-  segments.push({ text: chatWindow.intro_text + '\n\nPress ESC to exit\n\n', color: '#87ceeb' });
+  segments.push({
+    text: chatWindow.intro_text + '\n\nPress ESC to exit\n\n',
+    color: '#87ceeb',
+  });
 
   // Flatten and render all message blocks
-  const flattenedBlocks = chatWindow.messages.flatMap(
-    ({ role, content }) => content.map((block) => ({ role, block }))
+  const flattenedBlocks = chatWindow.messages.flatMap(({ role, content }) =>
+    content.map((block) => ({ role, block }))
   );
 
   for (const { role, block } of flattenedBlocks) {
@@ -86,7 +99,10 @@ export const selectChatWindowText = (state: RootState): TextSegment[] | null => 
 
   // Add current message with cursor
   if (chatWindow.currentMessage !== null) {
-    segments.push({ text: '> ' + chatWindow.currentMessage + '█', color: '#00ff00' });
+    segments.push({
+      text: '> ' + chatWindow.currentMessage + '█',
+      color: '#00ff00',
+    });
   } else if (chatWindow.animatingBeforeEndChat) {
     segments.push({ text: '█', color: '#ffaa00' });
   } else {
@@ -94,4 +110,23 @@ export const selectChatWindowText = (state: RootState): TextSegment[] | null => 
   }
 
   return segments;
+};
+
+/**
+ * Selector to get the complete view including tiles and text overlays
+ */
+export const selectView = (state: RootState): View | null => {
+  const tileArray = selectTileArray(state);
+  const chatText = selectChatWindowText(state);
+
+  if (!tileArray) {
+    return null;
+  }
+
+  return {
+    tileArray,
+    textBoxes: chatText
+      ? [{ text: chatText, startx: 2, starty: 2, endx: 23, endy: 13 }]
+      : [],
+  };
 };

@@ -23,6 +23,9 @@ export interface GameConfig {
     width: number;
     height: number;
   };
+  sidepane: {
+    width: number; // Width in tiles
+  };
   maps: Record<string, Map>;
   npcs: Record<string, NPC>;
 }
