@@ -17,6 +17,14 @@ export interface TileArray {
 }
 
 /**
+ * Represents a text segment with optional color
+ */
+export interface TextSegment {
+  text: string;
+  color?: string; // CSS color value, defaults to white if not specified
+}
+
+/**
  * TextBox represents a text box that is overlaid on the TileArray
  */
 export interface TextBox {
@@ -26,7 +34,7 @@ export interface TextBox {
   starty: number;
   endx: number;
   endy: number;
-  text: string;
+  text: TextSegment[];
   scrollOffset?: number; // Number of lines to scroll from the bottom (0 = show bottom)
 }
 
@@ -67,7 +75,6 @@ function renderTextBox(ctx: CanvasRenderingContext2D, textBox: TextBox, tileSize
   ctx.strokeRect(pixelX + 0.5, pixelY + 0.5, pixelWidth - 1, pixelHeight - 1);
   
   // Set up text properties
-  ctx.fillStyle = '#fff';
   ctx.font = '12px monospace';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
@@ -79,33 +86,43 @@ function renderTextBox(ctx: CanvasRenderingContext2D, textBox: TextBox, tileSize
   const textWidth = pixelWidth - (padding * 2);
   const textHeight = pixelHeight - (padding * 2);
   
-  // Handle newlines and word wrap the text
-  const paragraphs = text.split('\n');
-  const lines: string[] = [];
+  // Process each text segment and word wrap within each segment
+  interface ColoredLine {
+    text: string;
+    color: string;
+  }
   
-  for (const paragraph of paragraphs) {
-    if (paragraph === '') {
-      lines.push('');
-      continue;
-    }
+  const lines: ColoredLine[] = [];
+  
+  for (const segment of text) {
+    const paragraphs = segment.text.split('\n');
+    const color = segment.color || '#fff';
     
-    const words = paragraph.split(' ');
-    let currentLine = '';
-    
-    for (const word of words) {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      const metrics = ctx.measureText(testLine);
-      
-      if (metrics.width > textWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
+    for (const paragraph of paragraphs) {
+      if (paragraph === '') {
+        lines.push({ text: '', color });
+        continue;
       }
-    }
-    
-    if (currentLine) {
-      lines.push(currentLine);
+      
+      const words = paragraph.split(' ');
+      let currentLine = '';
+      
+      for (const word of words) {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        ctx.fillStyle = color; // Set color for measurement
+        const metrics = ctx.measureText(testLine);
+        
+        if (metrics.width > textWidth && currentLine) {
+          lines.push({ text: currentLine, color });
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      
+      if (currentLine) {
+        lines.push({ text: currentLine, color });
+      }
     }
   }
   
@@ -119,8 +136,6 @@ function renderTextBox(ctx: CanvasRenderingContext2D, textBox: TextBox, tileSize
   let endLine = totalLines;
   
   if (totalLines > maxVisibleLines) {
-    // If scrollOffset is 0, show the bottom (most recent content)
-    // If scrollOffset > 0, scroll up from the bottom
     endLine = totalLines - scrollOffset;
     startLine = Math.max(0, endLine - maxVisibleLines);
     endLine = Math.min(totalLines, startLine + maxVisibleLines);
@@ -132,11 +147,12 @@ function renderTextBox(ctx: CanvasRenderingContext2D, textBox: TextBox, tileSize
   ctx.rect(textX, textY, textWidth, textHeight);
   ctx.clip();
   
-  // Draw visible lines
+  // Draw visible lines with their colors
   for (let i = startLine; i < endLine; i++) {
     const line = lines[i];
     const lineY = textY + ((i - startLine) * lineHeight);
-    ctx.fillText(line, textX, lineY);
+    ctx.fillStyle = line.color;
+    ctx.fillText(line.text, textX, lineY);
   }
   
   ctx.restore();

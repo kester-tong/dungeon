@@ -1,7 +1,7 @@
 import { RootState } from './store';
 import { ChatWindow } from './gameSlice';
 import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
-import { TileArray } from '../components/Renderer';
+import { TileArray, TextSegment } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
@@ -34,39 +34,43 @@ export const selectTileArray = (state: RootState): TileArray | null => {
   return { tiles };
 };
 
-function renderToolUseBlockText(block: ToolUseBlock): string {
+function renderToolUseBlockText(block: ToolUseBlock): TextSegment {
   switch (block.name) {
     case 'open_door':
-      return 'The gate swings open and you pass through';
+      return { text: 'The gate swings open and you pass through\n\n', color: '#ffaa00' };
     default:
-      return '';
+      return { text: '', color: '#fff' };
   }
 }
 
-function renderContentBlockText(role: 'user' | 'assistant', block: ContentBlock): string {
+function renderContentBlockText(role: 'user' | 'assistant', block: ContentBlock): TextSegment {
   switch (block.type) {
     case 'text':
-      return '> ' + block.text + '\n\n';
+      const color = role === 'user' ? '#00ff00' : '#87ceeb';
+      return { text: '> ' + block.text + '\n\n', color };
     case 'tool_use':
-      return renderToolUseBlockText(block) + '\n\n';
+      return renderToolUseBlockText(block);
     case 'tool_result':
       // Currently only action is open_door whose result doesn't need displaying (always success)
-      return '';
+      return { text: '', color: '#fff' };
     default:
-      return '[Unknown content block]';
+      return { text: '[Unknown content block]', color: '#fff' };
   }
 }
 
 /**
- * Selector to get the chat window content as text representation for TextBox
+ * Selector to get the chat window content as TextSegment array for TextBox
  */
-export const selectChatWindowText = (state: RootState): string | null => {
+export const selectChatWindowText = (state: RootState): TextSegment[] | null => {
   const chatWindow = state.game.chatWindow;
   if (chatWindow === null) {
     return null;
   }
 
-  let text = chatWindow.intro_text + '\n\nPress ESC to exit\n\n';
+  const segments: TextSegment[] = [];
+
+  // Add intro text
+  segments.push({ text: chatWindow.intro_text + '\n\nPress ESC to exit\n\n', color: '#87ceeb' });
 
   // Flatten and render all message blocks
   const flattenedBlocks = chatWindow.messages.flatMap(
@@ -74,17 +78,20 @@ export const selectChatWindowText = (state: RootState): string | null => {
   );
 
   for (const { role, block } of flattenedBlocks) {
-    text += renderContentBlockText(role, block);
+    const segment = renderContentBlockText(role, block);
+    if (segment.text) {
+      segments.push(segment);
+    }
   }
 
   // Add current message with cursor
   if (chatWindow.currentMessage !== null) {
-    text += '> ' + chatWindow.currentMessage + '█';
+    segments.push({ text: '> ' + chatWindow.currentMessage + '█', color: '#00ff00' });
   } else if (chatWindow.animatingBeforeEndChat) {
-    text += '█';
+    segments.push({ text: '█', color: '#ffaa00' });
   } else {
-    text += '█';
+    segments.push({ text: '█', color: '#87ceeb' });
   }
 
-  return text;
+  return segments;
 };
