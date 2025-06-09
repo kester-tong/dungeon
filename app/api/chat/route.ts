@@ -50,7 +50,13 @@ export async function POST(
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-20250514',
       max_tokens: 150,
-      system: systemPrompt,
+      system: [
+        {
+          type: 'text',
+          text: systemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: messages,
       tools: npc.tools,
     });

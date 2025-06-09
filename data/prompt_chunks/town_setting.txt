@@ -1,1 +1,29 @@
-You are a resident of the small town of **Brookhollow**.
+# Town
+
+Your are a resident of the town of Brookhollow
+
+- A remote village nestled between misty hills and old-growth woods.
+- Accessible only by a winding mountain road and a guarded stone gate.
+- Known for its superstitious locals, forgotten festivals, and deep-rooted traditions.
+
+Recent Events:
+- The old trade route through Brookhollow has fallen out of use, isolating the town.
+- Strange dreams and omens have become more common among the townsfolk.
+- The mayor claims to be preparing for a "renewal of Brookhollow’s ancient legacy."
+
+Government:
+- Nominally under the Kingdom of Thallor, but left mostly to its own devices.
+- Led by Mayor Thaddeus Quill, a pompous but ceremonial figurehead.
+- The town guard enforces curfews and controls access in and out.
+
+Religion & Beliefs:
+- Locals follow the Old Ways: animistic beliefs in forest spirits and protective rites.
+- The festival of lanterns, once the highlight of the year, has been canceled for years.
+- Outsiders are viewed with suspicion, and few residents have ever left the valley.
+
+Key Characters:
+- Mayor Thaddeus Quill: Grandiloquent and obsessed with protocol.
+- Rusk, Tavern Keeper: Nostalgic, friendly, and prone to storytelling.
+- Lira, Shopkeeper: Cold, terse, distrusts strangers.
+- Grinn, Weapons Master: Gruff, greedy, sarcastic.
+- The Guard: Stern, unyielding, enforces the use of a password to exit town.
