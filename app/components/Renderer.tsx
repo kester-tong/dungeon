@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useTileset } from './TilesetProvider';
+import { Tileset } from '@/src/tileset';
 
 /**
  * TileArray represents a tile-based view to be rendered.
@@ -52,20 +53,6 @@ interface RendererProps {
   view: View;
   width: number;
   height: number;
-}
-
-/**
- * Returns true if the given tile is contained within any of the text boxes
- *
- * @param x x coordinate
- * @param y y coordinate
- * @param textBoxes The set of text boxes
- */
-function isContainedInTextBoxes(x: number, y: number, textBoxes: TextBox[]) {
-  return textBoxes.some(
-    ({ startx, starty, endx, endy }) =>
-      startx <= x && x < endx && starty <= y && y < endy
-  );
 }
 
 function renderTextBox(
@@ -191,102 +178,46 @@ function renderTextBox(
   ctx.restore();
 }
 
-export function Renderer({ view, width, height }: RendererProps) {
-  const { tileset } = useTileset();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Props from the last render so we can render just the parts that changed.
-  const previousPropsRef = useRef<RendererProps | null>(null);
-
-  const renderTileLayers = useCallback(
-    (
-      ctx: CanvasRenderingContext2D,
-      x: number,
-      y: number,
-      tileIndices: number[]
-    ) => {
-      if (!tileset) return;
+function renderTiles(
+  ctx: CanvasRenderingContext2D,
+  tiles: TileArray,
+  tileset: Tileset
+) {
+  for (let y = 0; y < tiles.tiles.length; y++) {
+    for (let x = 0; x < tiles.tiles[y].length; x++) {
       const tileSize = tileset.getTileSize();
       const pixelX = x * tileSize;
       const pixelY = y * tileSize;
 
       // Render each layer in order (bottom to top)
-      for (const tileIndex of tileIndices) {
+      for (const tileIndex of tiles.tiles[y][x]) {
         tileset.drawTile(ctx, tileIndex, pixelX, pixelY);
       }
-    },
-    [tileset]
+    }
+  }
+}
+
+function renderView(
+  ctx: CanvasRenderingContext2D,
+  view: View,
+  width: number,
+  height: number,
+  tileset: Tileset
+) {
+  // Clear the canvas
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, width, height);
+
+  // Render each tile
+  renderTiles(ctx, view.tileArray, tileset);
+  view.textBoxes.forEach((textBox) =>
+    renderTextBox(ctx, textBox, tileset.getTileSize())
   );
+}
 
-  const renderFullTileArray = useCallback(
-    (ctx: CanvasRenderingContext2D, tiles: TileArray) => {
-      // Clear the canvas
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, width, height);
-
-      // Render each tile
-      for (let y = 0; y < tiles.tiles.length; y++) {
-        for (let x = 0; x < tiles.tiles[y].length; x++) {
-          renderTileLayers(ctx, x, y, tiles.tiles[y][x]);
-        }
-      }
-      if (tileset) {
-        view.textBoxes.forEach((textBox) =>
-          renderTextBox(ctx, textBox, tileset.getTileSize())
-        );
-      }
-    },
-    [width, height, renderTileLayers, tileset, view.textBoxes]
-  );
-
-  const areTileLayersEqual = useCallback(
-    (indices1: number[], indices2: number[]): boolean => {
-      if (indices1.length !== indices2.length) {
-        return false;
-      }
-
-      for (let i = 0; i < indices1.length; i++) {
-        if (indices1[i] !== indices2[i]) {
-          return false;
-        }
-      }
-
-      return true;
-    },
-    []
-  );
-
-  const renderViewDiff = useCallback(
-    (ctx: CanvasRenderingContext2D, currentView: View, previousView: View) => {
-      if (!tileset) return;
-      const tileSize = tileset.getTileSize();
-
-      for (let y = 0; y < currentView.tileArray.tiles.length; y++) {
-        for (let x = 0; x < currentView.tileArray.tiles[y].length; x++) {
-          if (
-            !areTileLayersEqual(
-              currentView.tileArray.tiles[y][x],
-              previousView.tileArray.tiles[y][x]
-            ) ||
-            isContainedInTextBoxes(x, y, previousView.textBoxes) ||
-            isContainedInTextBoxes(x, y, currentView.textBoxes)
-          ) {
-            // Clear this tile position with black
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-
-            // Render the new tile layers
-            renderTileLayers(ctx, x, y, currentView.tileArray.tiles[y][x]);
-          }
-        }
-      }
-      if (tileset) {
-        currentView.textBoxes.forEach((textBox) =>
-          renderTextBox(ctx, textBox, tileset.getTileSize())
-        );
-      }
-    },
-    [tileset, areTileLayersEqual, renderTileLayers]
-  );
+export function Renderer({ view, width, height }: RendererProps) {
+  const { tileset } = useTileset();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -295,31 +226,10 @@ export function Renderer({ view, width, height }: RendererProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Initialize if it's null
-    if (!previousPropsRef.current) {
-      previousPropsRef.current = { view, width, height };
-      renderFullTileArray(ctx, view.tileArray);
-      return;
-    }
+    if (!tileset) return;
 
-    const { view: previousView } = previousPropsRef.current;
-
-    // Ensure dimensions match or default to full render
-    if (
-      view.tileArray.tiles.length !== previousView.tileArray.tiles.length ||
-      view.tileArray.tiles[0].length !== previousView.tileArray.tiles[0].length
-    ) {
-      previousPropsRef.current = { view, width, height };
-      renderFullTileArray(ctx, view.tileArray);
-      return;
-    }
-
-    // Perform diffing and update only changed tiles
-    renderViewDiff(ctx, view, previousView);
-
-    // Update the current view
-    previousPropsRef.current = { view, width, height };
-  }, [tileset, view, height, width, renderFullTileArray, renderViewDiff]);
+    renderView(ctx, view, height, width, tileset);
+  }, [tileset, view, height, width]);
 
   // Don't render if tileset isn't loaded yet
   if (!tileset) {
