@@ -1,5 +1,5 @@
 {
-  "intro_text": "A portly gentleman wearing blue and gold robes",
+  "intro_text": "An officious looking gentleman wearing blue and gold robes",
   "first_message": "Greetings traveller, I am the town mayor",
   "prompt_chunks": ["town_setting", "mayor", "response_format"]
 }
