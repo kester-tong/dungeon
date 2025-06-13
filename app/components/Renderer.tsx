@@ -51,8 +51,6 @@ export interface TextBox {
 
 interface RendererProps {
   view: View;
-  width: number;
-  height: number;
 }
 
 function renderTextBox(
@@ -206,7 +204,7 @@ function renderView(
 ) {
   // Clear the canvas
   ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, height, width);
 
   // Render each tile
   renderTiles(ctx, view.tileArray, tileset);
@@ -215,9 +213,12 @@ function renderView(
   );
 }
 
-export function Renderer({ view, width, height }: RendererProps) {
+export function Renderer({ view }: RendererProps) {
   const { tileset } = useTileset();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const height = view.tileArray.tiles.length * (tileset?.getTileSize() || 0);
+  const width = view.tileArray.tiles[0].length * (tileset?.getTileSize() || 0);
 
   useEffect(() => {
     if (!canvasRef.current) return;

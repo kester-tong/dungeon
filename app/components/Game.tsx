@@ -23,7 +23,7 @@ export default function Game() {
     <>
       <InputController onKeyDown={onKeyDown} />
       <main style={{ padding: '1rem' }}>
-        {view && <Renderer view={view} width={1056} height={480} />}
+        {view && <Renderer view={view} />}
       </main>
     </>
   );
