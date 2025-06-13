@@ -17,6 +17,6 @@ export interface OfferSaleAction extends BaseAction {
 /**
  * An action is something an NPC can do.
  *
- * Actions are expressed to NPCs via "tool use" within the Anthropic API
+ * Actions are expressed to NPCs via "tool use" within the Gemini API
  */
 export type NpcAction = OpenGateAction | OfferSaleAction;

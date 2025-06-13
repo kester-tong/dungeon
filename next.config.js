@@ -4,10 +4,6 @@ const nextConfig = {
     // Keep existing TypeScript config
     ignoreBuildErrors: false,
   },
-  // Environment variables
-  env: {
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-  },
 }
 
 module.exports = nextConfig

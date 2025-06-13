@@ -2,14 +2,7 @@
  * NPC (Non-Player Character) interface and types
  */
 
-import { Tool } from '@anthropic-ai/sdk/resources/messages';
-
-// TODO: import this from somwhere
-export interface JsonSchema {
-  type: 'object';
-  properties: { [index: string]: { type: 'string'; description: 'string' } };
-  required: string[];
-}
+import { FunctionDeclaration } from '@google/genai';
 
 export interface NPC {
   /**
@@ -27,5 +20,5 @@ export interface NPC {
    */
   prompt: string;
 
-  tools?: Tool[];
+  functions?: FunctionDeclaration[];
 }

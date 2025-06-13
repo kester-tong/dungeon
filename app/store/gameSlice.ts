@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
-import { MessageParam } from '@/src/npcs/Anthropic';
-import { Message } from '@/src/npcs/Anthropic';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
 import { Inventory } from '@/src/items';
+import { Content } from '@google/genai';
 
 /**
  * Position represents x, y coordinates and map location
@@ -13,8 +12,6 @@ export interface Position {
   y: number;
   mapId: string;
 }
-
-export type { Message as ChatMessage };
 
 /**
  * ChatWindow represents the chat/dialog interface
@@ -29,7 +26,7 @@ export type { Message as ChatMessage };
  */
 export interface ChatWindow {
   intro_text: string;
-  messages: MessageParam[];
+  messages: Content[];
   // These fields are used to request middleware to dispatch async actions.
   // They are necessary to keep game logic in the reducer.
   pendingChatRequest?: ChatRequest;
@@ -136,12 +133,12 @@ function handleMovement(
   // Check if target tile is an NPC - enter chat
   if (targetTile.type === 'npc') {
     const npc = gameConfig.npcs[targetTile.npcId];
-    const messages: MessageParam[] = [];
+    const messages: Content[] = [];
 
     if (npc?.first_message) {
       messages.push({
-        role: 'assistant',
-        content: [{ type: 'text', text: npc.first_message }],
+        role: 'model',
+        parts: [{ text: npc.first_message }],
       });
     }
 
@@ -205,13 +202,13 @@ const gameSlice = createSlice({
       if (state.chatWindow && state.chatWindow.currentMessage !== null) {
         state.chatWindow.messages.push({
           role: 'user',
-          content: [{ type: 'text', text: state.chatWindow.currentMessage }],
+          parts: [{ text: state.chatWindow.currentMessage }],
         });
         state.chatWindow.currentMessage = null;
         state.chatWindow.pendingChatRequest = {
           accessKey: '', // TODO: make this optional
           npcId: state.chatWindow.npcId,
-          messages: state.chatWindow.messages,
+          contents: state.chatWindow.messages,
         };
       }
     },
@@ -251,11 +248,12 @@ const gameSlice = createSlice({
         }
 
         // Check for tool use in the content blocks and handle immediately
-        const blocks = action.payload.response.message.content;
-        for (const block of blocks) {
-          if (block.type === 'tool_use') {
+        const content = action.payload.response.content;
+        const parts = content.parts || [];
+        for (const part of parts) {
+          if (part.functionCall) {
             // Handle the tool use immediately
-            switch (block.name) {
+            switch (part.functionCall.name) {
               case 'open_door':
                 // If player is on the town side of the door, move them to the forest
                 if (state.player.mapId === 'town') {
@@ -277,12 +275,9 @@ const gameSlice = createSlice({
           }
         }
 
-        state.chatWindow.messages.push({
-          role: 'assistant',
-          content: blocks,
-        });
-        const lastBlock = blocks.length > 0 ? blocks[blocks.length - 1] : null;
-        if (lastBlock && lastBlock.type === 'tool_use') {
+        state.chatWindow.messages.push(content);
+        const lastPart = parts.length > 0 ? parts[parts.length - 1] : null;
+        if (lastPart && lastPart.functionCall) {
           // Currently there is only one tool whic opens the gate.  In that case
           // we exit the chat after pausing to let the user read the message
           state.chatWindow.pendingAnimateEndChatRequest = 2000;

@@ -3136,11 +3136,11 @@
     "guard": {
       "intro_text": "You see an suspicous looking guard eying you from behind the door",
       "first_message": "Halt!  What is the password",
-      "tools": [
+      "functions": [
         {
           "name": "open_door",
           "description": "Open the door",
-          "input_schema": {
+          "parameters": {
             "type": "object",
             "properties": {},
             "required": []

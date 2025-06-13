@@ -25,7 +25,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.52.0",
+    "@google/genai": "^1.5.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
     "@reduxjs/toolkit": "^2.8.2",
     "next": "^15.3.3",
     "react": "^19.1.0",

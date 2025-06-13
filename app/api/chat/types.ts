@@ -1,7 +1,7 @@
-import { Message, MessageParam } from '@/src/npcs/Anthropic';
+import { Content } from '@google/genai';
 
 export interface ChatRequest {
-  messages: MessageParam[];
+  contents: Content[];
   npcId: string;
   accessKey: string;
 }
@@ -9,7 +9,7 @@ export interface ChatRequest {
 export interface ChatSuccessResponse {
   success: true;
   response: {
-    message: Message;
+    content: Content;
   };
 }
 

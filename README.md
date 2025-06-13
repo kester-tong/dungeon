@@ -1,17 +1,17 @@
 # Dungeon
 
-This is a small experimental game built with **Next.js** and **React**. It uses a tile based map and allows chatting with NPCs powered by the Anthropic API. Redux Toolkit provides state management for the game world.
+This is a small experimental game built with **Next.js** and **React**. It uses a tile based map and allows chatting with NPCs powered by the Gemini API. Redux Toolkit provides state management for the game world.
 
 ## Requirements
 
 - Node.js 18 or later
-- An Anthropic API key
+- An Gemini API key
 - An application password for the chat API
 
 Create a `.env.local` file in the project root and define:
 
 ```bash
-ANTHROPIC_API_KEY=<your_api_key>
+GOOGLE_AI_API_KEY=<your_api_key>
 APP_PASSWORD=<your_password>
 ```
 

@@ -1,8 +1,8 @@
 import { RootState } from './store';
 import { ChatWindow } from './gameSlice';
-import { ContentBlock, ToolUseBlock } from '@/src/npcs/Anthropic';
 import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
+import { FunctionCall, Part } from '@google/genai';
 
 // UI Color Constants
 const UI_COLORS = {
@@ -53,8 +53,8 @@ export const selectTileArray = (state: RootState): TileArray | null => {
   return { tiles };
 };
 
-function renderToolUseBlockText(block: ToolUseBlock): TextSegment {
-  switch (block.name) {
+function renderFunctionCall(functionCall: FunctionCall): TextSegment {
+  switch (functionCall.name) {
     case 'open_door':
       return {
         text: 'The gate swings open and you pass through\n\n',
@@ -65,25 +65,19 @@ function renderToolUseBlockText(block: ToolUseBlock): TextSegment {
   }
 }
 
-function renderContentBlockText(
-  role: 'user' | 'assistant',
-  block: ContentBlock
-): TextSegment {
-  switch (block.type) {
-    case 'text':
-      const color =
-        role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
-      return { text: '> ' + block.text + '\n\n', color };
-    case 'tool_use':
-      return renderToolUseBlockText(block);
-    case 'tool_result':
-      // Currently only action is open_door whose result doesn't need displaying (always success)
-      return { text: '', color: UI_COLORS.INSTRUCTION_TEXT };
-    default:
-      return {
-        text: '[Unknown content block]',
-        color: UI_COLORS.INSTRUCTION_TEXT,
-      };
+function renderContentPart(role: string | undefined, part: Part): TextSegment {
+  // TODO: handle function calls and responses.
+  if (part.text) {
+    const color =
+      role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
+    return { text: '> ' + part.text + '\n\n', color };
+  } else if (part.functionCall) {
+    return renderFunctionCall(part.functionCall);
+  } else {
+    return {
+      text: '[Unknown content block]',
+      color: UI_COLORS.INSTRUCTION_TEXT,
+    };
   }
 }
 
@@ -106,13 +100,13 @@ export const selectChatWindowText = (
     { text: '\n\nPress ESC to exit\n\n', color: UI_COLORS.INSTRUCTION_TEXT }
   );
 
-  // Flatten and render all message blocks
-  const flattenedBlocks = chatWindow.messages.flatMap(({ role, content }) =>
-    content.map((block) => ({ role, block }))
+  // Flatten and render all message parts
+  const flattenedParts = chatWindow.messages.flatMap(({ role, parts }) =>
+    (parts || []).map((part) => ({ role, part }))
   );
 
-  for (const { role, block } of flattenedBlocks) {
-    const segment = renderContentBlockText(role, block);
+  for (const { role, part } of flattenedParts) {
+    const segment = renderContentPart(role, part);
     if (segment.text) {
       segments.push(segment);
     }

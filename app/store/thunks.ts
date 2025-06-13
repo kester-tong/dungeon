@@ -124,18 +124,8 @@ export const handleKeyPress = createAsyncThunk(
             break;
         }
       } else {
-        const messages = gameState.chatWindow.messages;
-        const lastMessage =
-          messages.length > 0 ? messages[messages.length - 1] : null;
-        const lastBlock =
-          lastMessage && lastMessage.content.length > 0
-            ? lastMessage.content[lastMessage.content.length - 1]
-            : null;
-        if (lastBlock?.type === 'tool_use') {
-          // TODO: handle user input while waiting for an action.
-        } else {
-          // TODO handle user input while waiting for AI to respond.
-        }
+        // TODO: handle user input while waiting for an action.
+        // TODO handle user input while waiting for AI to respond.
       }
     } else {
       switch (key) {
