@@ -3,8 +3,8 @@ import { TilesetProvider } from './components/TilesetProvider';
 import { ReduxProvider } from './store/Provider';
 
 export const metadata: Metadata = {
-  title: 'Dungeon Game',
-  description: 'An interactive dungeon exploration game',
+  title: 'Pages of Thought',
+  description: 'An open world RPG with LLM powered characters',
 };
 
 export default function RootLayout({
