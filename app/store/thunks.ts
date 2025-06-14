@@ -25,8 +25,6 @@ export const handleKeyPress = createAsyncThunk(
       }
     } else if (gameState.chatWindow) {
       switch (gameState.chatWindow.turnState.type) {
-        case 'animating_before_end_chat':
-          break;
         case 'confirming_action':
           switch (key) {
             case 'n':
@@ -57,7 +55,8 @@ export const handleKeyPress = createAsyncThunk(
           }
           break;
         case 'waiting_for_ai':
-          // Let the use exit chat even while waiting for AI response.
+        case 'animating_before_end_chat':
+          // middleware will cancel pending requests/animations when the user exits the chat
           if (key === 'Escape') {
             dispatch(exitChat());
           }

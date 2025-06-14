@@ -320,8 +320,8 @@ const gameSlice = createSlice({
         if (lastPart && lastPart.functionCall) {
           switch (lastPart.functionCall.name) {
             case 'open_door':
-              // Currently there is only one tool which opens the gate.  In that case
-              // we exit the chat after pausing to let the user read the message
+              // There is listener middleware that listens for the state transition to
+              // animating_before_end_chat and exits the chat after a delay.
               state.chatWindow.turnState = {
                 type: 'animating_before_end_chat',
               };

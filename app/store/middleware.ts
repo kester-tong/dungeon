@@ -3,9 +3,9 @@ import type { RootState } from './store';
 import { handleChatResponse, exitChat } from './gameSlice';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+// Global state for tracking pending operations
+let chatAbortController: AbortController | null = null;
+let animationTimeoutId: NodeJS.Timeout | null = null;
 
 export const listenerMiddleware = createListenerMiddleware();
 
@@ -34,6 +34,9 @@ listenerMiddleware.startListening({
       return;
     }
 
+    // Create new abort controller for this request
+    chatAbortController = new AbortController();
+
     try {
       const requestBody: ChatRequest = {
         accessKey: accessKey,
@@ -47,6 +50,7 @@ listenerMiddleware.startListening({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        signal: chatAbortController.signal,
       });
 
       if (!response.ok) {
@@ -56,7 +60,12 @@ listenerMiddleware.startListening({
       const chatResponse: ChatResponse = await response.json();
       listenerApi.dispatch(handleChatResponse(chatResponse));
     } catch (error) {
-      // Add fallback message on error
+      // Don't handle AbortError - it means the request was intentionally cancelled
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+
+      // Add fallback message on other errors
       listenerApi.dispatch(
         handleChatResponse({
           success: false,
@@ -66,6 +75,9 @@ listenerMiddleware.startListening({
               : "Sorry, I couldn't understand that",
         })
       );
+    } finally {
+      // Clean up the abort controller after completion
+      chatAbortController = null;
     }
   },
 });
@@ -83,8 +95,28 @@ listenerMiddleware.startListening({
     );
   },
   effect: async (action, listenerApi) => {
-    // Sleep for 2 seconds (hardcoded for now, could be made configurable)
-    await sleep(2000);
-    listenerApi.dispatch(exitChat());
+    // Set up timeout with cleanup
+    animationTimeoutId = setTimeout(() => {
+      listenerApi.dispatch(exitChat());
+      animationTimeoutId = null; // Clean up after natural completion
+    }, 2000);
+  },
+});
+
+// Listen for exit chat to cancel pending operations
+listenerMiddleware.startListening({
+  actionCreator: exitChat,
+  effect: () => {
+    // Cancel pending chat request
+    if (chatAbortController) {
+      chatAbortController.abort();
+      chatAbortController = null;
+    }
+
+    // Cancel pending animation timeout
+    if (animationTimeoutId) {
+      clearTimeout(animationTimeoutId);
+      animationTimeoutId = null;
+    }
   },
 });
