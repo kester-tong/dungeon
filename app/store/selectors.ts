@@ -2,7 +2,7 @@ import { RootState } from './store';
 import { ChatWindow } from './gameSlice';
 import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
-import { FunctionCall, Part } from '@google/genai';
+import { FunctionCall, FunctionResponse, Part } from '@google/genai';
 
 // UI Color Constants
 const UI_COLORS = {
@@ -54,15 +54,48 @@ export const selectTileArray = (state: RootState): TileArray | null => {
 };
 
 function renderFunctionCall(functionCall: FunctionCall): TextSegment {
+  let text: string;
   switch (functionCall.name) {
     case 'open_door':
-      return {
-        text: 'The gate swings open and you pass through\n\n',
-        color: UI_COLORS.NARRATIVE_TEXT,
-      };
+      text = 'The gate swings open and you pass through\n\n';
+      break;
+    case 'sell_item':
+      const object_id = functionCall.args!['object_id'];
+      const price = functionCall.args!['price'];
+      text = `They offer you ${object_id} for the price of ${price} gold coins\n\n`;
+      break;
     default:
-      return { text: '', color: UI_COLORS.INSTRUCTION_TEXT };
+      text = `Unknown function call ${functionCall.name}`;
+      break;
   }
+
+  return {
+    text,
+    color: UI_COLORS.NARRATIVE_TEXT,
+  };
+}
+
+function renderFunctionResponse(
+  functionResponse: FunctionResponse
+): TextSegment {
+  let text: string;
+  switch (functionResponse.name) {
+    case 'open_door':
+      text = '\n\n';
+      break;
+    case 'sell_item':
+      const output = functionResponse.response!['output'];
+      text = `You ${output} the offer.\n\n`;
+      break;
+    default:
+      text = `Unknown function call ${functionResponse.name}`;
+      break;
+  }
+
+  return {
+    text,
+    color: UI_COLORS.NARRATIVE_TEXT,
+  };
 }
 
 function renderContentPart(role: string | undefined, part: Part): TextSegment {
@@ -73,6 +106,8 @@ function renderContentPart(role: string | undefined, part: Part): TextSegment {
     return { text: '> ' + part.text + '\n\n', color };
   } else if (part.functionCall) {
     return renderFunctionCall(part.functionCall);
+  } else if (part.functionResponse) {
+    return renderFunctionResponse(part.functionResponse);
   } else {
     return {
       text: '[Unknown content block]',
@@ -113,17 +148,26 @@ export const selectChatWindowText = (
   }
 
   // Add current message with cursor
-  if (chatWindow.currentMessage !== null) {
-    segments.push({
-      text: '> ' + chatWindow.currentMessage + '█',
-      color: UI_COLORS.USER_INPUT,
-    });
-  } else if (chatWindow.animatingBeforeEndChat) {
-    segments.push({ text: '█', color: UI_COLORS.NARRATIVE_TEXT });
-  } else {
-    segments.push({ text: '█', color: UI_COLORS.ASSISTANT_TEXT });
+  switch (chatWindow.turnState.type) {
+    case 'animating_before_end_chat':
+      segments.push({ text: '█', color: UI_COLORS.NARRATIVE_TEXT });
+      break;
+    case 'confirming_action':
+      segments.push({
+        text: 'Do you accept (y / n)? █',
+        color: UI_COLORS.NARRATIVE_TEXT,
+      });
+      break;
+    case 'user_turn':
+      segments.push({
+        text: '> ' + chatWindow.turnState.currentMessage + '█',
+        color: UI_COLORS.USER_INPUT,
+      });
+      break;
+    case 'waiting_for_ai':
+      segments.push({ text: '█', color: UI_COLORS.ASSISTANT_TEXT });
+      break;
   }
-
   return segments;
 };
 

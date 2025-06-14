@@ -10,6 +10,7 @@ import {
   handleChatResponse,
   chatToNpcStarted,
   animateEndChatStarted,
+  confirmAction,
 } from './gameSlice';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
 
@@ -104,28 +105,44 @@ export const handleKeyPress = createAsyncThunk(
         dispatch(dismissSplashText());
       }
     } else if (gameState.chatWindow) {
-      // Case 1: It's the user's turn
-      if (gameState.chatWindow.currentMessage !== null) {
-        switch (key) {
-          case 'Enter':
-            dispatch(sendChatToNpc());
-            break;
-          case 'Escape':
+      switch (gameState.chatWindow.turnState.type) {
+        case 'animating_before_end_chat':
+          break;
+        case 'confirming_action':
+          switch (key) {
+            case 'n':
+              dispatch(confirmAction(false));
+              break;
+            case 'y':
+              dispatch(confirmAction(true));
+              break;
+          }
+          break;
+        case 'user_turn':
+          switch (key) {
+            case 'Enter':
+              dispatch(sendChatToNpc());
+              break;
+            case 'Escape':
+              dispatch(exitChat());
+              break;
+            case 'Backspace':
+              dispatch(deleteCharFromInput());
+              break;
+            default:
+              // For regular characters in chat mode
+              if (key.length === 1) {
+                dispatch(addCharToInput(key));
+              }
+              break;
+          }
+          break;
+        case 'waiting_for_ai':
+          // Let the use exit chat even while waiting for AI response.
+          if (key === 'Escape') {
             dispatch(exitChat());
-            break;
-          case 'Backspace':
-            dispatch(deleteCharFromInput());
-            break;
-          default:
-            // For regular characters in chat mode
-            if (key.length === 1) {
-              dispatch(addCharToInput(key));
-            }
-            break;
-        }
-      } else {
-        // TODO: handle user input while waiting for an action.
-        // TODO handle user input while waiting for AI to respond.
+          }
+          break;
       }
     } else {
       switch (key) {

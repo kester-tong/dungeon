@@ -13,6 +13,35 @@ export interface Position {
   mapId: string;
 }
 
+export interface UserTurnState {
+  type: 'user_turn';
+  // The message the user is typing.
+  currentMessage: string;
+}
+
+// State when waiting for AI response
+export interface WaitingForNpcState {
+  type: 'waiting_for_ai';
+}
+
+// State when waiting for user to confirm an action
+export interface ConfirmingActionState {
+  type: 'confirming_action';
+  tool_name: string;
+}
+
+// State when about to end chat (after deley to let user
+// read the final message.
+export interface AnimatingBeforeEndChatState {
+  type: 'animating_before_end_chat';
+}
+
+export type TurnState =
+  | UserTurnState
+  | WaitingForNpcState
+  | ConfirmingActionState
+  | AnimatingBeforeEndChatState;
+
 /**
  * ChatWindow represents the chat/dialog interface
  * Turn semantics:
@@ -24,9 +53,11 @@ export interface Position {
  * - If it's the user's turn and confirmation of an action (e.g. buy/sell)
  *   is needed then currentMessage is null.
  */
-export interface ChatWindow {
+export type ChatWindow = {
   intro_text: string;
   messages: Content[];
+  npcId: string;
+  turnState: TurnState;
   // These fields are used to request middleware to dispatch async actions.
   // They are necessary to keep game logic in the reducer.
   pendingChatRequest?: ChatRequest;
@@ -34,11 +65,7 @@ export interface ChatWindow {
   // given interval before exiting the chat.  This usually is due to some
   // action e.g. a guard opening a gate.
   pendingAnimateEndChatRequest?: number;
-  animatingBeforeEndChat: boolean;
-  // The current message the user is typing.
-  currentMessage: string | null;
-  npcId: string;
-}
+};
 
 export interface GameState {
   player: Position;
@@ -145,9 +172,11 @@ function handleMovement(
     state.chatWindow = {
       intro_text: npc.intro_text,
       messages,
-      currentMessage: '',
+      turnState: {
+        type: 'user_turn',
+        currentMessage: '',
+      },
       npcId: targetTile.npcId,
-      animatingBeforeEndChat: false,
     };
     return;
   }
@@ -174,17 +203,15 @@ const gameSlice = createSlice({
     },
 
     deleteCharFromInput: (state) => {
-      if (state.chatWindow && state.chatWindow.currentMessage !== null) {
-        state.chatWindow.currentMessage = state.chatWindow.currentMessage.slice(
-          0,
-          -1
-        );
+      if (state.chatWindow && state.chatWindow.turnState.type === 'user_turn') {
+        state.chatWindow.turnState.currentMessage =
+          state.chatWindow.turnState.currentMessage.slice(0, -1);
       }
     },
 
     addCharToInput: (state, action: PayloadAction<string>) => {
-      if (state.chatWindow && state.chatWindow.currentMessage !== null) {
-        state.chatWindow.currentMessage += action.payload;
+      if (state.chatWindow && state.chatWindow.turnState.type === 'user_turn') {
+        state.chatWindow.turnState.currentMessage += action.payload;
       }
     },
 
@@ -199,17 +226,17 @@ const gameSlice = createSlice({
 
     // Chat functionality
     sendChatToNpc: (state) => {
-      if (state.chatWindow && state.chatWindow.currentMessage !== null) {
+      if (state.chatWindow && state.chatWindow.turnState.type === 'user_turn') {
         state.chatWindow.messages.push({
           role: 'user',
-          parts: [{ text: state.chatWindow.currentMessage }],
+          parts: [{ text: state.chatWindow.turnState.currentMessage }],
         });
-        state.chatWindow.currentMessage = null;
         state.chatWindow.pendingChatRequest = {
           accessKey: '', // TODO: make this optional
           npcId: state.chatWindow.npcId,
           contents: state.chatWindow.messages,
         };
+        state.chatWindow.turnState = { type: 'waiting_for_ai' };
       }
     },
 
@@ -227,21 +254,36 @@ const gameSlice = createSlice({
       }
     },
 
-    // sendToolResultToNpc: (state, action: PayloadAction<ToolResultBlock>) => {
-    //   if (state.chatWindow && state.chatWindow.currentTurn.type === 'user') {
-    //     state.chatWindow.messages.push({
-    //       role: 'user',
-    //       content: [action.payload],
-    //     });
-    //     state.chatWindow.currentTurn = {
-    //       type: 'assistant',
-    //       content: [],
-    //     };
-    //   }
-    // },
+    confirmAction: (state, action: PayloadAction<boolean>) => {
+      if (
+        state.chatWindow &&
+        state.chatWindow.turnState.type === 'confirming_action'
+      ) {
+        state.chatWindow.messages.push({
+          role: 'user',
+          parts: [
+            {
+              functionResponse: {
+                name: state.chatWindow.turnState.tool_name,
+                response: { output: action.payload ? 'accept' : 'reject' },
+              },
+            },
+          ],
+        });
+        state.chatWindow.pendingChatRequest = {
+          accessKey: '', // TODO: make this optional
+          npcId: state.chatWindow.npcId,
+          contents: state.chatWindow.messages,
+        };
+        state.chatWindow.turnState = { type: 'waiting_for_ai' };
+      }
+    },
 
     handleChatResponse: (state, action: PayloadAction<ChatResponse>) => {
-      if (state.chatWindow && state.chatWindow.currentMessage === null) {
+      if (
+        state.chatWindow &&
+        state.chatWindow.turnState.type === 'waiting_for_ai'
+      ) {
         // TODO: handle errors
         if (!action.payload.success) {
           return;
@@ -271,20 +313,34 @@ const gameSlice = createSlice({
                 }
                 break;
             }
-            break; // Only handle the first tool use
           }
         }
 
         state.chatWindow.messages.push(content);
         const lastPart = parts.length > 0 ? parts[parts.length - 1] : null;
         if (lastPart && lastPart.functionCall) {
-          // Currently there is only one tool whic opens the gate.  In that case
-          // we exit the chat after pausing to let the user read the message
-          state.chatWindow.pendingAnimateEndChatRequest = 2000;
-          state.chatWindow.animatingBeforeEndChat = true;
+          switch (lastPart.functionCall.name) {
+            case 'open_door':
+              // Currently there is only one tool whic opens the gate.  In that case
+              // we exit the chat after pausing to let the user read the message
+              state.chatWindow.pendingAnimateEndChatRequest = 2000;
+              state.chatWindow.turnState = {
+                type: 'animating_before_end_chat',
+              };
+              break;
+            case 'sell_item':
+              state.chatWindow.turnState = {
+                type: 'confirming_action',
+                tool_name: lastPart.functionCall.name,
+              };
+              break;
+          }
         } else {
           // Set to user's turn with new empty message.
-          state.chatWindow.currentMessage = '';
+          state.chatWindow.turnState = {
+            type: 'user_turn',
+            currentMessage: '',
+          };
         }
       }
     },
@@ -301,6 +357,7 @@ export const {
   chatToNpcStarted,
   handleChatResponse,
   animateEndChatStarted,
+  confirmAction,
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

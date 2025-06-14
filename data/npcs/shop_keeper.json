@@ -1,5 +1,6 @@
 {
   "intro_text": "A stern woman standing silently behind a well-organized shop counter.",
   "first_message": "...You buying something or not?",
-  "prompt_chunks": ["town_setting", "shop_keeper", "response_format"]
+  "prompt_chunks": ["town_setting", "shop_keeper", "response_format"],
+  "tools": ["sell_item"]
 }
