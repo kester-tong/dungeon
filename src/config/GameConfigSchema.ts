@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ItemType } from '../items';
 
 export const StartingPositionSchema = z.object({
   x: z.number(),
@@ -7,11 +8,27 @@ export const StartingPositionSchema = z.object({
 });
 export type StartingPosition = z.infer<typeof StartingPositionSchema>;
 
-export const TileSchema = z.object({
+export const TerrainTileSchema = z.object({
   tileIndex: z.number(),
-  type: z.enum(['terrain', 'obstacle', 'npc']),
-  npcId: z.string().optional(),
+  type: z.literal('terrain'),
 });
+
+export const ObstacleTileSchema = z.object({
+  tileIndex: z.number(),
+  type: z.literal('obstacle'),
+});
+
+export const NPCTileSchema = z.object({
+  tileIndex: z.number(),
+  type: z.literal('npc'),
+  npcId: z.string(),
+});
+
+export const TileSchema = z.discriminatedUnion('type', [
+  TerrainTileSchema,
+  ObstacleTileSchema,
+  NPCTileSchema,
+]);
 
 export const MapSchema = z.object({
   data: z.array(z.array(TileSchema)),
@@ -32,7 +49,7 @@ export const GameItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  type: z.string(),
+  type: z.nativeEnum(ItemType),
   tileIndex: z.number().optional(),
 });
 
