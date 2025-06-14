@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
-import { Inventory } from '@/src/items';
-import { Content } from '@google/genai';
+import { Inventory, ItemType } from '@/src/items';
+import { Content, FunctionCall } from '@google/genai';
 
 /**
  * Position represents x, y coordinates and map location
@@ -27,7 +27,7 @@ export interface WaitingForNpcState {
 // State when waiting for user to confirm an action
 export interface ConfirmingActionState {
   type: 'confirming_action';
-  tool_name: string;
+  functionCall: FunctionCall;
 }
 
 // State when about to end chat (after deley to let user
@@ -264,12 +264,42 @@ const gameSlice = createSlice({
           parts: [
             {
               functionResponse: {
-                name: state.chatWindow.turnState.tool_name,
+                name: state.chatWindow.turnState.functionCall.name!,
                 response: { output: action.payload ? 'accept' : 'reject' },
               },
             },
           ],
         });
+        switch (state.chatWindow.turnState.functionCall.name) {
+          case 'sell_item':
+            const objectId = state.chatWindow.turnState.functionCall.args![
+              'object_id'
+            ] as string;
+            const price = state.chatWindow.turnState.functionCall.args![
+              'price'
+            ] as number;
+            state.inventory.items.push({
+              item: {
+                description: objectId,
+                id: objectId,
+                name: objectId,
+                type: ItemType.TOOL,
+              },
+              quantity: 1,
+            });
+            state.inventory.items = state.inventory.items.map(
+              (inventorySlot) => {
+                if (inventorySlot.item.id === 'gold_coin') {
+                  return {
+                    item: inventorySlot.item,
+                    quantity: inventorySlot.quantity - price,
+                  };
+                } else {
+                  return inventorySlot;
+                }
+              }
+            );
+        }
         state.chatWindow.pendingChatRequest = {
           accessKey: '', // TODO: make this optional
           npcId: state.chatWindow.npcId,
@@ -331,7 +361,7 @@ const gameSlice = createSlice({
             case 'sell_item':
               state.chatWindow.turnState = {
                 type: 'confirming_action',
-                tool_name: lastPart.functionCall.name,
+                functionCall: lastPart.functionCall,
               };
               break;
           }

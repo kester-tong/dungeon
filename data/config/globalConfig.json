@@ -40,6 +40,16 @@
           "tileIndex": 456
         },
         "quantity": 3
+      },
+      {
+        "item": {
+          "id": "gold_coin",
+          "name": "Gold Coin",
+          "description": "A gold coin of the realm.",
+          "type": "misc",
+          "tileIndex": 115
+        },
+        "quantity": 10
       }
     ],
     "maxSlots": 10
