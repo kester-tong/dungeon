@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
-import { ChatRequest, ChatResponse } from '../api/chat/types';
+import { ChatResponse } from '../api/chat/types';
 import { Inventory, ItemType } from '@/src/items';
 import { Content, FunctionCall } from '@google/genai';
 
@@ -58,13 +58,6 @@ export type ChatWindow = {
   messages: Content[];
   npcId: string;
   turnState: TurnState;
-  // These fields are used to request middleware to dispatch async actions.
-  // They are necessary to keep game logic in the reducer.
-  pendingChatRequest?: ChatRequest;
-  // Setting this allows the reducer to request middleware to sleep for a
-  // given interval before exiting the chat.  This usually is due to some
-  // action e.g. a guard opening a gate.
-  pendingAnimateEndChatRequest?: number;
 };
 
 export interface GameState {
@@ -231,26 +224,7 @@ const gameSlice = createSlice({
           role: 'user',
           parts: [{ text: state.chatWindow.turnState.currentMessage }],
         });
-        state.chatWindow.pendingChatRequest = {
-          accessKey: '', // TODO: make this optional
-          npcId: state.chatWindow.npcId,
-          contents: state.chatWindow.messages,
-        };
         state.chatWindow.turnState = { type: 'waiting_for_ai' };
-      }
-    },
-
-    // Called to indicate that the call has started
-    chatToNpcStarted: (state) => {
-      if (state.chatWindow !== null) {
-        state.chatWindow.pendingChatRequest = undefined;
-      }
-    },
-
-    // Called to indicate that the call has started
-    animateEndChatStarted: (state) => {
-      if (state.chatWindow !== null) {
-        state.chatWindow.pendingAnimateEndChatRequest = undefined;
       }
     },
 
@@ -300,11 +274,6 @@ const gameSlice = createSlice({
               }
             );
         }
-        state.chatWindow.pendingChatRequest = {
-          accessKey: '', // TODO: make this optional
-          npcId: state.chatWindow.npcId,
-          contents: state.chatWindow.messages,
-        };
         state.chatWindow.turnState = { type: 'waiting_for_ai' };
       }
     },
@@ -351,9 +320,8 @@ const gameSlice = createSlice({
         if (lastPart && lastPart.functionCall) {
           switch (lastPart.functionCall.name) {
             case 'open_door':
-              // Currently there is only one tool whic opens the gate.  In that case
+              // Currently there is only one tool which opens the gate.  In that case
               // we exit the chat after pausing to let the user read the message
-              state.chatWindow.pendingAnimateEndChatRequest = 2000;
               state.chatWindow.turnState = {
                 type: 'animating_before_end_chat',
               };
@@ -384,9 +352,7 @@ export const {
   addCharToInput,
   movePlayer,
   sendChatToNpc,
-  chatToNpcStarted,
   handleChatResponse,
-  animateEndChatStarted,
   confirmAction,
 } = gameSlice.actions;
 
