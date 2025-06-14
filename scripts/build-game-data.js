@@ -118,6 +118,9 @@ function assembleGameData() {
   console.log('Loading prompt chunks...');
   const promptChunks = loadPromptChunks(path.join(dataDir, 'prompt_chunks'));
   
+  console.log('Loading tools...');
+  const tools = loadAllJsonFiles(path.join(dataDir, 'tools'));
+  
   console.log('Loading maps...');
   const jsonMaps = loadAllJsonFiles(path.join(dataDir, 'maps'));
   
@@ -131,7 +134,7 @@ function assembleGameData() {
   console.log('Processing maps...');
   const processedMaps = processMaps(jsonMaps);
   
-  console.log('Assembling NPC prompts...');
+  console.log('Assembling NPC prompts and tools...');
   const processedNpcs = {};
   for (const [npcId, npcData] of Object.entries(npcs)) {
     processedNpcs[npcId] = { ...npcData };
@@ -139,6 +142,16 @@ function assembleGameData() {
       processedNpcs[npcId].prompt = assemblePrompt(npcData.prompt_chunks, promptChunks);
       delete processedNpcs[npcId].prompt_chunks;
       console.log(`Assembled prompt for ${npcId} from ${npcData.prompt_chunks.length} chunks`);
+    }
+    if (npcData.tools) {
+      processedNpcs[npcId].functions = npcData.tools.map(toolName => {
+        if (!tools[toolName]) {
+          throw new Error(`Tool '${toolName}' referenced by NPC '${npcId}' not found in tools directory`);
+        }
+        return tools[toolName];
+      });
+      delete processedNpcs[npcId].tools;
+      console.log(`Assembled ${npcData.tools.length} tools for ${npcId}`);
     }
   }
   
@@ -151,6 +164,7 @@ function assembleGameData() {
   console.log(`\nAssembled game data:`);
   console.log(`- Global config loaded: ${globalConfig ? 'Yes' : 'No'}`);
   console.log(`- Prompt chunks loaded: ${Object.keys(promptChunks).length}`);
+  console.log(`- Tools loaded: ${Object.keys(tools).length}`);
   console.log(`- Maps loaded: ${Object.keys(jsonMaps).length}`);
   console.log(`- Maps processed: ${Object.keys(processedMaps).length}`);
   console.log(`- NPCs loaded: ${Object.keys(npcs).length}`);

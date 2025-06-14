@@ -1,0 +1,9 @@
+{
+  "name": "open_door",
+  "description": "Open the door",
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}
