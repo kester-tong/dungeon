@@ -1,18 +1,21 @@
 {
   "name": "sell_item",
-  "description": "Offer an item for sale.  The return value will be \"accepted\" or \"rejected\"",
+  "description": "Finalizes the sale of an item to the player character after they have agreed to purchase it. Only call this function to complete the transaction once the player has explicitly confirmed they want to buy a specific item for a specific price. Do not call this to make an initial offer.",
   "parameters": {
     "type": "object",
     "properties": {
-        "object_id": {
-            "type": "string",
-            "description": "The object id of the item for sale"
-        },
-        "price": {
-            "type": "number",
-            "description": "The price, in gold coins, of the item for sale"
-        }
+      "object_id": {
+        "type": "string",
+        "description": "The unique identifier of the item being sold. For example: 'ration', 'torch', 'health_potion'."
+      },
+      "price": {
+        "type": "number",
+        "description": "The final price, in gold coins, that the player has agreed to pay for the item."
+      }
     },
-    "required": []
+    "required": [
+      "object_id",
+      "price"
+    ]
   }
 }
