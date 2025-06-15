@@ -1,6 +1,72 @@
 {
   "intro_text": "A stern woman standing silently behind a well-organized shop counter.",
-  "first_message": "...You buying something or not?",
+  "preseeded_message_history": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "text": "hello"
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "functionCall": {
+            "name": "list_inventory",
+            "args": {}
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "parts": [
+        {
+          "functionResponse": {
+            "name": "list_inventory",
+            "response": {
+              "items": [
+                {
+                  "item": {
+                    "id": "rope",
+                    "name": "Rope",
+                    "description": "A coil of sturdy rope."
+                  },
+                  "price": 2
+                },
+                {
+                  "item": {
+                    "id": "ration",
+                    "name": "Ration", 
+                    "description": "A single day's worth of food."
+                  },
+                  "price": 1
+                },
+                {
+                  "item": {
+                    "id": "torch",
+                    "name": "Torch",
+                    "description": "A wooden torch for lighting dark places."
+                  },
+                  "price": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "model",
+      "parts": [
+        {
+          "text": "...You buying something or not?"
+        }
+      ]
+    }
+  ],
   "prompt_chunks": ["town_setting", "shop_keeper", "response_format"],
-  "tools": ["sell_item"]
+  "tools": ["sell_item", "list_inventory"]
 }

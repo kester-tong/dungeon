@@ -92,6 +92,10 @@ function renderFunctionCall(functionCall: FunctionCall): TextSegment {
       const price = functionCall.args!['price'];
       text = `They offer you ${object_id} for the price of ${price} gold coins\n\n`;
       break;
+    case 'list_inventory':
+      // Skip rendering - this is only for NPC internal state
+      text = '';
+      break;
     default:
       text = `Unknown function call ${functionCall.name}`;
       break;
@@ -114,6 +118,10 @@ function renderFunctionResponse(
     case 'sell_item':
       const output = functionResponse.response!['output'];
       text = `You ${output} the offer.\n\n`;
+      break;
+    case 'list_inventory':
+      // Skip rendering - this is only for NPC internal state
+      text = '';
       break;
     default:
       text = `Unknown function call ${functionResponse.name}`;

@@ -155,7 +155,10 @@ function handleMovement(
     const npc = gameConfig.npcs[targetTile.npcId];
     const messages: Content[] = [];
 
-    if (npc?.first_message) {
+    // Use preseeded message history if available, otherwise fall back to first_message
+    if (npc?.preseeded_message_history) {
+      messages.push(...npc.preseeded_message_history);
+    } else if (npc?.first_message) {
       messages.push({
         role: 'model',
         parts: [{ text: npc.first_message }],

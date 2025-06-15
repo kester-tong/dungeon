@@ -72,9 +72,22 @@ export const TilesetConfigSchema = z.object({
   characterTileIndex: z.number(),
 });
 
+// Schema for Google Generative AI Content structure
+const PartSchema = z.object({
+  text: z.string().optional(),
+  functionCall: z.any().optional(),
+  functionResponse: z.any().optional(),
+});
+
+const ContentSchema = z.object({
+  role: z.string(),
+  parts: z.array(PartSchema),
+});
+
 export const NPCSchema = z.object({
   intro_text: z.string(),
   first_message: z.string().optional(),
+  preseeded_message_history: z.array(ContentSchema).optional(),
   prompt: z.string(),
   functions: z.array(z.any()).optional(),
 });
@@ -98,3 +111,4 @@ export const GameConfigSchema = z.object({
 });
 
 export type GameConfig = z.infer<typeof GameConfigSchema>;
+export type GameItem = z.infer<typeof GameItemSchema>;

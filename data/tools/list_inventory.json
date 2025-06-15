@@ -1,0 +1,48 @@
+{
+  "name": "list_inventory",
+  "description": "Check what items are currently available for sale in the shop. Call this to discover your current inventory and prices.",
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "response": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "description": "List of items available for sale",
+        "items": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "type": "object",
+              "description": "The item details",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique identifier for the item"
+                },
+                "name": {
+                  "type": "string", 
+                  "description": "Display name of the item"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Detailed description of the item"
+                }
+              },
+              "required": ["id", "name", "description"]
+            },
+            "price": {
+              "type": "number",
+              "description": "Price of the item in gold coins"
+            }
+          },
+          "required": ["item", "price"]
+        }
+      }
+    },
+    "required": ["items"]
+  }
+}
