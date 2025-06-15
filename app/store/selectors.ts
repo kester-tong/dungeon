@@ -3,6 +3,7 @@ import { ChatWindow } from './gameSlice';
 import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
 import { FunctionCall, FunctionResponse, Part } from '@google/genai';
+import { GameItem } from '@/src/items';
 
 // UI Color Constants
 const UI_COLORS = {
@@ -14,6 +15,33 @@ const UI_COLORS = {
 } as const;
 
 const CHARACTER_TILE_INDEX = 576; // 18 * 32
+
+/**
+ * Selector to get an object by ID from the game config
+ */
+export const selectObjectById = (objectId: string): GameItem | null => {
+  return gameConfig.objects[objectId] || null;
+};
+
+/**
+ * Selector to get all available objects
+ */
+export const selectAllObjects = (): Record<string, GameItem> => {
+  return gameConfig.objects;
+};
+
+/**
+ * Selector to resolve inventory slots to full item details
+ */
+export const selectInventoryWithObjects = (state: RootState) => {
+  return state.game.inventory.items
+    .map((slot) => ({
+      item: selectObjectById(slot.objectId),
+      quantity: slot.quantity,
+      objectId: slot.objectId,
+    }))
+    .filter((slot) => slot.item !== null);
+};
 
 /**
  * Selector to get the current chat window if in chat
@@ -175,7 +203,7 @@ export const selectChatWindowText = (
  * Selector to get inventory as separate text boxes and tiles for proper alignment
  */
 export const selectInventoryDisplay = (state: RootState) => {
-  const inventory = state.game.inventory;
+  const inventoryWithObjects = selectInventoryWithObjects(state);
   const textBoxes = [];
   const inventoryTiles = [];
 
@@ -188,7 +216,7 @@ export const selectInventoryDisplay = (state: RootState) => {
     endy: 1,
   });
 
-  if (inventory.items.length === 0) {
+  if (inventoryWithObjects.length === 0) {
     textBoxes.push({
       text: [{ text: 'Empty', color: UI_COLORS.MUTED_TEXT }],
       startx: 25,
@@ -198,16 +226,16 @@ export const selectInventoryDisplay = (state: RootState) => {
     });
   } else {
     // Add each item as separate text box with corresponding tile
-    for (let i = 0; i < inventory.items.length; i++) {
-      const slot = inventory.items[i];
+    for (let i = 0; i < inventoryWithObjects.length; i++) {
+      const slot = inventoryWithObjects[i];
       const startY = 1 + i; // Start immediately after header (no gap)
 
       // Add item tile to the tile array at appropriate position
-      if (slot.item.tileIndex) {
+      if (slot.item!.tileIndex) {
         inventoryTiles.push({
           x: 25,
           y: startY,
-          tileIndex: slot.item.tileIndex,
+          tileIndex: slot.item!.tileIndex,
         });
       }
 
@@ -216,7 +244,7 @@ export const selectInventoryDisplay = (state: RootState) => {
       textBoxes.push({
         text: [
           {
-            text: slot.item.name + quantityText,
+            text: slot.item!.name + quantityText,
             color: UI_COLORS.INSTRUCTION_TEXT,
           },
         ],

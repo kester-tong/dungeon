@@ -373,14 +373,14 @@ describe('gameSlice', () => {
 
         // Should add item to inventory
         const ropeItem = state.inventory.items.find(
-          (slot) => slot.item.id === 'rope'
+          (slot) => slot.objectId === 'rope'
         );
         expect(ropeItem).toBeDefined();
         expect(ropeItem?.quantity).toBe(1);
 
         // Should deduct gold
         const goldItem = state.inventory.items.find(
-          (slot) => slot.item.id === 'gold_coin'
+          (slot) => slot.objectId === 'gold_coin'
         );
         expect(goldItem?.quantity).toBe(8); // 10 - 2
 

@@ -33,6 +33,6 @@ export interface Inventory {
  * Represents a single slot in the inventory
  */
 export interface InventorySlot {
-  item: GameItem;
+  objectId: string;
   quantity: number;
 }

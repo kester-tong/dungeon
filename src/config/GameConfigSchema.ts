@@ -54,7 +54,7 @@ export const GameItemSchema = z.object({
 });
 
 export const InventorySlotSchema = z.object({
-  item: GameItemSchema,
+  objectId: z.string(),
   quantity: z.number(),
 });
 
@@ -89,6 +89,7 @@ export const GameConfigSchema = z.object({
   sidepane: z.object({
     width: z.number(),
   }),
+  objects: z.record(GameItemSchema),
   initialInventory: InventorySchema,
   initialSplashText: z.string(),
   endOfMapText: z.string(),

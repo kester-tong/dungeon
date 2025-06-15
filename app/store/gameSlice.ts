@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
 import { ChatResponse } from '../api/chat/types';
-import { Inventory, ItemType } from '@/src/items';
+import { Inventory } from '@/src/items';
 import { Content, FunctionCall } from '@google/genai';
 
 /**
@@ -252,27 +252,31 @@ const gameSlice = createSlice({
             const price = state.chatWindow.turnState.functionCall.args![
               'price'
             ] as number;
-            state.inventory.items.push({
-              item: {
-                description: objectId,
-                id: objectId,
-                name: objectId,
-                type: ItemType.TOOL,
-              },
-              quantity: 1,
-            });
-            state.inventory.items = state.inventory.items.map(
-              (inventorySlot) => {
-                if (inventorySlot.item.id === 'gold_coin') {
-                  return {
-                    item: inventorySlot.item,
-                    quantity: inventorySlot.quantity - price,
-                  };
-                } else {
-                  return inventorySlot;
-                }
-              }
+
+            // Add the purchased item to inventory
+            const existingItemIndex = state.inventory.items.findIndex(
+              (slot) => slot.objectId === objectId
             );
+            if (existingItemIndex >= 0) {
+              state.inventory.items[existingItemIndex].quantity += 1;
+            } else {
+              state.inventory.items.push({
+                objectId: objectId,
+                quantity: 1,
+              });
+            }
+
+            // Deduct gold from inventory
+            const goldIndex = state.inventory.items.findIndex(
+              (slot) => slot.objectId === 'gold_coin'
+            );
+            if (goldIndex >= 0) {
+              state.inventory.items[goldIndex].quantity -= price;
+              // Remove gold entry if quantity reaches 0
+              if (state.inventory.items[goldIndex].quantity <= 0) {
+                state.inventory.items.splice(goldIndex, 1);
+              }
+            }
         }
         state.chatWindow.turnState = { type: 'waiting_for_ai' };
       }
