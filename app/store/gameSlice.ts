@@ -5,6 +5,116 @@ import { Inventory } from '@/src/items';
 import { Content, FunctionCall } from '@google/genai';
 
 /**
+ * Strongly-typed action definitions
+ */
+export interface OpenDoorAction {
+  type: 'open_door';
+}
+
+export interface SellItemAction {
+  type: 'sell_item';
+  objectId: string;
+  price: number;
+  accepted: boolean;
+}
+
+export type Action = OpenDoorAction | SellItemAction;
+
+/**
+ * Pending actions that require user confirmation
+ */
+export interface PendingSellItemAction {
+  type: 'sell_item';
+  objectId: string;
+  price: number;
+}
+
+export type PendingAction = PendingSellItemAction;
+
+/**
+ * Parsed chat history entry types
+ */
+export interface TextEntry {
+  type: 'text';
+  role: 'user' | 'model';
+  content: string;
+}
+
+export interface ActionEntry {
+  type: 'action';
+  action: Action;
+}
+
+export type ChatHistoryEntry = TextEntry | ActionEntry;
+
+/**
+ * Helper to parse function call to pending action
+ */
+function parseFunctionCallToPendingAction(functionCall: FunctionCall): PendingAction | null {
+  switch (functionCall.name) {
+    case 'sell_item':
+      return {
+        type: 'sell_item',
+        objectId: functionCall.args?.['object_id'] as string,
+        price: functionCall.args?.['price'] as number,
+      };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Helper to create completed action from pending action and acceptance
+ */
+function createCompletedAction(pendingAction: PendingAction, accepted: boolean): Action {
+  switch (pendingAction.type) {
+    case 'sell_item':
+      return {
+        type: 'sell_item',
+        objectId: pendingAction.objectId,
+        price: pendingAction.price,
+        accepted,
+      };
+  }
+}
+
+/**
+ * Parsing utilities for converting Gemini Content to ChatHistoryEntry
+ */
+function parseContent(content: Content): ChatHistoryEntry[] {
+  const entries: ChatHistoryEntry[] = [];
+  const parts = content.parts || [];
+  
+  for (const part of parts) {
+    if (part.text) {
+      entries.push({
+        type: 'text',
+        role: content.role as 'user' | 'model',
+        content: part.text,
+      });
+    }
+    // Skip functionCall and functionResponse parts - they don't go directly into chat history
+    // Completed actions are added via addCompletedActionToHistory function
+  }
+  
+  return entries;
+}
+
+/**
+ * Helper to add a completed action to chat history
+ */
+function addCompletedActionToHistory(chatHistory: ChatHistoryEntry[], action: Action): void {
+  chatHistory.push({
+    type: 'action',
+    action,
+  });
+}
+
+function parseContentArray(contents: Content[]): ChatHistoryEntry[] {
+  return contents.flatMap(parseContent);
+}
+
+/**
  * Position represents x, y coordinates and map location
  */
 export interface Position {
@@ -27,7 +137,7 @@ export interface WaitingForNpcState {
 // State when waiting for user to confirm an action
 export interface ConfirmingActionState {
   type: 'confirming_action';
-  functionCall: FunctionCall;
+  pendingAction: PendingAction;
 }
 
 // State when about to end chat (after deley to let user
@@ -55,7 +165,8 @@ export type TurnState =
  */
 export type ChatWindow = {
   intro_text: string;
-  messages: Content[];
+  contents: Content[];
+  chatHistory: ChatHistoryEntry[];
   npcId: string;
   turnState: TurnState;
 };
@@ -153,13 +264,13 @@ function handleMovement(
   // Check if target tile is an NPC - enter chat
   if (targetTile.type === 'npc') {
     const npc = gameConfig.npcs[targetTile.npcId];
-    const messages: Content[] = [];
+    const contents: Content[] = [];
 
     // Use preseeded message history if available, otherwise fall back to first_message
     if (npc?.preseeded_message_history) {
-      messages.push(...npc.preseeded_message_history);
+      contents.push(...npc.preseeded_message_history);
     } else if (npc?.first_message) {
-      messages.push({
+      contents.push({
         role: 'model',
         parts: [{ text: npc.first_message }],
       });
@@ -167,7 +278,8 @@ function handleMovement(
 
     state.chatWindow = {
       intro_text: npc.intro_text,
-      messages,
+      contents,
+      chatHistory: parseContentArray(contents),
       turnState: {
         type: 'user_turn',
         currentMessage: '',
@@ -223,10 +335,12 @@ const gameSlice = createSlice({
     // Chat functionality
     sendChatToNpc: (state) => {
       if (state.chatWindow && state.chatWindow.turnState.type === 'user_turn') {
-        state.chatWindow.messages.push({
+        const userContent: Content = {
           role: 'user',
           parts: [{ text: state.chatWindow.turnState.currentMessage }],
-        });
+        };
+        state.chatWindow.contents.push(userContent);
+        state.chatWindow.chatHistory.push(...parseContent(userContent));
         state.chatWindow.turnState = { type: 'waiting_for_ai' };
       }
     },
@@ -236,51 +350,57 @@ const gameSlice = createSlice({
         state.chatWindow &&
         state.chatWindow.turnState.type === 'confirming_action'
       ) {
-        state.chatWindow.messages.push({
+        const pendingAction = state.chatWindow.turnState.pendingAction;
+        const accepted = action.payload;
+        
+        // Create the function response content for the raw contents
+        const responseContent: Content = {
           role: 'user',
           parts: [
             {
               functionResponse: {
-                name: state.chatWindow.turnState.functionCall.name!,
-                response: { output: action.payload ? 'accept' : 'reject' },
+                name: pendingAction.type,
+                response: { output: accepted ? 'accept' : 'reject' },
               },
             },
           ],
-        });
-        switch (state.chatWindow.turnState.functionCall.name) {
-          case 'sell_item':
-            const objectId = state.chatWindow.turnState.functionCall.args![
-              'object_id'
-            ] as string;
-            const price = state.chatWindow.turnState.functionCall.args![
-              'price'
-            ] as number;
+        };
+        state.chatWindow.contents.push(responseContent);
+        
+        // Create and add the completed action to chat history
+        const completedAction = createCompletedAction(pendingAction, accepted);
+        addCompletedActionToHistory(state.chatWindow.chatHistory, completedAction);
+        
+        // Handle the actual game logic for accepted actions
+        if (accepted && pendingAction.type === 'sell_item') {
+          const { objectId, price } = pendingAction;
 
-            // Add the purchased item to inventory
-            const existingItemIndex = state.inventory.items.findIndex(
-              (slot) => slot.objectId === objectId
-            );
-            if (existingItemIndex >= 0) {
-              state.inventory.items[existingItemIndex].quantity += 1;
-            } else {
-              state.inventory.items.push({
-                objectId: objectId,
-                quantity: 1,
-              });
-            }
+          // Add the purchased item to inventory
+          const existingItemIndex = state.inventory.items.findIndex(
+            (slot) => slot.objectId === objectId
+          );
+          if (existingItemIndex >= 0) {
+            state.inventory.items[existingItemIndex].quantity += 1;
+          } else {
+            state.inventory.items.push({
+              objectId: objectId,
+              quantity: 1,
+            });
+          }
 
-            // Deduct gold from inventory
-            const goldIndex = state.inventory.items.findIndex(
-              (slot) => slot.objectId === 'gold_coin'
-            );
-            if (goldIndex >= 0) {
-              state.inventory.items[goldIndex].quantity -= price;
-              // Remove gold entry if quantity reaches 0
-              if (state.inventory.items[goldIndex].quantity <= 0) {
-                state.inventory.items.splice(goldIndex, 1);
-              }
+          // Deduct gold from inventory
+          const goldIndex = state.inventory.items.findIndex(
+            (slot) => slot.objectId === 'gold_coin'
+          );
+          if (goldIndex >= 0) {
+            state.inventory.items[goldIndex].quantity -= price;
+            // Remove gold entry if quantity reaches 0
+            if (state.inventory.items[goldIndex].quantity <= 0) {
+              state.inventory.items.splice(goldIndex, 1);
             }
+          }
         }
+        
         state.chatWindow.turnState = { type: 'waiting_for_ai' };
       }
     },
@@ -300,7 +420,7 @@ const gameSlice = createSlice({
         const parts = content.parts || [];
         for (const part of parts) {
           if (part.functionCall) {
-            // Handle the tool use immediately
+            // Handle immediate actions
             switch (part.functionCall.name) {
               case 'open_door':
                 // If player is on the town side of the door, move them to the forest
@@ -317,28 +437,44 @@ const gameSlice = createSlice({
                     y: 1,
                   };
                 }
+                // Add completed open_door action to chat history
+                addCompletedActionToHistory(state.chatWindow.chatHistory, {
+                  type: 'open_door',
+                });
                 break;
             }
           }
         }
 
-        state.chatWindow.messages.push(content);
+        state.chatWindow.contents.push(content);
+        state.chatWindow.chatHistory.push(...parseContent(content));
         const lastPart = parts.length > 0 ? parts[parts.length - 1] : null;
         if (lastPart && lastPart.functionCall) {
-          switch (lastPart.functionCall.name) {
-            case 'open_door':
-              // There is listener middleware that listens for the state transition to
-              // animating_before_end_chat and exits the chat after a delay.
-              state.chatWindow.turnState = {
-                type: 'animating_before_end_chat',
-              };
-              break;
-            case 'sell_item':
-              state.chatWindow.turnState = {
-                type: 'confirming_action',
-                functionCall: lastPart.functionCall,
-              };
-              break;
+          const pendingAction = parseFunctionCallToPendingAction(lastPart.functionCall);
+          if (pendingAction) {
+            // This requires user confirmation
+            state.chatWindow.turnState = {
+              type: 'confirming_action',
+              pendingAction,
+            };
+          } else {
+            // Handle immediate actions
+            switch (lastPart.functionCall.name) {
+              case 'open_door':
+                // There is listener middleware that listens for the state transition to
+                // animating_before_end_chat and exits the chat after a delay.
+                state.chatWindow.turnState = {
+                  type: 'animating_before_end_chat',
+                };
+                break;
+              default:
+                // Unknown action - continue normally
+                state.chatWindow.turnState = {
+                  type: 'user_turn',
+                  currentMessage: '',
+                };
+                break;
+            }
           }
         } else {
           // Set to user's turn with new empty message.

@@ -29,7 +29,7 @@ listenerMiddleware.startListening({
     if (
       !accessKey ||
       gameState.chatWindow === null ||
-      !gameState.chatWindow.messages.length
+      !gameState.chatWindow.contents.length
     ) {
       return;
     }
@@ -41,7 +41,7 @@ listenerMiddleware.startListening({
       const requestBody: ChatRequest = {
         accessKey: accessKey,
         npcId: gameState.chatWindow.npcId,
-        contents: gameState.chatWindow.messages,
+        contents: gameState.chatWindow.contents,
       };
 
       const response = await fetch('/api/chat', {

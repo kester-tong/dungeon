@@ -171,15 +171,33 @@ export const selectChatWindowText = (
     { text: '\n\nPress ESC to exit\n\n', color: UI_COLORS.INSTRUCTION_TEXT }
   );
 
-  // Flatten and render all message parts
-  const flattenedParts = chatWindow.messages.flatMap(({ role, parts }) =>
-    (parts || []).map((part) => ({ role, part }))
-  );
-
-  for (const { role, part } of flattenedParts) {
-    const segment = renderContentPart(role, part);
-    if (segment.text) {
-      segments.push(segment);
+  // Render all chat history entries
+  for (const entry of chatWindow.chatHistory) {
+    if (entry.type === 'text') {
+      const color = entry.role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
+      segments.push({ text: '> ' + entry.content + '\n\n', color });
+    } else if (entry.type === 'action') {
+      let text: string;
+      const action = entry.action;
+      
+      switch (action.type) {
+        case 'open_door':
+          text = 'The gate swings open and you pass through\n\n';
+          break;
+        case 'sell_item':
+          if (action.accepted) {
+            text = `You bought ${action.objectId} for ${action.price} gold coins\n\n`;
+          } else {
+            text = `You rejected the offer of ${action.objectId} for ${action.price} gold coins\n\n`;
+          }
+          break;
+        default:
+          text = `Unknown action ${(action as any).type}`;
+          break;
+      }
+      if (text) {
+        segments.push({ text, color: UI_COLORS.NARRATIVE_TEXT });
+      }
     }
   }
 
@@ -189,8 +207,15 @@ export const selectChatWindowText = (
       segments.push({ text: '█', color: UI_COLORS.NARRATIVE_TEXT });
       break;
     case 'confirming_action':
+      const pendingAction = chatWindow.turnState.pendingAction;
+      let confirmText = 'Do you accept (y / n)? █';
+      
+      if (pendingAction.type === 'sell_item') {
+        confirmText = `Accept offer of ${pendingAction.objectId} for ${pendingAction.price} gold? (y / n) █`;
+      }
+      
       segments.push({
-        text: 'Do you accept (y / n)? █',
+        text: confirmText,
         color: UI_COLORS.NARRATIVE_TEXT,
       });
       break;

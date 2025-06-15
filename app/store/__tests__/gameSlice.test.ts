@@ -9,6 +9,7 @@ import gameReducer, {
   handleChatResponse,
   confirmAction,
   GameState,
+  PendingAction,
 } from '../gameSlice';
 import { createStateWithChat, createMockMessage } from '../testUtils';
 import { gameConfig } from '@/src/config/gameConfig';
@@ -197,12 +198,12 @@ describe('gameSlice', () => {
       it('should add user message and transition to waiting state', () => {
         const stateWithChat = createStateWithChat({
           turnState: { type: 'user_turn', currentMessage: 'Hello there' },
-          messages: [],
+          contents: [],
         });
         const state = gameReducer(stateWithChat, sendChatToNpc());
 
-        expect(state.chatWindow?.messages).toHaveLength(1);
-        expect(state.chatWindow?.messages[0]).toEqual({
+        expect(state.chatWindow?.contents).toHaveLength(1);
+        expect(state.chatWindow?.contents[0]).toEqual({
           role: 'user',
           parts: [{ text: 'Hello there' }],
         });
@@ -223,7 +224,7 @@ describe('gameSlice', () => {
       it('should handle successful chat response', () => {
         const stateWithChat = createStateWithChat({
           turnState: { type: 'waiting_for_ai' },
-          messages: [createMockMessage('user', 'Hello')],
+          contents: [createMockMessage('user', 'Hello')],
         });
 
         const response: ChatResponse = {
@@ -238,8 +239,8 @@ describe('gameSlice', () => {
 
         const state = gameReducer(stateWithChat, handleChatResponse(response));
 
-        expect(state.chatWindow?.messages).toHaveLength(2);
-        expect(state.chatWindow?.messages[1]).toEqual(
+        expect(state.chatWindow?.contents).toHaveLength(2);
+        expect(state.chatWindow?.contents[1]).toEqual(
           response.response.content
         );
         expect(state.chatWindow?.turnState).toEqual({
@@ -251,7 +252,7 @@ describe('gameSlice', () => {
       it('should handle response with function call for confirmation', () => {
         const stateWithChat = createStateWithChat({
           turnState: { type: 'waiting_for_ai' },
-          messages: [createMockMessage('user', 'I want to buy something')],
+          contents: [createMockMessage('user', 'I want to buy something')],
         });
 
         const functionCall = {
@@ -273,14 +274,18 @@ describe('gameSlice', () => {
 
         expect(state.chatWindow?.turnState).toEqual({
           type: 'confirming_action',
-          functionCall,
+          pendingAction: {
+            type: 'sell_item',
+            objectId: 'sword',
+            price: 10,
+          },
         });
       });
 
       it('should handle response with open_door function call', () => {
         const stateWithChat = createStateWithChat({
           turnState: { type: 'waiting_for_ai' },
-          messages: [createMockMessage('user', 'Open the door')],
+          contents: [createMockMessage('user', 'Open the door')],
         });
 
         const functionCall = {
@@ -345,21 +350,22 @@ describe('gameSlice', () => {
   describe('Action Confirmation Reducers', () => {
     describe('confirmAction', () => {
       it('should handle confirmed sell_item action', () => {
-        const functionCall = {
-          name: 'sell_item',
-          args: { object_id: 'rope', price: 2 },
+        const pendingAction: PendingAction = {
+          type: 'sell_item',
+          objectId: 'rope',
+          price: 2,
         };
 
         const stateWithConfirmation = createStateWithChat({
-          turnState: { type: 'confirming_action', functionCall },
-          messages: [createMockMessage('user', 'I want to buy rope')],
+          turnState: { type: 'confirming_action', pendingAction },
+          contents: [createMockMessage('user', 'I want to buy rope')],
         });
 
         const state = gameReducer(stateWithConfirmation, confirmAction(true));
 
-        // Should add function response to messages
-        expect(state.chatWindow?.messages).toHaveLength(2);
-        expect(state.chatWindow?.messages[1]).toEqual({
+        // Should add function response to contents
+        expect(state.chatWindow?.contents).toHaveLength(2);
+        expect(state.chatWindow?.contents[1]).toEqual({
           role: 'user',
           parts: [
             {
@@ -389,20 +395,21 @@ describe('gameSlice', () => {
       });
 
       it('should handle rejected action', () => {
-        const functionCall = {
-          name: 'sell_item',
-          args: { object_id: 'rope', price: 2 },
+        const pendingAction: PendingAction = {
+          type: 'sell_item',
+          objectId: 'rope',
+          price: 2,
         };
 
         const stateWithConfirmation = createStateWithChat({
-          turnState: { type: 'confirming_action', functionCall },
-          messages: [createMockMessage('user', 'I want to buy rope')],
+          turnState: { type: 'confirming_action', pendingAction },
+          contents: [createMockMessage('user', 'I want to buy rope')],
         });
 
         const state = gameReducer(stateWithConfirmation, confirmAction(false));
 
-        // Should add rejection response to messages
-        expect(state.chatWindow?.messages[1]).toEqual({
+        // Should add rejection response to contents
+        expect(state.chatWindow?.contents[1]).toEqual({
           role: 'user',
           parts: [
             {
