@@ -19,50 +19,6 @@
   "sidepane": {
     "width": 8
   },
-  "objects": {
-    "rusty_sword": {
-      "id": "rusty_sword",
-      "name": "Rusty Sword",
-      "description": "An old, weathered sword that has seen better days.",
-      "type": "weapon",
-      "tileIndex": 336
-    },
-    "health_potion": {
-      "id": "health_potion",
-      "name": "Health Potion",
-      "description": "A red liquid that restores vitality.",
-      "type": "consumable",
-      "tileIndex": 456
-    },
-    "gold_coin": {
-      "id": "gold_coin",
-      "name": "Gold Coin",
-      "description": "A gold coin of the realm.",
-      "type": "misc",
-      "tileIndex": 115
-    },
-    "rope": {
-      "id": "rope",
-      "name": "Rope",
-      "description": "A coil of sturdy rope.",
-      "type": "tool",
-      "tileIndex": 123
-    },
-    "ration": {
-      "id": "ration",
-      "name": "Ration",
-      "description": "A single day's worth of food.",
-      "type": "consumable",
-      "tileIndex": 145
-    },
-    "torch": {
-      "id": "torch",
-      "name": "Torch",
-      "description": "A wooden torch for lighting dark places.",
-      "type": "tool",
-      "tileIndex": 167
-    }
-  },
   "initialInventory": {
     "items": [
       {

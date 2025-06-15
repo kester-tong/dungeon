@@ -1,0 +1,7 @@
+{
+  "id": "health_potion",
+  "name": "Health Potion",
+  "description": "A red liquid that restores vitality.",
+  "type": "consumable",
+  "tileIndex": 456
+}

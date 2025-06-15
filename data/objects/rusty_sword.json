@@ -1,0 +1,7 @@
+{
+  "id": "rusty_sword",
+  "name": "Rusty Sword",
+  "description": "An old, weathered sword that has seen better days.",
+  "type": "weapon",
+  "tileIndex": 336
+}

@@ -1,0 +1,7 @@
+{
+  "id": "ration",
+  "name": "Ration",
+  "description": "A single day's worth of food.",
+  "type": "consumable",
+  "tileIndex": 145
+}

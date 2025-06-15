@@ -1,0 +1,7 @@
+{
+  "id": "torch",
+  "name": "Torch",
+  "description": "A wooden torch for lighting dark places.",
+  "type": "tool",
+  "tileIndex": 459
+}

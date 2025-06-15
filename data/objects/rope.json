@@ -1,0 +1,7 @@
+{
+  "id": "rope",
+  "name": "Rope",
+  "description": "A coil of sturdy rope.",
+  "type": "tool",
+  "tileIndex": 152
+}

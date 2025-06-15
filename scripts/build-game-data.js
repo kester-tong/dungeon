@@ -127,6 +127,9 @@ function assembleGameData() {
   console.log('Loading NPCs...');
   const npcs = loadAllJsonFiles(path.join(dataDir, 'npcs'));
   
+  console.log('Loading objects...');
+  const objects = loadAllJsonFiles(path.join(dataDir, 'objects'));
+  
   if (!globalConfig) {
     throw new Error('globalConfig.json is required but not found');
   }
@@ -157,6 +160,7 @@ function assembleGameData() {
   
   const gameData = {
     ...globalConfig,
+    objects: objects,
     maps: processedMaps,
     npcs: processedNpcs
   };
@@ -165,6 +169,7 @@ function assembleGameData() {
   console.log(`- Global config loaded: ${globalConfig ? 'Yes' : 'No'}`);
   console.log(`- Prompt chunks loaded: ${Object.keys(promptChunks).length}`);
   console.log(`- Tools loaded: ${Object.keys(tools).length}`);
+  console.log(`- Objects loaded: ${Object.keys(objects).length}`);
   console.log(`- Maps loaded: ${Object.keys(jsonMaps).length}`);
   console.log(`- Maps processed: ${Object.keys(processedMaps).length}`);
   console.log(`- NPCs loaded: ${Object.keys(npcs).length}`);
