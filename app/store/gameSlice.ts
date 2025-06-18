@@ -1,8 +1,8 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
 import { ChatResponse } from '../api/chat/types';
 import { Inventory } from '@/src/items';
-import { Content, FunctionCall } from '@google/genai';
+import { Content, FunctionCall, FunctionResponse } from '@google/genai';
 
 /**
  * Strongly-typed action definitions
@@ -15,21 +15,9 @@ export interface SellItemAction {
   type: 'sell_item';
   objectId: string;
   price: number;
-  accepted: boolean;
 }
 
 export type Action = OpenDoorAction | SellItemAction;
-
-/**
- * Pending actions that require user confirmation
- */
-export interface PendingSellItemAction {
-  type: 'sell_item';
-  objectId: string;
-  price: number;
-}
-
-export type PendingAction = PendingSellItemAction;
 
 /**
  * Parsed chat history entry types
@@ -43,6 +31,7 @@ export interface TextEntry {
 export interface ActionEntry {
   type: 'action';
   action: Action;
+  accepted: boolean;
 }
 
 export type ChatHistoryEntry = TextEntry | ActionEntry;
@@ -50,7 +39,7 @@ export type ChatHistoryEntry = TextEntry | ActionEntry;
 /**
  * Helper to parse function call to pending action
  */
-function parseFunctionCallToPendingAction(functionCall: FunctionCall): PendingAction | null {
+function parseFunctionCall(functionCall: FunctionCall): Action | null {
   switch (functionCall.name) {
     case 'sell_item':
       return {
@@ -58,22 +47,90 @@ function parseFunctionCallToPendingAction(functionCall: FunctionCall): PendingAc
         objectId: functionCall.args?.['object_id'] as string,
         price: functionCall.args?.['price'] as number,
       };
+    case 'open_door':
+      return {
+        type: 'open_door',
+      };
     default:
       return null;
   }
 }
 
 /**
+ * Either performs the action or returns null indicating that confirmation is needed.
+ *
+ * This function is needed because some actions will fail anyway depending on the game state
+ * (e.g. buying an object you can't afford) so  we should fail early without confirmation.
+ *
+ * @param action
+ * @param state
+ */
+function actionNeedsConfirmation(action: Action, state: GameState): boolean {
+  switch (action.type) {
+    case 'sell_item':
+      // TODO: skip confirmation if player character can't afford it
+      return true;
+    case 'open_door':
+      return false;
+  }
+}
+
+/**
  * Helper to create completed action from pending action and acceptance
  */
-function createCompletedAction(pendingAction: PendingAction, accepted: boolean): Action {
-  switch (pendingAction.type) {
-    case 'sell_item':
+function performAction(
+  action: Action,
+  state: Draft<GameState>
+): FunctionResponse {
+  switch (action.type) {
+    case 'open_door':
+      // If player is on the town side of the door, move them to the forest
+      if (state.player.mapId === 'town') {
+        state.player = {
+          mapId: 'forest',
+          x: 11,
+          y: 13,
+        };
+      } else {
+        state.player = {
+          mapId: 'town',
+          x: 11,
+          y: 1,
+        };
+      }
       return {
-        type: 'sell_item',
-        objectId: pendingAction.objectId,
-        price: pendingAction.price,
-        accepted,
+        name: 'open_door',
+        response: {},
+      };
+    case 'sell_item':
+      const { objectId, price } = action;
+      // Add the purchased item to inventory
+      const existingItemIndex = state.inventory.items.findIndex(
+        (slot) => slot.objectId === objectId
+      );
+      if (existingItemIndex >= 0) {
+        state.inventory.items[existingItemIndex].quantity += 1;
+      } else {
+        state.inventory.items.push({
+          objectId: objectId,
+          quantity: 1,
+        });
+      }
+
+      // Deduct gold from inventory
+      const goldIndex = state.inventory.items.findIndex(
+        (slot) => slot.objectId === 'gold_coin'
+      );
+      if (goldIndex >= 0) {
+        state.inventory.items[goldIndex].quantity -= price;
+        // Remove gold entry if quantity reaches 0
+        if (state.inventory.items[goldIndex].quantity <= 0) {
+          state.inventory.items.splice(goldIndex, 1);
+        }
+      }
+      return {
+        name: 'sell_item',
+        response: { result: 'accept' },
       };
   }
 }
@@ -84,7 +141,7 @@ function createCompletedAction(pendingAction: PendingAction, accepted: boolean):
 function parseContent(content: Content): ChatHistoryEntry[] {
   const entries: ChatHistoryEntry[] = [];
   const parts = content.parts || [];
-  
+
   for (const part of parts) {
     if (part.text) {
       entries.push({
@@ -96,18 +153,8 @@ function parseContent(content: Content): ChatHistoryEntry[] {
     // Skip functionCall and functionResponse parts - they don't go directly into chat history
     // Completed actions are added via addCompletedActionToHistory function
   }
-  
-  return entries;
-}
 
-/**
- * Helper to add a completed action to chat history
- */
-function addCompletedActionToHistory(chatHistory: ChatHistoryEntry[], action: Action): void {
-  chatHistory.push({
-    type: 'action',
-    action,
-  });
+  return entries;
 }
 
 function parseContentArray(contents: Content[]): ChatHistoryEntry[] {
@@ -137,7 +184,7 @@ export interface WaitingForNpcState {
 // State when waiting for user to confirm an action
 export interface ConfirmingActionState {
   type: 'confirming_action';
-  pendingAction: PendingAction;
+  pendingAction: Action;
 }
 
 // State when about to end chat (after deley to let user
@@ -352,55 +399,32 @@ const gameSlice = createSlice({
       ) {
         const pendingAction = state.chatWindow.turnState.pendingAction;
         const accepted = action.payload;
-        
+
+        let functionResponse: FunctionResponse;
+        if (accepted) {
+          functionResponse = performAction(pendingAction, state);
+        } else {
+          functionResponse = {
+            name: pendingAction.type,
+            response: { output: 'reject' },
+          };
+        }
+
         // Create the function response content for the raw contents
         const responseContent: Content = {
           role: 'user',
           parts: [
             {
-              functionResponse: {
-                name: pendingAction.type,
-                response: { output: accepted ? 'accept' : 'reject' },
-              },
+              functionResponse,
             },
           ],
         };
         state.chatWindow.contents.push(responseContent);
-        
-        // Create and add the completed action to chat history
-        const completedAction = createCompletedAction(pendingAction, accepted);
-        addCompletedActionToHistory(state.chatWindow.chatHistory, completedAction);
-        
-        // Handle the actual game logic for accepted actions
-        if (accepted && pendingAction.type === 'sell_item') {
-          const { objectId, price } = pendingAction;
-
-          // Add the purchased item to inventory
-          const existingItemIndex = state.inventory.items.findIndex(
-            (slot) => slot.objectId === objectId
-          );
-          if (existingItemIndex >= 0) {
-            state.inventory.items[existingItemIndex].quantity += 1;
-          } else {
-            state.inventory.items.push({
-              objectId: objectId,
-              quantity: 1,
-            });
-          }
-
-          // Deduct gold from inventory
-          const goldIndex = state.inventory.items.findIndex(
-            (slot) => slot.objectId === 'gold_coin'
-          );
-          if (goldIndex >= 0) {
-            state.inventory.items[goldIndex].quantity -= price;
-            // Remove gold entry if quantity reaches 0
-            if (state.inventory.items[goldIndex].quantity <= 0) {
-              state.inventory.items.splice(goldIndex, 1);
-            }
-          }
-        }
-        
+        state.chatWindow.chatHistory.push({
+          type: 'action',
+          action: pendingAction,
+          accepted,
+        });
         state.chatWindow.turnState = { type: 'waiting_for_ai' };
       }
     },
@@ -410,71 +434,54 @@ const gameSlice = createSlice({
         state.chatWindow &&
         state.chatWindow.turnState.type === 'waiting_for_ai'
       ) {
-        // TODO: handle errors
         if (!action.payload.success) {
+          // TODO: handle errors better.
+          state.chatWindow = null;
           return;
         }
 
-        // Check for tool use in the content blocks and handle immediately
         const content = action.payload.response.content;
-        const parts = content.parts || [];
-        for (const part of parts) {
-          if (part.functionCall) {
-            // Handle immediate actions
-            switch (part.functionCall.name) {
-              case 'open_door':
-                // If player is on the town side of the door, move them to the forest
-                if (state.player.mapId === 'town') {
-                  state.player = {
-                    mapId: 'forest',
-                    x: 11,
-                    y: 13,
-                  };
-                } else {
-                  state.player = {
-                    mapId: 'town',
-                    x: 11,
-                    y: 1,
-                  };
-                }
-                // Add completed open_door action to chat history
-                addCompletedActionToHistory(state.chatWindow.chatHistory, {
-                  type: 'open_door',
-                });
-                break;
-            }
-          }
-        }
-
         state.chatWindow.contents.push(content);
         state.chatWindow.chatHistory.push(...parseContent(content));
+
+        // TODO: handle function calls that don't appear in the last part of the message
+        // either with error or otherwise.
+        const parts = content.parts || [];
         const lastPart = parts.length > 0 ? parts[parts.length - 1] : null;
-        if (lastPart && lastPart.functionCall) {
-          const pendingAction = parseFunctionCallToPendingAction(lastPart.functionCall);
-          if (pendingAction) {
-            // This requires user confirmation
+        const functionCall = lastPart?.functionCall;
+        if (functionCall) {
+          const action = parseFunctionCall(functionCall);
+          if (action === null) {
+            // TODO: add something to chatHistory indicate a failed attempt at an action
+            state.chatWindow = null;
+            return;
+          }
+          if (actionNeedsConfirmation(action, state)) {
             state.chatWindow.turnState = {
               type: 'confirming_action',
-              pendingAction,
+              pendingAction: action,
             };
           } else {
-            // Handle immediate actions
-            switch (lastPart.functionCall.name) {
-              case 'open_door':
-                // There is listener middleware that listens for the state transition to
-                // animating_before_end_chat and exits the chat after a delay.
-                state.chatWindow.turnState = {
-                  type: 'animating_before_end_chat',
-                };
-                break;
-              default:
-                // Unknown action - continue normally
-                state.chatWindow.turnState = {
-                  type: 'user_turn',
-                  currentMessage: '',
-                };
-                break;
-            }
+            const functionResponse = performAction(action, state);
+            state.chatWindow.chatHistory.push({
+              type: 'action',
+              action,
+              accepted: true,
+            });
+            state.chatWindow.contents.push({
+              role: 'user',
+              parts: [{ functionResponse }],
+            });
+            // TODO: right now we only reach this point for the open door action which we
+            // want to end the chat.  However really we should have a function that
+            // determines whether an action ends the chat.  In the case that it doesn't
+            // we should trigger a new API call.  To do this we should update the
+            // listener code which currently looks for state changes to waiting_for_ai
+            // However in this case we're already in the waiting_for_ai state so we
+            // should also listen for changes to chatWindow.contents.
+            state.chatWindow.turnState = {
+              type: 'animating_before_end_chat',
+            };
           }
         } else {
           // Set to user's turn with new empty message.

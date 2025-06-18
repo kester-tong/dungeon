@@ -1,4 +1,4 @@
-import { GameState, ChatWindow, PendingAction } from './gameSlice';
+import { GameState, ChatWindow } from './gameSlice';
 import { Content } from '@google/genai';
 import { gameConfig } from '@/src/config/gameConfig';
 
@@ -8,10 +8,10 @@ export const createMockChatWindow = (
 ): ChatWindow => {
   const legacyMessages = (overrides as any)?.messages || [];
   const contents: Content[] = overrides?.contents || legacyMessages;
-  const chatHistory = contents.flatMap(content => {
+  const chatHistory = contents.flatMap((content) => {
     const entries = [];
     const parts = content.parts || [];
-    
+
     for (const part of parts) {
       if (part.text) {
         entries.push({
@@ -21,7 +21,7 @@ export const createMockChatWindow = (
         });
       }
     }
-    
+
     return entries;
   });
 

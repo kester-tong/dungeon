@@ -2,7 +2,6 @@ import { RootState } from './store';
 import { ChatWindow } from './gameSlice';
 import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
-import { FunctionCall, FunctionResponse, Part } from '@google/genai';
 import { GameItem } from '@/src/items';
 
 // UI Color Constants
@@ -81,77 +80,6 @@ export const selectTileArray = (state: RootState): TileArray | null => {
   return { tiles };
 };
 
-function renderFunctionCall(functionCall: FunctionCall): TextSegment {
-  let text: string;
-  switch (functionCall.name) {
-    case 'open_door':
-      text = 'The gate swings open and you pass through\n\n';
-      break;
-    case 'sell_item':
-      const object_id = functionCall.args!['object_id'];
-      const price = functionCall.args!['price'];
-      text = `They offer you ${object_id} for the price of ${price} gold coins\n\n`;
-      break;
-    case 'list_inventory':
-      // Skip rendering - this is only for NPC internal state
-      text = '';
-      break;
-    default:
-      text = `Unknown function call ${functionCall.name}`;
-      break;
-  }
-
-  return {
-    text,
-    color: UI_COLORS.NARRATIVE_TEXT,
-  };
-}
-
-function renderFunctionResponse(
-  functionResponse: FunctionResponse
-): TextSegment {
-  let text: string;
-  switch (functionResponse.name) {
-    case 'open_door':
-      text = '\n\n';
-      break;
-    case 'sell_item':
-      const output = functionResponse.response!['output'];
-      text = `You ${output} the offer.\n\n`;
-      break;
-    case 'list_inventory':
-      // Skip rendering - this is only for NPC internal state
-      text = '';
-      break;
-    default:
-      text = `Unknown function call ${functionResponse.name}`;
-      break;
-  }
-
-  return {
-    text,
-    color: UI_COLORS.NARRATIVE_TEXT,
-  };
-}
-
-function renderContentPart(role: string | undefined, part: Part): TextSegment {
-  // TODO: handle function calls and responses.
-  if (part.text) {
-    const color =
-      role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
-    return { text: '> ' + part.text + '\n\n', color };
-  } else if (part.functionCall) {
-    return renderFunctionCall(part.functionCall);
-  } else if (part.functionResponse) {
-    return renderFunctionResponse(part.functionResponse);
-  } else {
-    return {
-      text: '[Unknown content block]',
-      color: UI_COLORS.INSTRUCTION_TEXT,
-    };
-  }
-}
-
 /**
  * Selector to get the chat window content as TextSegment array for TextBox
  */
@@ -174,18 +102,19 @@ export const selectChatWindowText = (
   // Render all chat history entries
   for (const entry of chatWindow.chatHistory) {
     if (entry.type === 'text') {
-      const color = entry.role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
+      const color =
+        entry.role === 'user' ? UI_COLORS.USER_INPUT : UI_COLORS.ASSISTANT_TEXT;
       segments.push({ text: '> ' + entry.content + '\n\n', color });
     } else if (entry.type === 'action') {
       let text: string;
       const action = entry.action;
-      
+
       switch (action.type) {
         case 'open_door':
           text = 'The gate swings open and you pass through\n\n';
           break;
         case 'sell_item':
-          if (action.accepted) {
+          if (entry.accepted) {
             text = `You bought ${action.objectId} for ${action.price} gold coins\n\n`;
           } else {
             text = `You rejected the offer of ${action.objectId} for ${action.price} gold coins\n\n`;
@@ -209,11 +138,11 @@ export const selectChatWindowText = (
     case 'confirming_action':
       const pendingAction = chatWindow.turnState.pendingAction;
       let confirmText = 'Do you accept (y / n)? █';
-      
+
       if (pendingAction.type === 'sell_item') {
         confirmText = `Accept offer of ${pendingAction.objectId} for ${pendingAction.price} gold? (y / n) █`;
       }
-      
+
       segments.push({
         text: confirmText,
         color: UI_COLORS.NARRATIVE_TEXT,
