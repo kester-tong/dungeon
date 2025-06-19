@@ -50,7 +50,7 @@ export const GameItemSchema = z.object({
   name: z.string(),
   description: z.string(),
   type: z.nativeEnum(ItemType),
-  tileIndex: z.number().optional(),
+  tileIndex: z.number(),
 });
 
 export const InventorySlotSchema = z.object({

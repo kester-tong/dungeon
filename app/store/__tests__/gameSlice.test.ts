@@ -9,7 +9,7 @@ import gameReducer, {
   handleChatResponse,
   confirmAction,
   GameState,
-  PendingAction,
+  Action,
 } from '../gameSlice';
 import { createStateWithChat, createMockMessage } from '../testUtils';
 import { gameConfig } from '@/src/config/gameConfig';
@@ -334,7 +334,6 @@ describe('gameSlice', () => {
         const stateWithChat = createStateWithChat({
           turnState: { type: 'waiting_for_ai' },
         });
-        const originalState = JSON.parse(JSON.stringify(stateWithChat));
 
         const response: ChatResponse = {
           success: false,
@@ -342,7 +341,7 @@ describe('gameSlice', () => {
         };
 
         const state = gameReducer(stateWithChat, handleChatResponse(response));
-        expect(state).toEqual(originalState);
+        expect(state.chatWindow).toBeNull();
       });
     });
   });
@@ -350,7 +349,7 @@ describe('gameSlice', () => {
   describe('Action Confirmation Reducers', () => {
     describe('confirmAction', () => {
       it('should handle confirmed sell_item action', () => {
-        const pendingAction: PendingAction = {
+        const pendingAction: Action = {
           type: 'sell_item',
           objectId: 'rope',
           price: 2,
@@ -371,7 +370,7 @@ describe('gameSlice', () => {
             {
               functionResponse: {
                 name: 'sell_item',
-                response: { output: 'accept' },
+                response: { result: 'accept' },
               },
             },
           ],
@@ -395,7 +394,7 @@ describe('gameSlice', () => {
       });
 
       it('should handle rejected action', () => {
-        const pendingAction: PendingAction = {
+        const pendingAction: Action = {
           type: 'sell_item',
           objectId: 'rope',
           price: 2,

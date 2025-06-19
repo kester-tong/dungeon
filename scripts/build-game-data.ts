@@ -42,7 +42,7 @@ interface GameItem {
   name: string;
   description: string;
   type: string;
-  tileIndex?: number;
+  tileIndex: number;
 }
 
 function loadJsonFile<T = any>(filePath: string): T | null {
