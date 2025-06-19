@@ -1,22 +1,64 @@
-#!/usr/bin/env node
+#!/usr/bin/env ts-node
 
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
+import { GameConfig, GameConfigSchema } from '../src/config/GameConfigSchema';
 
-function loadJsonFile(filePath) {
+// Types for our build process
+interface MapData {
+  data: string[];
+  tileMapping: Record<string, any>;
+  neighbors: Record<string, string>;
+  [key: string]: any;
+}
+
+interface NPCData {
+  intro_text: string;
+  first_message?: string;
+  preseeded_message_history?: any[];
+  prompt_chunks?: string[];
+  tools?: string[];
+  [key: string]: any;
+}
+
+interface GlobalConfig {
+  tileset: any;
+  startingPosition: any;
+  canvas: any;
+  sidepane: any;
+  initialInventory: any;
+  initialSplashText: string;
+  endOfMapText: string;
+}
+
+interface ToolDefinition {
+  name: string;
+  description: string;
+  parameters: any;
+}
+
+interface GameItem {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  tileIndex?: number;
+}
+
+function loadJsonFile<T = any>(filePath: string): T | null {
   try {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(content);
+      return JSON.parse(content) as T;
     }
   } catch (error) {
-    console.error(`Error loading ${filePath}:`, error.message);
+    console.error(`Error loading ${filePath}:`, (error as Error).message);
   }
   return null;
 }
 
-function loadPromptChunks(chunksDir) {
-  const chunks = {};
+function loadPromptChunks(chunksDir: string): Record<string, string> {
+  const chunks: Record<string, string> = {};
   try {
     if (fs.existsSync(chunksDir)) {
       const files = fs.readdirSync(chunksDir);
@@ -29,12 +71,12 @@ function loadPromptChunks(chunksDir) {
       }
     }
   } catch (error) {
-    console.error(`Error loading prompt chunks:`, error.message);
+    console.error(`Error loading prompt chunks:`, (error as Error).message);
   }
   return chunks;
 }
 
-function assemblePrompt(promptChunks, chunks) {
+function assemblePrompt(promptChunks: string[], chunks: Record<string, string>): string {
   return promptChunks.map(chunkName => {
     if (chunks[chunkName]) {
       return chunks[chunkName];
@@ -45,23 +87,23 @@ function assemblePrompt(promptChunks, chunks) {
   }).join('\n\n');
 }
 
-function loadAllJsonFiles(directory) {
-  const result = {};
+function loadAllJsonFiles<T = any>(directory: string): Record<string, T> {
+  const result: Record<string, T> = {};
   try {
     if (fs.existsSync(directory)) {
       const files = fs.readdirSync(directory);
       for (const file of files) {
         if (file.endsWith('.json')) {
           const filePath = path.join(directory, file);
-          const data = loadJsonFile(filePath);
+          const data = loadJsonFile<T>(filePath);
           if (data) {
             const key = path.basename(file, '.json');
             
-            // Load corresponding .txt file if it exists
+            // Load corresponding .txt file if it exists (for maps)
             const txtFile = path.join(directory, `${key}.txt`);
             if (fs.existsSync(txtFile)) {
               const mapData = fs.readFileSync(txtFile, 'utf8').split('\n');
-              data.data = mapData;
+              (data as any).data = mapData;
               console.log(`Loaded ${key} from ${file} with data from ${key}.txt`);
             } else {
               console.log(`Loaded ${key} from ${file}`);
@@ -75,13 +117,13 @@ function loadAllJsonFiles(directory) {
       console.warn(`Directory not found: ${directory}`);
     }
   } catch (error) {
-    console.error(`Error reading directory ${directory}:`, error.message);
+    console.error(`Error reading directory ${directory}:`, (error as Error).message);
   }
   return result;
 }
 
-function processMaps(jsonMaps) {
-  const processedMaps = {};
+function processMaps(jsonMaps: Record<string, MapData>): Record<string, any> {
+  const processedMaps: Record<string, any> = {};
 
   for (const [mapId, mapConfig] of Object.entries(jsonMaps)) {
     const height = mapConfig.data.length;
@@ -108,27 +150,37 @@ function processMaps(jsonMaps) {
   return processedMaps;
 }
 
-function assembleGameData() {
+function validateGameData(gameData: any): GameConfig {
+  try {
+    return GameConfigSchema.parse(gameData);
+  } catch (error) {
+    console.error('❌ Game data validation failed:');
+    console.error(error);
+    throw new Error('Generated game data does not match expected schema');
+  }
+}
+
+function assembleGameData(): GameConfig {
   const rootDir = path.resolve(__dirname, '..');
   const dataDir = path.join(rootDir, 'data');
   
   console.log('Loading global config...');
-  const globalConfig = loadJsonFile(path.join(dataDir, 'config', 'globalConfig.json'));
+  const globalConfig = loadJsonFile<GlobalConfig>(path.join(dataDir, 'config', 'globalConfig.json'));
   
   console.log('Loading prompt chunks...');
   const promptChunks = loadPromptChunks(path.join(dataDir, 'prompt_chunks'));
   
   console.log('Loading tools...');
-  const tools = loadAllJsonFiles(path.join(dataDir, 'tools'));
+  const tools = loadAllJsonFiles<ToolDefinition>(path.join(dataDir, 'tools'));
   
   console.log('Loading maps...');
-  const jsonMaps = loadAllJsonFiles(path.join(dataDir, 'maps'));
+  const jsonMaps = loadAllJsonFiles<MapData>(path.join(dataDir, 'maps'));
   
   console.log('Loading NPCs...');
-  const npcs = loadAllJsonFiles(path.join(dataDir, 'npcs'));
+  const npcs = loadAllJsonFiles<NPCData>(path.join(dataDir, 'npcs'));
   
   console.log('Loading objects...');
-  const objects = loadAllJsonFiles(path.join(dataDir, 'objects'));
+  const objects = loadAllJsonFiles<GameItem>(path.join(dataDir, 'objects'));
   
   if (!globalConfig) {
     throw new Error('globalConfig.json is required but not found');
@@ -138,14 +190,16 @@ function assembleGameData() {
   const processedMaps = processMaps(jsonMaps);
   
   console.log('Assembling NPC prompts and tools...');
-  const processedNpcs = {};
+  const processedNpcs: Record<string, any> = {};
   for (const [npcId, npcData] of Object.entries(npcs)) {
     processedNpcs[npcId] = { ...npcData };
+    
     if (npcData.prompt_chunks) {
       processedNpcs[npcId].prompt = assemblePrompt(npcData.prompt_chunks, promptChunks);
       delete processedNpcs[npcId].prompt_chunks;
       console.log(`Assembled prompt for ${npcId} from ${npcData.prompt_chunks.length} chunks`);
     }
+    
     if (npcData.tools) {
       processedNpcs[npcId].functions = npcData.tools.map(toolName => {
         if (!tools[toolName]) {
@@ -175,10 +229,15 @@ function assembleGameData() {
   console.log(`- NPCs loaded: ${Object.keys(npcs).length}`);
   console.log(`- NPCs processed: ${Object.keys(processedNpcs).length}`);
   
-  return gameData;
+  // Validate the assembled data matches our schema
+  console.log('\nValidating game data against schema...');
+  const validatedGameData = validateGameData(gameData);
+  console.log('✅ Game data validation passed!');
+  
+  return validatedGameData;
 }
 
-function main() {
+function main(): void {
   try {
     console.log('=== Building Game Data ===\n');
     
@@ -197,7 +256,7 @@ function main() {
     console.log(`📁 Output: ${outputPath}`);
     
   } catch (error) {
-    console.error('❌ Error assembling game data:', error.message);
+    console.error('❌ Error assembling game data:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -206,4 +265,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { assembleGameData };
+export { assembleGameData };

@@ -4,13 +4,16 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/build-game-data.js",
+    "prebuild": "npm run build-data && npm run validate-config",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "build-data": "ts-node --project tsconfig.scripts.json scripts/build-game-data.ts",
+    "validate-config": "ts-node --project tsconfig.scripts.json scripts/validate-config.ts",
+    "dev-validate": "ts-node --project tsconfig.scripts.json scripts/dev-validate.ts"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +33,7 @@
     "jest-environment-jsdom": "^30.0.0",
     "prettier": "^3.5.3",
     "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
