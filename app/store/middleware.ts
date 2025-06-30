@@ -1,11 +1,11 @@
 import { createListenerMiddleware } from '@reduxjs/toolkit';
 import type { RootState } from './store';
-import { handleChatResponse, exitChat } from './gameSlice';
 import { ChatRequest, ChatResponse } from '../api/chat/types';
+import { processGameEvent } from './thunks';
 
 // Global state for tracking pending operations
 let chatAbortController: AbortController | null = null;
-let animationTimeoutId: NodeJS.Timeout | null = null;
+// let animationTimeoutId: NodeJS.Timeout | null = null;
 
 export const listenerMiddleware = createListenerMiddleware();
 
@@ -58,7 +58,9 @@ listenerMiddleware.startListening({
       }
 
       const chatResponse: ChatResponse = await response.json();
-      listenerApi.dispatch(handleChatResponse(chatResponse));
+      listenerApi.dispatch(
+        processGameEvent({ type: 'chatresponse', response: chatResponse })
+      );
     } catch (error) {
       // Don't handle AbortError - it means the request was intentionally cancelled
       if (error instanceof Error && error.name === 'AbortError') {
@@ -67,12 +69,15 @@ listenerMiddleware.startListening({
 
       // Add fallback message on other errors
       listenerApi.dispatch(
-        handleChatResponse({
-          success: false,
-          error:
-            typeof error === 'string'
-              ? error
-              : "Sorry, I couldn't understand that",
+        processGameEvent({
+          type: 'chatresponse',
+          response: {
+            success: false,
+            error:
+              typeof error === 'string'
+                ? error
+                : "Sorry, I couldn't understand that",
+          },
         })
       );
     } finally {
@@ -83,40 +88,41 @@ listenerMiddleware.startListening({
 });
 
 // Listen for transitions to animating_before_end_chat state
-listenerMiddleware.startListening({
-  predicate: (action, currentState, previousState) => {
-    const current = (currentState as RootState).game;
-    const previous = (previousState as RootState).game;
+// listenerMiddleware.startListening({
+//   predicate: (action, currentState, previousState) => {
+//     const current = (currentState as RootState).game;
+//     const previous = (previousState as RootState).game;
 
-    // Check if we transitioned to animating_before_end_chat state
-    return (
-      current.chatWindow?.turnState.type === 'animating_before_end_chat' &&
-      previous.chatWindow?.turnState.type !== 'animating_before_end_chat'
-    );
-  },
-  effect: async (action, listenerApi) => {
-    // Set up timeout with cleanup
-    animationTimeoutId = setTimeout(() => {
-      listenerApi.dispatch(exitChat());
-      animationTimeoutId = null; // Clean up after natural completion
-    }, 2000);
-  },
-});
+//     // Check if we transitioned to animating_before_end_chat state
+//     return (
+//       current.chatWindow?.turnState.type === 'animating_before_end_chat' &&
+//       previous.chatWindow?.turnState.type !== 'animating_before_end_chat'
+//     );
+//   },
+//   effect: async (action, listenerApi) => {
+//     // Set up timeout with cleanup
+//     // animationTimeoutId = setTimeout(() => {
+//     //   listenerApi.dispatch(handleEvent({ type: 'timerelapsed' }));
+//     //   animationTimeoutId = null; // Clean up after natural completion
+//     // }, 2000);
+//   },
+// });
 
+// TODO: this needs to be refactored to handle the new event-based system
 // Listen for exit chat to cancel pending operations
-listenerMiddleware.startListening({
-  actionCreator: exitChat,
-  effect: () => {
-    // Cancel pending chat request
-    if (chatAbortController) {
-      chatAbortController.abort();
-      chatAbortController = null;
-    }
+// listenerMiddleware.startListening({
+//   actionCreator: exitChat,
+//   effect: () => {
+//     // Cancel pending chat request
+//     if (chatAbortController) {
+//       chatAbortController.abort();
+//       chatAbortController = null;
+//     }
 
-    // Cancel pending animation timeout
-    if (animationTimeoutId) {
-      clearTimeout(animationTimeoutId);
-      animationTimeoutId = null;
-    }
-  },
-});
+//     // Cancel pending animation timeout
+//     if (animationTimeoutId) {
+//       clearTimeout(animationTimeoutId);
+//       animationTimeoutId = null;
+//     }
+//   },
+// });
