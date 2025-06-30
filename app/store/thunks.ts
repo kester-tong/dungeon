@@ -1,11 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { GameEvent } from '@/src/engine/types';
-import { GameEngine } from '@/src/engine/GameEngine';
+import { handleEvent } from '@/src/engine/engine';
 import { setState } from './gameSlice';
 import type { RootState } from './store';
 import { ChatResponse } from '../api/chat/types';
-
-const gameEngine = new GameEngine();
 
 export const processGameEvent = createAsyncThunk(
   'game/processGameEvent',
@@ -13,7 +11,7 @@ export const processGameEvent = createAsyncThunk(
     const currentState = (getState() as RootState).game;
 
     // 1. Get new state and actions from the synchronous engine
-    const { state: newState, actions } = gameEngine.handleEvent(
+    const { state: newState, actions } = handleEvent(
       currentState,
       event
     );
