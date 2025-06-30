@@ -1,6 +1,7 @@
 import { handleEvent } from './engine';
 import { GameState } from '@/app/store/gameSlice';
 import { GameEvent } from './types';
+import { gameConfig } from '@/src/config/gameConfig';
 
 const initialGameState: GameState = {
   player: { mapId: 'town', x: 5, y: 7 },
@@ -47,6 +48,12 @@ describe('Game Engine', () => {
         { ...initialGameState, player: { mapId: 'town', x: 11, y: 0 } },
         { type: 'keydown', key: 'ArrowUp' },
         { player: { mapId: 'forest', x: 11, y: 14 } },
+      ],
+      [
+        'should show splash text when hitting a map boundary with no connecting map',
+        { ...initialGameState, player: { mapId: 'town', x: 0, y: 7 } },
+        { type: 'keydown', key: 'ArrowLeft' },
+        { splashText: gameConfig.endOfMapText },
       ],
     ];
 
