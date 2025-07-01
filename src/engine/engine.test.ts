@@ -7,7 +7,7 @@ type TestCase = {
   name: string;
   initialState: GameState;
   event: GameEvent;
-  expectedState: Partial<GameState>;
+  expectedState: GameState;
   expectedActions?: AsyncAction[];
 };
 
@@ -24,43 +24,43 @@ const testCases: TestCase[] = [
     name: 'should move the player north',
     initialState: initialGameState,
     event: { type: 'keydown', key: 'ArrowUp' },
-    expectedState: { player: { mapId: 'town', x: 5, y: 6 } },
+    expectedState: { ...initialGameState, player: { mapId: 'town', x: 5, y: 6 } },
   },
   {
     name: 'should move the player south',
     initialState: initialGameState,
     event: { type: 'keydown', key: 'ArrowDown' },
-    expectedState: { player: { mapId: 'town', x: 5, y: 8 } },
+    expectedState: { ...initialGameState, player: { mapId: 'town', x: 5, y: 8 } },
   },
   {
     name: 'should move the player west',
     initialState: initialGameState,
     event: { type: 'keydown', key: 'ArrowLeft' },
-    expectedState: { player: { mapId: 'town', x: 4, y: 7 } },
+    expectedState: { ...initialGameState, player: { mapId: 'town', x: 4, y: 7 } },
   },
   {
     name: 'should move the player east',
     initialState: initialGameState,
     event: { type: 'keydown', key: 'ArrowRight' },
-    expectedState: { player: { mapId: 'town', x: 6, y: 7 } },
+    expectedState: { ...initialGameState, player: { mapId: 'town', x: 6, y: 7 } },
   },
   {
     name: 'should not move the player into a wall',
     initialState: { ...initialGameState, player: { mapId: 'town', x: 1, y: 1 } },
     event: { type: 'keydown', key: 'ArrowUp' },
-    expectedState: { player: { mapId: 'town', x: 1, y: 1 } },
+    expectedState: { ...initialGameState, player: { mapId: 'town', x: 1, y: 1 } },
   },
   {
     name: 'should transition to a new map',
     initialState: { ...initialGameState, player: { mapId: 'town', x: 11, y: 0 } },
     event: { type: 'keydown', key: 'ArrowUp' },
-    expectedState: { player: { mapId: 'forest', x: 11, y: 14 } },
+    expectedState: { ...initialGameState, player: { mapId: 'forest', x: 11, y: 14 } },
   },
   {
     name: 'should show splash text when hitting a map boundary with no connecting map',
     initialState: { ...initialGameState, player: { mapId: 'town', x: 0, y: 7 } },
     event: { type: 'keydown', key: 'ArrowLeft' },
-    expectedState: { splashText: gameConfig.endOfMapText },
+    expectedState: { ...initialGameState, player: { mapId: 'town', x: 0, y: 7 }, splashText: gameConfig.endOfMapText },
   },
   // Chat and Tool Use
   {
@@ -95,6 +95,7 @@ const testCases: TestCase[] = [
       },
     },
     expectedState: {
+      ...initialGameState,
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
@@ -144,7 +145,41 @@ const testCases: TestCase[] = [
     },
     event: { type: 'keydown', key: 'y' },
     expectedState: {
+      ...initialGameState,
       inventory: { items: [{ objectId: 'rope', quantity: 1 }], maxSlots: 10 },
+      chatWindow: {
+        npcId: 'shop_keeper',
+        intro_text: 'Welcome to my shop!',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                functionResponse: {
+                  name: 'sell_item',
+                  response: {
+                    result: 'accept',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+        chatHistory: [
+          {
+            type: 'action',
+            action: {
+              type: 'sell_item',
+              objectId: 'rope',
+              price: 10,
+            },
+            accepted: true,
+          },
+        ],
+        turnState: {
+          type: 'waiting_for_ai',
+        },
+      },
     },
     expectedActions: [{ type: 'send_chat_request' }],
   },
@@ -169,7 +204,41 @@ const testCases: TestCase[] = [
     },
     event: { type: 'keydown', key: 'n' },
     expectedState: {
+      ...initialGameState,
       inventory: { items: [], maxSlots: 10 },
+      chatWindow: {
+        npcId: 'shop_keeper',
+        intro_text: 'Welcome to my shop!',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                functionResponse: {
+                  name: 'sell_item',
+                  response: {
+                    output: 'reject',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+        chatHistory: [
+          {
+            type: 'action',
+            action: {
+              type: 'sell_item',
+              objectId: 'rope',
+              price: 10,
+            },
+            accepted: false,
+          },
+        ],
+        turnState: {
+          type: 'waiting_for_ai',
+        },
+      },
     },
     expectedActions: [{ type: 'send_chat_request' }],
   },
@@ -200,6 +269,7 @@ const testCases: TestCase[] = [
       },
     },
     expectedState: {
+      ...initialGameState,
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
@@ -225,7 +295,7 @@ const testCases: TestCase[] = [
 describe('Game Engine', () => {
   it.each(testCases)('$name', ({ initialState, event, expectedState, expectedActions }) => {
     const { state: newState, actions } = handleEvent(initialState, event);
-    expect(newState).toMatchObject(expectedState);
+    expect(newState).toEqual(expectedState);
     if (expectedActions) {
       expect(actions).toEqual(expectedActions);
     }
