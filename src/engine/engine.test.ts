@@ -98,7 +98,19 @@ const testCases: TestCase[] = [
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
-        contents: [],
+        contents: [
+          {
+            role: 'model',
+            parts: [
+              {
+                functionCall: {
+                  name: 'sell_item',
+                  args: { object_id: 'rope', price: 10 },
+                },
+              },
+            ],
+          },
+        ],
         chatHistory: [],
         turnState: {
           type: 'confirming_action',
@@ -191,8 +203,19 @@ const testCases: TestCase[] = [
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
-        contents: [],
-        chatHistory: [],
+        contents: [
+          {
+            role: 'model',
+            parts: [{ text: 'Thank you for your purchase!' }],
+          },
+        ],
+        chatHistory: [
+          {
+            type: 'text',
+            role: 'model',
+            content: 'Thank you for your purchase!',
+          },
+        ],
         turnState: { type: 'user_turn', currentMessage: '' },
       },
     },
