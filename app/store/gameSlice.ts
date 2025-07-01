@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
 import { Inventory } from '@/src/items';
 import { Content } from '@google/genai';
+import { AsyncAction, GameEvent } from '@/src/engine/types';
 
 /**
  * Strongly-typed action definitions
@@ -110,8 +111,15 @@ const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    setState: (state, action: PayloadAction<GameState>) => {
-      return action.payload;
+    setState: (
+      state,
+      action: PayloadAction<{
+        state: GameState;
+        event: GameEvent;
+        actions: AsyncAction[];
+      }>
+    ) => {
+      return action.payload.state;
     },
   },
 });

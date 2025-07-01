@@ -17,7 +17,7 @@ export const processGameEvent = createAsyncThunk(
     );
 
     // 2. Dispatch the new state to the store immediately
-    dispatch(setState(newState));
+    dispatch(setState({ state: newState, event, actions }));
 
     // 3. Handle all async actions returned by the engine
     for (const action of actions) {

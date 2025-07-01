@@ -295,31 +295,27 @@ function handleConfirmActionKeydown(
   const pendingAction = chatWindow.turnState.pendingAction;
   let newState = { ...state };
   let functionResponse: FunctionResponse;
-  let userMessage: string;
 
   if (accepted) {
     const result = performAction(pendingAction, state);
     newState = result.state;
     functionResponse = result.functionResponse;
-    userMessage = 'Thank you for the item.';
   } else {
     functionResponse = {
       name: pendingAction.type,
       response: { output: 'reject' },
     };
-    userMessage = "I've changed my mind.";
   }
 
   const newChatWindow = {
     ...newState.chatWindow!,
     contents: [
       ...newState.chatWindow!.contents,
-      { role: 'user' as const, parts: [{ functionResponse }, { text: userMessage }] },
+      { role: 'user' as const, parts: [{ functionResponse }] },
     ],
     chatHistory: [
       ...newState.chatWindow!.chatHistory,
       { type: 'action' as const, action: pendingAction, accepted },
-      { type: 'text' as const, role: 'user' as const, content: userMessage },
     ],
     turnState: { type: 'waiting_for_ai' as const },
   };
