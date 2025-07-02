@@ -1,4 +1,4 @@
-import { Action, GameState, ChatHistoryEntry } from '@/app/store/gameSlice';
+import { Action, GameState, ChatHistoryEntry } from './types';
 import { GameEvent, EngineResult, ChatResponseEvent } from './types';
 import { gameConfig } from '@/src/config/gameConfig';
 import { Content, FunctionCall, FunctionResponse } from '@google/genai';

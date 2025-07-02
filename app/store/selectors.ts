@@ -1,5 +1,5 @@
 import { RootState } from './store';
-import { ChatWindow } from './gameSlice';
+import { ChatWindow } from '@/src/engine/types';
 import { TileArray, TextSegment, View } from '../components/Renderer';
 import { gameConfig } from '@/src/config/gameConfig';
 import { GameItem } from '@/src/items';

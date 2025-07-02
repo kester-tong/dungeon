@@ -1,5 +1,5 @@
 import { handleEvent } from './engine';
-import { GameState } from '@/app/store/gameSlice';
+import { GameState } from '@/src/engine/types';
 import { GameEvent, AsyncAction } from './types';
 import { gameConfig } from '@/src/config/gameConfig';
 
