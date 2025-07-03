@@ -75,7 +75,7 @@
       },
       {
         "objectId": "gold_coin",
-        "quantity": 1
+        "quantity": 10
       }
     ],
     "maxSlots": 10
