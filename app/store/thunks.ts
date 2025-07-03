@@ -1,9 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { GameEvent } from '@/src/engine/types';
+import { GameEvent } from '@/src/engine/events';
 import { handleEvent } from '@/src/engine/engine';
 import { setState } from './gameSlice';
 import type { RootState } from './store';
-import { ChatResponse } from '../api/chat/types';
+import { ChatResponse } from '@/src/apis/types';
 
 export const processGameEvent = createAsyncThunk(
   'game/processGameEvent',

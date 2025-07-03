@@ -1,10 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { gameConfig } from '@/src/config/gameConfig';
-import {
-  AsyncAction,
-  GameEvent,
-  GameState,
-} from '@/src/engine/types';
+import { GameState } from '@/src/game/state';
+import { GameEvent } from '@/src/engine/events';
+import { AsyncAction } from '@/src/engine/types';
 
 const initialState: GameState = {
   player: gameConfig.startingPosition,

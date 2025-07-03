@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GenerateContentParameters, GoogleGenAI } from '@google/genai';
 import { gameConfig } from '@/src/config/gameConfig';
-import { ChatRequest, ChatResponse } from './types';
+import { ChatRequest, ChatResponse } from '@/src/apis/types';
 
 export async function POST(
   request: NextRequest

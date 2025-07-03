@@ -1,4 +1,4 @@
-import { GameState, ChatWindow } from '@/src/engine/types';
+import { GameState, ChatWindow } from '@/src/game/state';
 import { Content } from '@google/genai';
 import { gameConfig } from '@/src/config/gameConfig';
 

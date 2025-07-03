@@ -1,6 +1,7 @@
 import { handleEvent } from './engine';
-import { GameState } from '@/src/engine/types';
-import { GameEvent, AsyncAction } from './types';
+import { GameState } from '@/src/game/state';
+import { GameEvent } from './events';
+import { AsyncAction } from './types';
 import { gameConfig } from '@/src/config/gameConfig';
 
 type TestCase = {
