@@ -1,6 +1,6 @@
 import { GameState } from '@/src/state';
 import { Action, ActionResult } from './types';
-import { sellItem } from './sellItem';
+import { sellItem, validateSellItem } from './sellItem';
 import { openDoor } from './openDoor';
 import { FunctionCall } from '@google/genai';
 
@@ -19,11 +19,23 @@ export function parseFunctionCall(functionCall: FunctionCall): Action | null {
   }
 }
 
-export function actionNeedsConfirmation(action: Action): boolean {
+export function actionNeedsConfirmation(
+  state: GameState,
+  action: Action
+): boolean {
   switch (action.type) {
     case 'sell_item':
-      return true;
+      return validateSellItem(state, action) === null;
     case 'open_door':
+      return false;
+  }
+}
+
+export function shouldExitDialogAfterAction(action: Action): boolean {
+  switch (action.type) {
+    case 'open_door':
+      return true;
+    case 'sell_item':
       return false;
   }
 }

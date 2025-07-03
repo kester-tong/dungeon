@@ -114,10 +114,12 @@ export const selectChatWindowText = (
           text = 'The gate swings open and you pass through\n\n';
           break;
         case 'sell_item':
-          if (entry.accepted) {
+          if (entry.outcome === 'accepted') {
             text = `You bought ${action.objectId} for ${action.price} gold coins\n\n`;
-          } else {
+          } else if (entry.outcome === 'rejected') {
             text = `You rejected the offer of ${action.objectId} for ${action.price} gold coins\n\n`;
+          } else {
+            text = `${entry.error}\n\n`;
           }
           break;
         default:

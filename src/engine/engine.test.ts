@@ -14,7 +14,7 @@ type TestCase = {
 const initialGameState: GameState = {
   player: { mapId: 'town', x: 5, y: 7 },
   splashText: null,
-  inventory: { items: [], maxSlots: 10 },
+  inventory: { items: [{ objectId: 'gold_coin', quantity: 100 }], maxSlots: 10 },
   chatWindow: null,
 };
 
@@ -96,6 +96,10 @@ const testCases: TestCase[] = [
     },
     expectedState: {
       ...initialGameState,
+      inventory: {
+        items: [{ objectId: 'gold_coin', quantity: 100 }],
+        maxSlots: 10,
+      },
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
@@ -146,7 +150,13 @@ const testCases: TestCase[] = [
     event: { type: 'keydown', key: 'y' },
     expectedState: {
       ...initialGameState,
-      inventory: { items: [{ objectId: 'rope', quantity: 1 }], maxSlots: 10 },
+      inventory: {
+        items: [
+          { objectId: 'gold_coin', quantity: 90 },
+          { objectId: 'rope', quantity: 1 },
+        ],
+        maxSlots: 10,
+      },
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
@@ -173,7 +183,7 @@ const testCases: TestCase[] = [
               objectId: 'rope',
               price: 10,
             },
-            accepted: true,
+            outcome: 'accepted',
           },
         ],
         turnState: {
@@ -205,7 +215,10 @@ const testCases: TestCase[] = [
     event: { type: 'keydown', key: 'n' },
     expectedState: {
       ...initialGameState,
-      inventory: { items: [], maxSlots: 10 },
+      inventory: {
+        items: [{ objectId: 'gold_coin', quantity: 100 }],
+        maxSlots: 10,
+      },
       chatWindow: {
         npcId: 'shop_keeper',
         intro_text: 'Welcome to my shop!',
@@ -232,7 +245,7 @@ const testCases: TestCase[] = [
               objectId: 'rope',
               price: 10,
             },
-            accepted: false,
+            outcome: 'rejected',
           },
         ],
         turnState: {

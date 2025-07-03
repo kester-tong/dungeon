@@ -1,9 +1,22 @@
-import { Inventory } from './types';
+import { Inventory, InventorySlot } from './types';
 
-export function addItem(inventory: Inventory, objectId: string, quantity: number): Inventory {
+export function getItemQuantity(inventory: Inventory, objectId: string): number {
+  const item = inventory.items.find((slot) => slot.objectId === objectId);
+  return item ? item.quantity : 0;
+}
+
+export function getUsedSlots(inventory: Inventory): number {
+  return inventory.items.length;
+}
+
+export function addItem(
+  inventory: Inventory,
+  objectId: string,
+  quantity: number
+): Inventory {
   const newInventory = JSON.parse(JSON.stringify(inventory));
   const itemIndex = newInventory.items.findIndex(
-    (i: any) => i.objectId === objectId
+    (i: InventorySlot) => i.objectId === objectId
   );
   if (itemIndex > -1) {
     newInventory.items[itemIndex].quantity += quantity;
@@ -13,10 +26,14 @@ export function addItem(inventory: Inventory, objectId: string, quantity: number
   return newInventory;
 }
 
-export function removeItem(inventory: Inventory, objectId: string, quantity: number): Inventory {
+export function removeItem(
+  inventory: Inventory,
+  objectId: string,
+  quantity: number
+): Inventory {
   const newInventory = JSON.parse(JSON.stringify(inventory));
   const itemIndex = newInventory.items.findIndex(
-    (i: any) => i.objectId === objectId
+    (i: InventorySlot) => i.objectId === objectId
   );
   if (itemIndex > -1) {
     newInventory.items[itemIndex].quantity -= quantity;

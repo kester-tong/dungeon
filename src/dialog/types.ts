@@ -13,7 +13,8 @@ export interface TextEntry {
 export interface ActionEntry {
   type: 'action';
   action: Action;
-  accepted: boolean;
+  outcome: 'accepted' | 'rejected' | 'failed';
+  error?: string;
 }
 
 export type ChatHistoryEntry = TextEntry | ActionEntry;

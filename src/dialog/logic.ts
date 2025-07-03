@@ -4,6 +4,7 @@ import {
   actionNeedsConfirmation,
   parseFunctionCall,
   performAction,
+  shouldExitDialogAfterAction,
 } from '../actions';
 import { ChatResponseEvent } from '../engine';
 import { Content, FunctionResponse } from '@google/genai';
@@ -57,7 +58,7 @@ export function handleChatResponse(
       return { state: { ...state, chatWindow: null }, actions: [] };
     }
 
-    if (actionNeedsConfirmation(action)) {
+    if (actionNeedsConfirmation(newState, action)) {
       newState.chatWindow!.turnState = {
         type: 'confirming_action',
         pendingAction: action,
@@ -73,15 +74,31 @@ export function handleChatResponse(
         ...newState.chatWindow!.contents,
         { role: 'user', parts: [{ functionResponse }] },
       ];
+
+      const outcome = functionResponse.response.error ? 'failed' : 'accepted';
       newState.chatWindow!.chatHistory = [
         ...newState.chatWindow!.chatHistory,
-        { type: 'action', action, accepted: true },
+        {
+          type: 'action',
+          action,
+          outcome,
+          error: functionResponse.response.error,
+        },
       ];
-      newState.chatWindow!.turnState = { type: 'animating_before_end_chat' };
-      return {
-        state: newState,
-        actions: [{ type: 'start_timer', duration: 2000 }],
-      };
+
+      if (shouldExitDialogAfterAction(action)) {
+        newState.chatWindow!.turnState = { type: 'animating_before_end_chat' };
+        return {
+          state: newState,
+          actions: [{ type: 'start_timer', duration: 2000 }],
+        };
+      } else {
+        newState.chatWindow!.turnState = { type: 'waiting_for_ai' };
+        return {
+          state: newState,
+          actions: [{ type: 'send_chat_request' }],
+        };
+      }
     }
   } else {
     newState.chatWindow!.turnState = {
@@ -196,11 +213,13 @@ function handleConfirmActionKeydown(
   const pendingAction = chatWindow.turnState.pendingAction;
   let newState = { ...state };
   let functionResponse: FunctionResponse;
+  let outcome: 'accepted' | 'rejected' = 'rejected';
 
   if (accepted) {
     const result = performAction(newState, pendingAction);
     newState = result.state;
     functionResponse = result.functionResponse;
+    outcome = 'accepted';
   } else {
     functionResponse = {
       name: pendingAction.type,
@@ -216,7 +235,7 @@ function handleConfirmActionKeydown(
     ],
     chatHistory: [
       ...newState.chatWindow!.chatHistory,
-      { type: 'action' as const, action: pendingAction, accepted },
+      { type: 'action' as const, action: pendingAction, outcome },
     ],
     turnState: { type: 'waiting_for_ai' as const },
   };
