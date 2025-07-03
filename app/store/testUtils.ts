@@ -1,4 +1,5 @@
-import { GameState, ChatWindow } from '@/src/game/state';
+import { ChatWindow } from '@/src/dialog';
+import { GameState } from '@/src/state';
 import { Content } from '@google/genai';
 import { gameConfig } from '@/src/config/gameConfig';
 
@@ -59,3 +60,4 @@ export const createStateWithChat = (
   inventory: gameConfig.initialInventory,
   splashText: null,
 });
+

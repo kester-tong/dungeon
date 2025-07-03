@@ -1,8 +1,7 @@
 import { handleEvent } from './engine';
-import { GameState } from '@/src/game/state';
-import { GameEvent } from './events';
-import { AsyncAction } from './types';
-import { gameConfig } from '@/src/config/gameConfig';
+import { GameState } from '../state';
+import { GameEvent, AsyncAction } from './';
+import { gameConfig } from '../config/gameConfig';
 
 type TestCase = {
   name: string;
@@ -14,9 +13,9 @@ type TestCase = {
 
 const initialGameState: GameState = {
   player: { mapId: 'town', x: 5, y: 7 },
-  chatWindow: null,
-  inventory: { items: [], maxSlots: 10 },
   splashText: null,
+  inventory: { items: [], maxSlots: 10 },
+  chatWindow: null,
 };
 
 const testCases: TestCase[] = [

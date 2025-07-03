@@ -1,3 +1,6 @@
+import { GameState } from '../state';
+import { FunctionResponse } from '@google/genai';
+
 /**
  * Strongly-typed action definitions
  */
@@ -12,3 +15,8 @@ export interface SellItemAction {
 }
 
 export type Action = OpenDoorAction | SellItemAction;
+
+export type ActionResult = {
+  state: GameState;
+  functionResponse: FunctionResponse;
+};

@@ -1,4 +1,4 @@
-import { GameState } from '../game/state';
+import { GameState } from '../state';
 
 export type StartTimerAction = {
   type: 'start_timer';

@@ -1,6 +1,5 @@
-import { Inventory } from '../items';
 import { Content } from '@google/genai';
-import { Action } from './actions';
+import { Action } from '../actions';
 
 /**
  * Parsed chat history entry types
@@ -18,16 +17,6 @@ export interface ActionEntry {
 }
 
 export type ChatHistoryEntry = TextEntry | ActionEntry;
-
-/**
- * Position represents x, y coordinates and map location
- */
-export interface Position {
-  x: number;
-  y: number;
-  mapId: string;
-}
-
 export interface UserTurnState {
   type: 'user_turn';
   // The message the user is typing.
@@ -76,9 +65,6 @@ export type ChatWindow = {
   turnState: TurnState;
 };
 
-export interface GameState {
-  player: Position;
+export interface DialogState {
   chatWindow: ChatWindow | null;
-  inventory: Inventory;
-  splashText: string | null;
 }
