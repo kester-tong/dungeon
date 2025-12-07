@@ -36,7 +36,7 @@ export async function POST(
     const systemPrompt = npc.prompt;
 
     const generateContentRequest: GenerateContentParameters = {
-      model: 'gemini-2.5-pro-preview-06-05',
+      model: 'gemini-2.5-flash',
       config: {
         systemInstruction: systemPrompt,
         tools: [
